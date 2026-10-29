@@ -1,0 +1,122 @@
+@import "tailwindcss";
+
+/* Tokens del prototipo "Telón".
+   Telón (carmesí) es el color de marca; Marquesina (ámbar) marca disponibilidad
+   y momentos de celebración; Tinta es el texto y las superficies oscuras. */
+@theme {
+  --color-telon-50: #fdf2f3;
+  --color-telon-100: #fbe3e6;
+  --color-telon-200: #f5c2c9;
+  --color-telon-500: #c8203a;
+  --color-telon-600: #a3122a;
+  --color-telon-700: #860d22;
+  --color-telon-900: #4d0714;
+
+  --color-tinta: #1e1a2e;
+  --color-tinta-soft: #5e5873;
+  --color-butaca: #f3f1f6;
+  --color-linea: #e3e0ea;
+
+  --color-marquesina: #f2b705;
+  --color-marquesina-soft: #fff4cc;
+
+  --color-ok: #0f7b6c;
+  --color-ok-soft: #dff3ef;
+  --color-alerta: #b45309;
+  --color-alerta-soft: #fdf0dc;
+
+  --font-cartel: "Big Shoulders Display", "Figtree", sans-serif;
+  --font-sans: "Figtree", ui-sans-serif, system-ui, sans-serif;
+
+  --ease-salida: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-white font-sans text-tinta antialiased;
+  }
+  ::selection {
+    background: var(--color-marquesina);
+    color: var(--color-tinta);
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-marquesina);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  input,
+  select,
+  textarea {
+    caret-color: var(--color-telon-600);
+  }
+  a {
+    text-underline-offset: 3px;
+  }
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #cdc8d8 transparent;
+  }
+}
+
+/* Borde perforado del boleto (resumen de reservación) */
+.boleto-corte {
+  position: relative;
+  border-top: 2px dashed var(--color-linea);
+}
+.boleto-corte::before,
+.boleto-corte::after {
+  content: "";
+  position: absolute;
+  top: -13px;
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  background: var(--boleto-fondo, white);
+}
+.boleto-corte::before {
+  left: -13px;
+}
+.boleto-corte::after {
+  right: -13px;
+}
+
+/* Foquitos de marquesina del hero: el único momento animado de la página */
+@keyframes foco {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+.foco {
+  animation: foco 2.4s var(--ease-salida) infinite;
+}
+
+@keyframes entra {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.entra {
+  animation: entra 0.5s var(--ease-salida) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .foco,
+  .entra {
+    animation: none;
+  }
+}
