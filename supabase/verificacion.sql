@@ -1,7 +1,7 @@
 -- ═════════════════════════════════════════════════════════════════════════════
 -- Verificación de las migraciones 1, 2 y 3
 -- Solo lee: no cambia nada. Ejecútalo en SQL Editor después de aplicarlas.
--- Cada fila debe decir ok = true. Si alguna dice false, manda captura.
+-- Cada fila debe decir ok = true (21 chequeos). Si alguna dice false, manda captura.
 -- ═════════════════════════════════════════════════════════════════════════════
 
 with tablas as (
@@ -10,7 +10,9 @@ with tablas as (
    where n.nspname = 'public' and c.relkind = 'r'
      and c.relname in ('configuracion', 'horario_servicio', 'bloqueos', 'perfiles', 'clientes', 'categorias',
                        'shows', 'paquetes', 'extras', 'zonas', 'lista_interes', 'reservaciones',
-                       'reservacion_extras', 'notas_reservacion', 'pagos', 'bitacora')
+                       'reservacion_extras', 'notas_reservacion', 'pagos', 'bitacora',
+                       -- migración 4
+                       'paginas', 'aceptaciones_legales', 'preguntas_frecuentes')
 ),
 funciones as (
   select p.proname
@@ -18,14 +20,16 @@ funciones as (
    where n.nspname = 'public'
      and p.proname in ('tocar_actualizado', 'generar_folio', 'es_admin', 'manejar_nuevo_usuario', 'zona_por_cp',
                        'recalcular_pagado', 'registrar_bitacora', 'ocupacion', 'crear_reservacion',
-                       'cancelar_reservacion', 'proteger_ficha_cliente')
+                       'cancelar_reservacion', 'proteger_ficha_cliente',
+                       -- migración 4
+                       'versionar_pagina', 'aceptar_paginas', 'validar_comprobante')
 ),
 chequeos (orden, chequeo, esperado, obtenido) as (
   values
-    (1,  'Tablas creadas',                        '16', (select count(*) from tablas)::text),
-    (2,  'Tablas con RLS activo',                 '16', (select count(*) from tablas where relrowsecurity)::text),
-    (3,  'Políticas de seguridad en tablas',      '35', (select count(*) from pg_policies where schemaname = 'public')::text),
-    (4,  'Funciones de negocio',                  '11', (select count(*) from funciones)::text),
+    (1,  'Tablas creadas',                        '19', (select count(*) from tablas)::text),
+    (2,  'Tablas con RLS activo',                 '19', (select count(*) from tablas where relrowsecurity)::text),
+    (3,  'Políticas de seguridad en tablas',      '40', (select count(*) from pg_policies where schemaname = 'public')::text),
+    (4,  'Funciones de negocio',                  '14', (select count(*) from funciones)::text),
     (5,  'Trigger de nuevos usuarios',            '1',  (select count(*) from pg_trigger where tgname = 'al_crear_usuario')::text),
     (6,  'Regla anti-traslapes de reservaciones', '1',  (select count(*) from pg_constraint where conname = 'reservaciones_sin_traslape')::text),
     (7,  'Buckets de Storage',                    '2',  (select count(*) from storage.buckets where id in ('shows', 'comprobantes'))::text),
@@ -41,7 +45,12 @@ chequeos (orden, chequeo, esperado, obtenido) as (
     (15, 'Paquetes',                              '12', (select count(*) from public.paquetes)::text),
     (16, 'Extras',                                '4',  (select count(*) from public.extras)::text),
     (17, 'Cobertura: 45110 cae en Zapopan',       'Zapopan', coalesce((public.zona_por_cp('45110')).nombre, 'sin zona')),
-    (18, 'Cobertura: 45640 queda fuera',          'sin zona', coalesce((public.zona_por_cp('45640')).nombre, 'sin zona'))
+    (18, 'Cobertura: 45640 queda fuera',          'sin zona', coalesce((public.zona_por_cp('45640')).nombre, 'sin zona')),
+    -- migración 4
+    (19, 'Páginas legales publicadas',            '3',  (select count(*) from public.paginas where publicada
+                                                           and slug in ('aviso-de-privacidad', 'terminos', 'politica-de-cancelacion'))::text),
+    (20, 'Preguntas frecuentes activas',          '6',  (select count(*) from public.preguntas_frecuentes where activa)::text),
+    (21, 'Correo para avisos del dueño',          'true', (select (correo_avisos is not null)::text from public.configuracion))
 )
 select orden, chequeo, esperado, obtenido, esperado = obtenido as ok
   from chequeos
