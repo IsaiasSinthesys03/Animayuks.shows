@@ -1,7 +1,7 @@
 -- ═════════════════════════════════════════════════════════════════════════════
 -- Verificación de las migraciones
 -- Solo lee: no cambia nada. Ejecútalo en SQL Editor después de aplicarlas.
--- Cada fila debe decir ok = true (26 chequeos). Si alguna dice false, manda captura.
+-- Cada fila debe decir ok = true (30 chequeos). Si alguna dice false, manda captura.
 -- ═════════════════════════════════════════════════════════════════════════════
 
 with tablas as (
@@ -14,7 +14,9 @@ with tablas as (
                        -- migración 4
                        'paginas', 'aceptaciones_legales', 'preguntas_frecuentes',
                        -- migración 6
-                       'retenciones')
+                       'retenciones',
+                       -- migración 9
+                       'plantillas_correo', 'notificaciones')
 ),
 funciones as (
   select p.proname
@@ -33,14 +35,18 @@ funciones as (
                        -- migración 7
                        'reprogramar_reservacion',
                        -- migración 8
-                       'expirar_pendientes', 'limpiar_retenciones')
+                       'expirar_pendientes', 'limpiar_retenciones',
+                       -- migración 9
+                       'fecha_es', 'hora_es', 'pesos', 'escapar_html', 'renderizar', 'envolver_correo',
+                       'reembolso_estimado', 'datos_correo', 'encolar_correo', 'notificar_reservacion', 'notificar_pago',
+                       'enviar_pendientes', 'revisar_envios', 'reintentar_correo', 'encolar_recordatorios', 'encolar_resumen_diario')
 ),
 chequeos (orden, chequeo, esperado, obtenido) as (
   values
-    (1,  'Tablas creadas',                        '20', (select count(*) from tablas)::text),
-    (2,  'Tablas con RLS activo',                 '20', (select count(*) from tablas where relrowsecurity)::text),
-    (3,  'Políticas de seguridad en tablas',      '41', (select count(*) from pg_policies where schemaname = 'public')::text),
-    (4,  'Funciones de negocio',                  '26', (select count(*) from funciones)::text),
+    (1,  'Tablas creadas',                        '22', (select count(*) from tablas)::text),
+    (2,  'Tablas con RLS activo',                 '22', (select count(*) from tablas where relrowsecurity)::text),
+    (3,  'Políticas de seguridad en tablas',      '44', (select count(*) from pg_policies where schemaname = 'public')::text),
+    (4,  'Funciones de negocio',                  '42', (select count(*) from funciones)::text),
     (5,  'Trigger de nuevos usuarios',            '1',  (select count(*) from pg_trigger where tgname = 'al_crear_usuario')::text),
     (6,  'Regla anti-traslapes de reservaciones', '1',  (select count(*) from pg_constraint where conname = 'reservaciones_sin_traslape')::text),
     (7,  'Buckets de Storage',                    '2',  (select count(*) from storage.buckets where id in ('shows', 'comprobantes'))::text),
@@ -74,7 +80,14 @@ chequeos (orden, chequeo, esperado, obtenido) as (
     (25, 'Reprogramar exige sesión',              'false', (has_function_privilege('anon', 'public.reprogramar_reservacion(uuid,timestamptz,text)', 'execute'))::text),
     -- migración 8
     (26, 'Trabajos de cron activos',              '2',  (select count(*) from cron.job
-                                                          where jobname in ('ay-expirar-pendientes', 'ay-limpiar-retenciones') and active)::text)
+                                                          where jobname in ('ay-expirar-pendientes', 'ay-limpiar-retenciones') and active)::text),
+    -- migración 9
+    (27, 'Trabajos de cron de correos activos',   '4',  (select count(*) from cron.job
+                                                          where jobname in ('ay-enviar-correos', 'ay-revisar-envios', 'ay-recordatorios', 'ay-resumen-diario') and active)::text),
+    (28, 'Plantillas de correo activas',          '13', (select count(*) from public.plantillas_correo where activa)::text),
+    (29, 'API key de Resend en Vault',            '1',  (select count(*) from vault.decrypted_secrets where name = 'resend_api_key')::text),
+    (30, 'Bandeja de salida cerrada al público',  'false', (has_function_privilege('authenticated', 'public.enviar_pendientes(int)', 'execute')
+                                                           or has_function_privilege('anon', 'public.encolar_correo(text,uuid,uuid,jsonb,text)', 'execute'))::text)
 )
 select orden, chequeo, esperado, obtenido, esperado = obtenido as ok
   from chequeos
