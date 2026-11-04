@@ -1,7 +1,7 @@
 -- ═════════════════════════════════════════════════════════════════════════════
--- Verificación de las migraciones 1, 2 y 3
+-- Verificación de las migraciones
 -- Solo lee: no cambia nada. Ejecútalo en SQL Editor después de aplicarlas.
--- Cada fila debe decir ok = true (21 chequeos). Si alguna dice false, manda captura.
+-- Cada fila debe decir ok = true (23 chequeos). Si alguna dice false, manda captura.
 -- ═════════════════════════════════════════════════════════════════════════════
 
 with tablas as (
@@ -22,14 +22,17 @@ funciones as (
                        'recalcular_pagado', 'registrar_bitacora', 'ocupacion', 'crear_reservacion',
                        'cancelar_reservacion', 'proteger_ficha_cliente',
                        -- migración 4
-                       'versionar_pagina', 'aceptar_paginas', 'validar_comprobante')
+                       'versionar_pagina', 'aceptar_paginas', 'validar_comprobante',
+                       -- migración 5
+                       'bloquear_agenda', 'bloqueos_tomar_candado', 'calcular_horario', 'validar_horario',
+                       'evaluar_horarios_dia', 'horarios_disponibles', 'disponibilidad_mes')
 ),
 chequeos (orden, chequeo, esperado, obtenido) as (
   values
     (1,  'Tablas creadas',                        '19', (select count(*) from tablas)::text),
     (2,  'Tablas con RLS activo',                 '19', (select count(*) from tablas where relrowsecurity)::text),
     (3,  'Políticas de seguridad en tablas',      '40', (select count(*) from pg_policies where schemaname = 'public')::text),
-    (4,  'Funciones de negocio',                  '14', (select count(*) from funciones)::text),
+    (4,  'Funciones de negocio',                  '21', (select count(*) from funciones)::text),
     (5,  'Trigger de nuevos usuarios',            '1',  (select count(*) from pg_trigger where tgname = 'al_crear_usuario')::text),
     (6,  'Regla anti-traslapes de reservaciones', '1',  (select count(*) from pg_constraint where conname = 'reservaciones_sin_traslape')::text),
     (7,  'Buckets de Storage',                    '2',  (select count(*) from storage.buckets where id in ('shows', 'comprobantes'))::text),
@@ -50,7 +53,13 @@ chequeos (orden, chequeo, esperado, obtenido) as (
     (19, 'Páginas legales publicadas',            '3',  (select count(*) from public.paginas where publicada
                                                            and slug in ('aviso-de-privacidad', 'terminos', 'politica-de-cancelacion'))::text),
     (20, 'Preguntas frecuentes activas',          '6',  (select count(*) from public.preguntas_frecuentes where activa)::text),
-    (21, 'Correo para avisos del dueño',          'true', (select (correo_avisos is not null)::text from public.configuracion))
+    (21, 'Correo para avisos del dueño',          'true', (select (correo_avisos is not null)::text from public.configuracion)),
+    -- migración 5
+    (22, 'Visitante consulta disponibilidad',     'true', (has_function_privilege('anon', 'public.horarios_disponibles(uuid,uuid,uuid[],text,date)', 'execute')
+                                                           and has_function_privilege('anon', 'public.disponibilidad_mes(uuid,uuid,uuid[],text,int,int)', 'execute'))::text),
+    (23, 'Funciones internas cerradas al público','false', (has_function_privilege('anon', 'public.calcular_horario(uuid,uuid,uuid[],text,timestamptz,boolean)', 'execute')
+                                                           or has_function_privilege('authenticated', 'public.validar_horario(timestamptz,timestamptz,tstzrange,uuid)', 'execute')
+                                                           or has_function_privilege('authenticated', 'public.bloquear_agenda()', 'execute'))::text)
 )
 select orden, chequeo, esperado, obtenido, esperado = obtenido as ok
   from chequeos
