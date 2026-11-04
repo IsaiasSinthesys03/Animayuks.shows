@@ -516,3 +516,26 @@ La etapa 2 está terminada cuando:
 | RF-CAT-09/10, RF-CFG-06 FAQ y textos legales | M4 |
 | RNF-LEG-01/03 Aviso de privacidad y versión aceptada | M4 `paginas`, `aceptaciones_legales` |
 | RNF-DIS-06 Reintentos | M9 `revisar_envios` |
+
+---
+
+## 10. Resultado de la implementación (4 nov 2026)
+
+Migraciones 4 a 9 aplicadas en Supabase con respaldo previo cada una. Verificación **30/30** y baterías 01–07 con **89 pruebas**, todas en verde en Supabase y sin dejar datos.
+
+### Cambios respecto al plan
+
+| Plan | Implementado | Motivo |
+|---|---|---|
+| `crear_reservacion(…, p_retencion_id)` | Sin parámetro nuevo: los apartados **propios** no cuentan como ocupados y se borran al reservar | Más simple para el frontend y sin cambiar la firma |
+| `validar_horario(…, p_excluir_retencion)` | Excluye automáticamente los apartados de quien llama (`auth.uid()`) | Mismo motivo |
+| 11 plantillas | 13 plantillas: cancelación y reprogramación tienen versión para el cliente y para el dueño | Cada plantilla tiene un solo destinatario |
+| Recordatorio y resumen a hora fija en UTC | Los trabajos corren cada hora y solo encolan a la hora configurada (`hora_recordatorio`, `hora_resumen_diario`) | Así el panel puede cambiar los horarios sin tocar `cron` |
+| — | Llave de idempotencia de Resend en cada envío | Un reintento tras un tiempo de espera agotado nunca duplica el correo |
+| — | Errores 4xx de Resend (salvo 429) pasan directo a `fallida` | Reintentar un correo inválido no sirve |
+| Datos bancarios con valor `PENDIENTE` | Vacíos; el correo pide escribir por WhatsApp mientras no haya CLABE | Se capturan desde el panel |
+
+### Pendiente de la etapa
+
+- [ ] Prueba real controlada de correos (requiere permiso).
+- [ ] Revisión del Security Advisor de Supabase.
