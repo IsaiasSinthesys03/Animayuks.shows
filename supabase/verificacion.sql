@@ -1,7 +1,7 @@
 -- ═════════════════════════════════════════════════════════════════════════════
 -- Verificación de las migraciones
 -- Solo lee: no cambia nada. Ejecútalo en SQL Editor después de aplicarlas.
--- Cada fila debe decir ok = true (25 chequeos). Si alguna dice false, manda captura.
+-- Cada fila debe decir ok = true (26 chequeos). Si alguna dice false, manda captura.
 -- ═════════════════════════════════════════════════════════════════════════════
 
 with tablas as (
@@ -31,14 +31,16 @@ funciones as (
                        -- migración 6
                        'apartar_horario', 'liberar_horario',
                        -- migración 7
-                       'reprogramar_reservacion')
+                       'reprogramar_reservacion',
+                       -- migración 8
+                       'expirar_pendientes', 'limpiar_retenciones')
 ),
 chequeos (orden, chequeo, esperado, obtenido) as (
   values
     (1,  'Tablas creadas',                        '20', (select count(*) from tablas)::text),
     (2,  'Tablas con RLS activo',                 '20', (select count(*) from tablas where relrowsecurity)::text),
     (3,  'Políticas de seguridad en tablas',      '41', (select count(*) from pg_policies where schemaname = 'public')::text),
-    (4,  'Funciones de negocio',                  '24', (select count(*) from funciones)::text),
+    (4,  'Funciones de negocio',                  '26', (select count(*) from funciones)::text),
     (5,  'Trigger de nuevos usuarios',            '1',  (select count(*) from pg_trigger where tgname = 'al_crear_usuario')::text),
     (6,  'Regla anti-traslapes de reservaciones', '1',  (select count(*) from pg_constraint where conname = 'reservaciones_sin_traslape')::text),
     (7,  'Buckets de Storage',                    '2',  (select count(*) from storage.buckets where id in ('shows', 'comprobantes'))::text),
@@ -69,7 +71,10 @@ chequeos (orden, chequeo, esperado, obtenido) as (
     -- migración 6
     (24, 'Apartar exige sesión',                  'false', (has_function_privilege('anon', 'public.apartar_horario(uuid,uuid,uuid[],text,timestamptz)', 'execute'))::text),
     -- migración 7
-    (25, 'Reprogramar exige sesión',              'false', (has_function_privilege('anon', 'public.reprogramar_reservacion(uuid,timestamptz,text)', 'execute'))::text)
+    (25, 'Reprogramar exige sesión',              'false', (has_function_privilege('anon', 'public.reprogramar_reservacion(uuid,timestamptz,text)', 'execute'))::text),
+    -- migración 8
+    (26, 'Trabajos de cron activos',              '2',  (select count(*) from cron.job
+                                                          where jobname in ('ay-expirar-pendientes', 'ay-limpiar-retenciones') and active)::text)
 )
 select orden, chequeo, esperado, obtenido, esperado = obtenido as ok
   from chequeos
