@@ -1,7 +1,7 @@
 -- ═════════════════════════════════════════════════════════════════════════════
 -- Verificación de las migraciones
 -- Solo lee: no cambia nada. Ejecútalo en SQL Editor después de aplicarlas.
--- Cada fila debe decir ok = true (23 chequeos). Si alguna dice false, manda captura.
+-- Cada fila debe decir ok = true (24 chequeos). Si alguna dice false, manda captura.
 -- ═════════════════════════════════════════════════════════════════════════════
 
 with tablas as (
@@ -12,7 +12,9 @@ with tablas as (
                        'shows', 'paquetes', 'extras', 'zonas', 'lista_interes', 'reservaciones',
                        'reservacion_extras', 'notas_reservacion', 'pagos', 'bitacora',
                        -- migración 4
-                       'paginas', 'aceptaciones_legales', 'preguntas_frecuentes')
+                       'paginas', 'aceptaciones_legales', 'preguntas_frecuentes',
+                       -- migración 6
+                       'retenciones')
 ),
 funciones as (
   select p.proname
@@ -25,14 +27,16 @@ funciones as (
                        'versionar_pagina', 'aceptar_paginas', 'validar_comprobante',
                        -- migración 5
                        'bloquear_agenda', 'bloqueos_tomar_candado', 'calcular_horario', 'validar_horario',
-                       'evaluar_horarios_dia', 'horarios_disponibles', 'disponibilidad_mes')
+                       'evaluar_horarios_dia', 'horarios_disponibles', 'disponibilidad_mes',
+                       -- migración 6
+                       'apartar_horario', 'liberar_horario')
 ),
 chequeos (orden, chequeo, esperado, obtenido) as (
   values
-    (1,  'Tablas creadas',                        '19', (select count(*) from tablas)::text),
-    (2,  'Tablas con RLS activo',                 '19', (select count(*) from tablas where relrowsecurity)::text),
-    (3,  'Políticas de seguridad en tablas',      '40', (select count(*) from pg_policies where schemaname = 'public')::text),
-    (4,  'Funciones de negocio',                  '21', (select count(*) from funciones)::text),
+    (1,  'Tablas creadas',                        '20', (select count(*) from tablas)::text),
+    (2,  'Tablas con RLS activo',                 '20', (select count(*) from tablas where relrowsecurity)::text),
+    (3,  'Políticas de seguridad en tablas',      '41', (select count(*) from pg_policies where schemaname = 'public')::text),
+    (4,  'Funciones de negocio',                  '23', (select count(*) from funciones)::text),
     (5,  'Trigger de nuevos usuarios',            '1',  (select count(*) from pg_trigger where tgname = 'al_crear_usuario')::text),
     (6,  'Regla anti-traslapes de reservaciones', '1',  (select count(*) from pg_constraint where conname = 'reservaciones_sin_traslape')::text),
     (7,  'Buckets de Storage',                    '2',  (select count(*) from storage.buckets where id in ('shows', 'comprobantes'))::text),
@@ -59,7 +63,9 @@ chequeos (orden, chequeo, esperado, obtenido) as (
                                                            and has_function_privilege('anon', 'public.disponibilidad_mes(uuid,uuid,uuid[],text,int,int)', 'execute'))::text),
     (23, 'Funciones internas cerradas al público','false', (has_function_privilege('anon', 'public.calcular_horario(uuid,uuid,uuid[],text,timestamptz,boolean)', 'execute')
                                                            or has_function_privilege('authenticated', 'public.validar_horario(timestamptz,timestamptz,tstzrange,uuid)', 'execute')
-                                                           or has_function_privilege('authenticated', 'public.bloquear_agenda()', 'execute'))::text)
+                                                           or has_function_privilege('authenticated', 'public.bloquear_agenda()', 'execute'))::text),
+    -- migración 6
+    (24, 'Apartar exige sesión',                  'false', (has_function_privilege('anon', 'public.apartar_horario(uuid,uuid,uuid[],text,timestamptz)', 'execute'))::text)
 )
 select orden, chequeo, esperado, obtenido, esperado = obtenido as ok
   from chequeos
