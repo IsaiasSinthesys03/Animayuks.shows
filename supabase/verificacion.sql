@@ -1,7 +1,7 @@
 -- ═════════════════════════════════════════════════════════════════════════════
 -- Verificación de las migraciones
 -- Solo lee: no cambia nada. Ejecútalo en SQL Editor después de aplicarlas.
--- Cada fila debe decir ok = true (24 chequeos). Si alguna dice false, manda captura.
+-- Cada fila debe decir ok = true (25 chequeos). Si alguna dice false, manda captura.
 -- ═════════════════════════════════════════════════════════════════════════════
 
 with tablas as (
@@ -29,14 +29,16 @@ funciones as (
                        'bloquear_agenda', 'bloqueos_tomar_candado', 'calcular_horario', 'validar_horario',
                        'evaluar_horarios_dia', 'horarios_disponibles', 'disponibilidad_mes',
                        -- migración 6
-                       'apartar_horario', 'liberar_horario')
+                       'apartar_horario', 'liberar_horario',
+                       -- migración 7
+                       'reprogramar_reservacion')
 ),
 chequeos (orden, chequeo, esperado, obtenido) as (
   values
     (1,  'Tablas creadas',                        '20', (select count(*) from tablas)::text),
     (2,  'Tablas con RLS activo',                 '20', (select count(*) from tablas where relrowsecurity)::text),
     (3,  'Políticas de seguridad en tablas',      '41', (select count(*) from pg_policies where schemaname = 'public')::text),
-    (4,  'Funciones de negocio',                  '23', (select count(*) from funciones)::text),
+    (4,  'Funciones de negocio',                  '24', (select count(*) from funciones)::text),
     (5,  'Trigger de nuevos usuarios',            '1',  (select count(*) from pg_trigger where tgname = 'al_crear_usuario')::text),
     (6,  'Regla anti-traslapes de reservaciones', '1',  (select count(*) from pg_constraint where conname = 'reservaciones_sin_traslape')::text),
     (7,  'Buckets de Storage',                    '2',  (select count(*) from storage.buckets where id in ('shows', 'comprobantes'))::text),
@@ -65,7 +67,9 @@ chequeos (orden, chequeo, esperado, obtenido) as (
                                                            or has_function_privilege('authenticated', 'public.validar_horario(timestamptz,timestamptz,tstzrange,uuid)', 'execute')
                                                            or has_function_privilege('authenticated', 'public.bloquear_agenda()', 'execute'))::text),
     -- migración 6
-    (24, 'Apartar exige sesión',                  'false', (has_function_privilege('anon', 'public.apartar_horario(uuid,uuid,uuid[],text,timestamptz)', 'execute'))::text)
+    (24, 'Apartar exige sesión',                  'false', (has_function_privilege('anon', 'public.apartar_horario(uuid,uuid,uuid[],text,timestamptz)', 'execute'))::text),
+    -- migración 7
+    (25, 'Reprogramar exige sesión',              'false', (has_function_privilege('anon', 'public.reprogramar_reservacion(uuid,timestamptz,text)', 'execute'))::text)
 )
 select orden, chequeo, esperado, obtenido, esperado = obtenido as ok
   from chequeos
