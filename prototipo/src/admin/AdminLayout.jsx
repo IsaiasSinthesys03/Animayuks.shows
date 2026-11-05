@@ -27,7 +27,9 @@ export default function AdminLayout() {
   useEffect(() => setMas(false), [pathname])
 
   if (cargando) return <Cargando />
-  if (!usuario || !esAdmin) return <Navigate to="/entrar?siguiente=/admin" replace state={{ desdeAdmin: !!usuario }} />
+  if (!usuario) return <Navigate to="/entrar?siguiente=/admin" replace />
+  // Una cuenta de cliente va a su área: mandarla a Entrar crearía un bucle, porque ya tiene sesión
+  if (!esAdmin) return <Navigate to="/mi-cuenta" replace state={{ sinPermisoPanel: true }} />
 
   const cerrarSesion = async () => {
     await salir()

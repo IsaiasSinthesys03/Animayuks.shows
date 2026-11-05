@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { CalendarClock, Hourglass, Loader2, MapPin } from 'lucide-react'
 import { salir, useAuth } from '../auth'
@@ -133,6 +133,7 @@ export default function MisReservaciones() {
   const { usuario, cliente, esAdmin, cargando } = useAuth()
   const { data: cfg } = useConfiguracion()
   const navigate = useNavigate()
+  const sinPermisoPanel = useLocation().state?.sinPermisoPanel
   const [pestana, setPestana] = useState('proximas')
   const [accion, setAccion] = useState(null) // { tipo: 'cancelar' | 'fecha' | 'comprobante', r }
 
@@ -151,6 +152,11 @@ export default function MisReservaciones() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:py-14">
+      {sinPermisoPanel && (
+        <p role="status" className="mb-6 rounded-xl bg-marquesina-soft px-4 py-3 text-[15px]">
+          Esta es una cuenta de cliente. Para abrir el panel, cierra sesión y entra con la cuenta de administrador.
+        </p>
+      )}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           {cliente?.nombre && <p className="text-tinta-soft">Hola, {cliente.nombre.split(' ')[0]}</p>}

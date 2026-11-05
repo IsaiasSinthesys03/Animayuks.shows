@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { MailCheck } from 'lucide-react'
 import { entrar, mensajeAuth, registrar, useAuth } from '../auth'
 import { Boton, Campo, Input } from '../components/ui'
@@ -9,8 +9,10 @@ export default function Entrar() {
   const { usuario, esAdmin, cargando } = useAuth()
   const navigate = useNavigate()
   const [params] = useSearchParams()
-  const desdeAdmin = useLocation().state?.desdeAdmin
-  const siguiente = params.get('siguiente')
+  // Solo rutas internas: un enlace no debe poder sacar a nadie del sitio al iniciar sesión
+  const destino = params.get('siguiente')
+  const siguiente = destino?.startsWith('/') && !destino.startsWith('//') ? destino : null
+  const paraPanel = siguiente?.startsWith('/admin')
   const [modo, setModo] = useState(params.get('modo') === 'registro' ? 'registro' : 'entrar')
   const [f, setF] = useState({ nombre: '', telefono: '', correo: '', contrasena: '', acepta: false })
   const [error, setError] = useState('')
@@ -21,8 +23,10 @@ export default function Entrar() {
   const set = (k, v) => setF((x) => ({ ...x, [k]: v }))
 
   useEffect(() => {
-    if (!cargando && usuario) navigate(siguiente ?? (esAdmin ? '/admin' : '/mi-cuenta'), { replace: true })
-  }, [cargando, usuario, esAdmin, siguiente, navigate])
+    if (cargando || !usuario) return
+    if (paraPanel && !esAdmin) navigate('/mi-cuenta', { replace: true, state: { sinPermisoPanel: true } })
+    else navigate(siguiente ?? (esAdmin ? '/admin' : '/mi-cuenta'), { replace: true })
+  }, [cargando, usuario, esAdmin, siguiente, paraPanel, navigate])
 
   const enviar = async (e) => {
     e.preventDefault()
@@ -69,9 +73,9 @@ export default function Entrar() {
 
   return (
     <div className="mx-auto max-w-md px-4 py-12 sm:px-6 lg:py-20">
-      {desdeAdmin && (
+      {paraPanel && (
         <p role="status" className="mb-6 rounded-xl bg-marquesina-soft px-4 py-3 text-sm font-semibold text-tinta">
-          El panel es solo para el administrador. Entra con esa cuenta.
+          Para abrir el panel, entra con la cuenta de administrador. <Link to="/entrar" className="underline">Soy cliente</Link>
         </p>
       )}
       <h1 className="font-cartel text-6xl leading-[0.9] font-black uppercase">{modo === 'entrar' ? 'Entra a tu cuenta' : 'Crea tu cuenta'}</h1>
