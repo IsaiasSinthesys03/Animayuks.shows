@@ -321,5 +321,32 @@ begin
 end $$;
 reset role;
 
+-- ── N14–N15: ajustes tras la prueba real (migración 10) ─────────────────────
+do $$ begin
+  -- creado_en = now(): solo los de esta transacción, no los correos reales ya enviados
+  if exists (select 1 from public.notificaciones
+              where creado_en = now() and (html like '%m..%' or html like '%m.</strong>.%')) then
+    raise exception 'PRUEBA FALLIDA N14: hay correos con doble punto después de a. m. / p. m.';
+  end if;
+  if exists (select 1 from public.plantillas_correo where cuerpo ~ '\{\{(hora|hora_anterior)\}\}(</strong>)?\.|\{\{vence\}\}</strong>\.') then
+    raise exception 'PRUEBA FALLIDA N14: hay plantillas con punto después de la hora';
+  end if;
+  raise notice 'N14 ok: ningún correo trae doble punto después de la hora';
+end $$;
+
+do $$ begin
+  if not exists (select 1 from public.notificaciones where plantilla = 'reservacion_cancelada'
+                    and reservacion_id = current_setting('prueba.r1')::uuid and html like '%/reservar"%')
+     or not exists (select 1 from public.notificaciones where plantilla = 'reservacion_expirada'
+                    and reservacion_id = current_setting('prueba.r2')::uuid and html like '%/reservar"%')
+     or not exists (select 1 from public.notificaciones where plantilla = 'reservacion_recibida'
+                    and reservacion_id = current_setting('prueba.r1')::uuid and html like '%/mi-cuenta"%')
+     or not exists (select 1 from public.notificaciones where plantilla = 'aviso_nueva_reservacion'
+                    and reservacion_id = current_setting('prueba.r1')::uuid and html like '%/admin"%') then
+    raise exception 'PRUEBA FALLIDA N15: un botón lleva a la página equivocada';
+  end if;
+  raise notice 'N15 ok: cada botón lleva a su página (reservar, mis reservaciones, panel)';
+end $$;
+
 do $$ begin raise notice 'Batería 07 completa. Deshaciendo los datos de prueba (ningún correo sale)...'; end $$;
 rollback;

@@ -28,6 +28,7 @@ Reglas:
 | 7 | [`20261104000007_reprogramar.sql`](migrations/20261104000007_reprogramar.sql) | `reprogramar_reservacion()` |
 | 8 | [`20261104000008_tareas_programadas.sql`](migrations/20261104000008_tareas_programadas.sql) | `pg_cron`: expirar pendientes sin anticipo y limpiar apartados vencidos |
 | 9 | [`20261104000009_notificaciones.sql`](migrations/20261104000009_notificaciones.sql) | Correos de reservación: bandeja de salida, 13 plantillas, envío por Resend con `pg_net`, reintentos, recordatorio y resumen diario |
+| 10 | [`20261104000010_ajustes_correos.sql`](migrations/20261104000010_ajustes_correos.sql) | Ajustes tras la prueba real: doble punto después de la hora y destino de los botones |
 
 **Si algo quedó mal** con las migraciones 1–3 y todavía no hay datos reales, [`deshacer_migraciones.sql`](deshacer_migraciones.sql) las revierte. **Borra datos: no usarlo en producción.**
 

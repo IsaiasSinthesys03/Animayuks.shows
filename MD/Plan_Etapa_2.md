@@ -521,7 +521,7 @@ La etapa 2 está terminada cuando:
 
 ## 10. Resultado de la implementación (4 nov 2026)
 
-Migraciones 4 a 9 aplicadas en Supabase con respaldo previo cada una. Verificación **30/30** y baterías 01–07 con **89 pruebas**, todas en verde en Supabase y sin dejar datos.
+Migraciones 4 a 10 aplicadas en Supabase con respaldo previo cada una. Verificación **30/30** y baterías 01–07 con **91 pruebas**, todas en verde en Supabase y sin dejar datos.
 
 ### Cambios respecto al plan
 
@@ -537,5 +537,5 @@ Migraciones 4 a 9 aplicadas en Supabase con respaldo previo cada una. Verificaci
 
 ### Pendiente de la etapa
 
-- [ ] Prueba real controlada de correos (requiere permiso).
+- [x] Prueba real de correos (4 nov 2026): 4 correos en Recibidos de Gmail. Se corrigió el doble punto tras la hora y el destino de los botones (migración 10).
 - [ ] Revisión del Security Advisor de Supabase.
