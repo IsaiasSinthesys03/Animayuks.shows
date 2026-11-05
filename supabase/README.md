@@ -7,7 +7,7 @@ Este proyecto **no usa la CLI de Supabase**. Las migraciones son archivos SQL co
 1. **Conexión:** `supabase/.env` (no se sube a git) contiene `AY_DB_URL` con la URI del *Session pooler* (Supabase → **Connect**). Nunca se imprime ni se sube.
 2. **Respaldo antes de tocar nada:** `pg_dump` a la carpeta `respaldos/` (no se sube a git).
 3. **Aplicar:** `psql "$AY_DB_URL" -v ON_ERROR_STOP=1 -f migrations/<archivo>.sql`. Cada archivo trae su propio `begin; … commit;`: entra completo o no entra nada.
-4. **Verificar y probar:** [`verificacion.sql`](verificacion.sql) (30 chequeos) y **todas** las baterías de [`tests/`](tests/). Las pruebas crean sus propios datos dentro de una transacción y la deshacen al final (`rollback`): no dejan nada en la base y no envían correos.
+4. **Verificar y probar:** [`verificacion.sql`](verificacion.sql) (22 chequeos) y **todas** las baterías de [`tests/`](tests/). Las pruebas crean sus propios datos dentro de una transacción y la deshacen al final (`rollback`): no dejan nada en la base y no envían correos.
 5. **Guardar:** commit y push del `.sql` y sus pruebas.
 
 Reglas:
@@ -29,6 +29,8 @@ Reglas:
 | 8 | [`20261104000008_tareas_programadas.sql`](migrations/20261104000008_tareas_programadas.sql) | `pg_cron`: expirar pendientes sin anticipo y limpiar apartados vencidos |
 | 9 | [`20261104000009_notificaciones.sql`](migrations/20261104000009_notificaciones.sql) | Correos de reservación: bandeja de salida, 13 plantillas, envío por Resend con `pg_net`, reintentos, recordatorio y resumen diario |
 | 10 | [`20261104000010_ajustes_correos.sql`](migrations/20261104000010_ajustes_correos.sql) | Ajustes tras la prueba real: doble punto después de la hora y destino de los botones |
+| 11 | [`20261105000011_whatsapp_configurable.sql`](migrations/20261105000011_whatsapp_configurable.sql) | Quita el WhatsApp de ejemplo y valida su formato |
+| 12 | [`20261105000012_proteger_zonas.sql`](migrations/20261105000012_proteger_zonas.sql) | Una zona con reservaciones no se puede borrar |
 
 **Si algo quedó mal** con las migraciones 1–3 y todavía no hay datos reales, [`deshacer_migraciones.sql`](deshacer_migraciones.sql) las revierte. **Borra datos: no usarlo en producción.**
 

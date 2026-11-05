@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Plus } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import { mensajeError, zonaPorCP } from '../lib/api'
-import { guardarZona } from '../lib/apiAdmin'
+import { borrarZona, guardarZona } from '../lib/apiAdmin'
 import { useZonas } from '../lib/consultas'
 import { pesos } from '../lib/format'
 import { useStore } from '../store'
@@ -78,6 +78,21 @@ export default function Zonas() {
   const [resultado, setResultado] = useState(undefined)
   const [editando, setEditando] = useState(undefined) // undefined: cerrado, null: nueva, id: editar
   const actual = editando ? zonas.data?.find((z) => z.id === editando) : null
+  const [errorBorrar, setErrorBorrar] = useState('')
+
+  const eliminar = async (z) => {
+    setErrorBorrar('')
+    if (!window.confirm(`¿Eliminar la zona ${z.nombre}? Sus códigos postales dejarán de tener cobertura.`)) return
+    try {
+      await borrarZona(z.id)
+      await queryClient.invalidateQueries({ queryKey: ['zonas'] })
+      avisar(`${z.nombre} eliminada`)
+    } catch (err) {
+      setErrorBorrar(err.code === '23503'
+        ? `${z.nombre} tiene reservaciones y no se puede eliminar. Puedes pausarla con su interruptor.`
+        : mensajeError(err))
+    }
+  }
 
   const probar = async (cp) => {
     setPrueba(cp)
@@ -107,6 +122,8 @@ export default function Zonas() {
       {zonas.isLoading && <Cargando />}
       {zonas.isError && <ErrorCarga onReintentar={zonas.refetch} />}
 
+      {errorBorrar && <p role="alert" className="mb-3 rounded-xl bg-telon-50 px-4 py-3 text-sm font-medium text-telon-700">{errorBorrar}</p>}
+
       {zonas.data?.length === 0 && <div className="rounded-2xl bg-white p-10 text-center font-semibold ring-1 ring-linea">Sin zonas, nadie puede reservar en línea. Agrega la primera.</div>}
 
       {zonas.data?.length > 0 && (
@@ -125,6 +142,9 @@ export default function Zonas() {
                 await queryClient.invalidateQueries({ queryKey: ['zonas'] })
                 avisar(z.activa ? `${z.nombre} desactivada` : `${z.nombre} activada`)
               }} />
+              <button onClick={() => eliminar(z)} aria-label={`Eliminar ${z.nombre}`} className="rounded-full p-2 text-tinta-soft hover:bg-telon-50 hover:text-telon-700">
+                <Trash2 className="size-4" />
+              </button>
             </li>
           ))}
         </ul>

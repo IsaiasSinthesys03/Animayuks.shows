@@ -164,5 +164,36 @@ begin
 end $$;
 reset role;
 
+-- ── Borrar zonas (migración 12) ─────────────────────────────────────────────
+set local role authenticated;
+select set_config('request.jwt.claim.sub', 'a0000000-0000-4000-8000-0000000008ad', true);
+do $$
+declare n int;
+begin
+  begin
+    delete from public.zonas where id = 'a0000000-0000-4000-8000-000000000801';
+    raise exception 'PRUEBA FALLIDA P12: borró una zona con reservaciones';
+  exception when foreign_key_violation then null;
+  end;
+  insert into public.zonas (id, nombre, codigos_postales) values ('a0000000-0000-4000-8000-000000000803', 'Zona sin uso', array['99990']);
+  delete from public.zonas where id = 'a0000000-0000-4000-8000-000000000803';
+  get diagnostics n = row_count;
+  if n <> 1 then raise exception 'PRUEBA FALLIDA P12: no borró la zona sin reservaciones'; end if;
+  raise notice 'P12 ok: el admin borra zonas sin reservaciones; las que tienen reservaciones se protegen';
+end $$;
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claim.sub', 'a0000000-0000-4000-8000-0000000008a1', true);
+do $$
+declare n int;
+begin
+  delete from public.zonas where nombre = 'Zona panel';
+  get diagnostics n = row_count;
+  if n <> 0 then raise exception 'PRUEBA FALLIDA P13: un cliente borró una zona'; end if;
+  raise notice 'P13 ok: un cliente no puede borrar zonas';
+end $$;
+reset role;
+
 do $$ begin raise notice 'Batería 08 completa. Deshaciendo los datos de prueba...'; end $$;
 rollback;

@@ -55,6 +55,7 @@ export async function subirImagen(archivo, carpeta) {
 
 // ── Zonas ───────────────────────────────────────────────────────────────────
 export const guardarZona = (id, z) => (id ? datos(supabase.from('zonas').update(z).eq('id', id)) : datos(supabase.from('zonas').insert(z)))
+export const borrarZona = (id) => datos(supabase.from('zonas').delete().eq('id', id))
 
 // ── Horarios y bloqueos ─────────────────────────────────────────────────────
 export const obtenerHorario = () => datos(supabase.from('horario_servicio').select('*').order('dia_semana'))

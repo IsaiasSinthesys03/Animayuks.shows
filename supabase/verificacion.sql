@@ -1,7 +1,8 @@
 -- ═════════════════════════════════════════════════════════════════════════════
 -- Verificación de las migraciones
--- Solo lee: no cambia nada. Ejecútalo en SQL Editor después de aplicarlas.
--- Cada fila debe decir ok = true (30 chequeos). Si alguna dice false, manda captura.
+-- Solo lee: no cambia nada. Revisa la estructura, no los datos que el administrador
+-- puede editar desde el panel (zonas, shows, preguntas...). Ejecútalo en SQL Editor después de aplicarlas.
+-- Cada fila debe decir ok = true (22 chequeos). Si alguna dice false, manda captura.
 -- ═════════════════════════════════════════════════════════════════════════════
 
 with tablas as (
@@ -56,18 +57,10 @@ chequeos (orden, chequeo, esperado, obtenido) as (
                                                           where p.rol = 'admin' and lower(u.email) = 'picafresa.codex@gmail.com')::text),
     (10, 'Configuración del negocio',             '1',  (select count(*) from public.configuracion)::text),
     (11, 'Días del horario de servicio',          '7',  (select count(*) from public.horario_servicio)::text),
-    (12, 'Zonas de cobertura',                    '5',  (select count(*) from public.zonas)::text),
-    (13, 'Categorías',                            '3',  (select count(*) from public.categorias)::text),
-    (14, 'Shows',                                 '6',  (select count(*) from public.shows)::text),
-    (15, 'Paquetes',                              '12', (select count(*) from public.paquetes)::text),
-    (16, 'Extras',                                '4',  (select count(*) from public.extras)::text),
-    (17, 'Cobertura: 45110 cae en Zapopan',       'Zapopan', coalesce((public.zona_por_cp('45110')).nombre, 'sin zona')),
-    (18, 'Cobertura: 45640 queda fuera',          'sin zona', coalesce((public.zona_por_cp('45640')).nombre, 'sin zona')),
+    (12, 'Zonas con reservaciones protegidas',    'a',  (select confdeltype::text from pg_constraint where conname = 'reservaciones_zona_id_fkey')),
     -- migración 4
-    (19, 'Páginas legales publicadas',            '3',  (select count(*) from public.paginas where publicada
-                                                           and slug in ('aviso-de-privacidad', 'terminos', 'politica-de-cancelacion'))::text),
-    (20, 'Preguntas frecuentes activas',          '6',  (select count(*) from public.preguntas_frecuentes where activa)::text),
-    (21, 'Correo para avisos del dueño',          'true', (select (correo_avisos is not null)::text from public.configuracion)),
+    (19, 'Páginas legales existen',               '3',  (select count(*) from public.paginas
+                                                          where slug in ('aviso-de-privacidad', 'terminos', 'politica-de-cancelacion'))::text),
     -- migración 5
     (22, 'Visitante consulta disponibilidad',     'true', (has_function_privilege('anon', 'public.horarios_disponibles(uuid,uuid,uuid[],text,date)', 'execute')
                                                            and has_function_privilege('anon', 'public.disponibilidad_mes(uuid,uuid,uuid[],text,int,int)', 'execute'))::text),
@@ -84,7 +77,7 @@ chequeos (orden, chequeo, esperado, obtenido) as (
     -- migración 9
     (27, 'Trabajos de cron de correos activos',   '4',  (select count(*) from cron.job
                                                           where jobname in ('ay-enviar-correos', 'ay-revisar-envios', 'ay-recordatorios', 'ay-resumen-diario') and active)::text),
-    (28, 'Plantillas de correo activas',          '13', (select count(*) from public.plantillas_correo where activa)::text),
+    (28, 'Plantillas de correo',                  '13', (select count(*) from public.plantillas_correo)::text),
     (29, 'API key de Resend en Vault',            '1',  (select count(*) from vault.decrypted_secrets where name = 'resend_api_key')::text),
     (30, 'Bandeja de salida cerrada al público',  'false', (has_function_privilege('authenticated', 'public.enviar_pendientes(int)', 'execute')
                                                            or has_function_privilege('anon', 'public.encolar_correo(text,uuid,uuid,jsonb,text)', 'execute'))::text)
