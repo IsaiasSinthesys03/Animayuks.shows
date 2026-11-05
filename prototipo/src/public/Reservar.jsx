@@ -308,6 +308,14 @@ export default function Reservar() {
   if (confirmada) return <Confirmacion reservacion={confirmada} show={show} cfg={cfg} />
   if (shows.isLoading || cargandoSesion) return <Cargando />
   if (shows.isError) return <ErrorCarga onReintentar={shows.refetch} />
+  if (activos.length === 0) {
+    return (
+      <div className="mx-auto max-w-xl px-4 py-24 text-center">
+        <h1 className="font-cartel text-5xl leading-none font-black uppercase">Pronto podrás reservar</h1>
+        <p className="mt-3 text-tinta-soft">Todavía no hay shows disponibles.</p>
+      </div>
+    )
+  }
 
   const mm = restante !== null && restante > 0 ? `${Math.floor(restante / 60)}:${String(restante % 60).padStart(2, '0')}` : null
 

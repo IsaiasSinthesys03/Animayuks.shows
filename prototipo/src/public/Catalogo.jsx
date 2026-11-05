@@ -64,7 +64,13 @@ export default function Catalogo() {
       {shows.isLoading && <Cargando />}
       {shows.isError && <ErrorCarga onReintentar={shows.refetch} />}
 
-      {shows.data && lista.length === 0 && (
+      {shows.data?.length === 0 && (
+        <div className="mt-12 rounded-2xl bg-butaca p-10 text-center">
+          <p className="text-lg font-semibold">Pronto publicaremos nuestros shows.</p>
+        </div>
+      )}
+
+      {shows.data?.length > 0 && lista.length === 0 && (
         <div className="mt-12 rounded-2xl bg-butaca p-10 text-center">
           <p className="text-lg font-semibold">Ningún show coincide con tu búsqueda.</p>
           <button onClick={() => { setTexto(''); setCategoria('Todos') }} className="mt-3 font-semibold text-telon-700 underline">

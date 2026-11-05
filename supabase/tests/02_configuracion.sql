@@ -12,8 +12,9 @@ update public.perfiles set rol = 'admin' where id = 'a0000000-0000-4000-8000-000
 
 insert into public.paginas (slug, titulo, contenido, publicada)
 values ('prueba-borrador', 'Página no publicada', 'Oculta', false);
-insert into public.preguntas_frecuentes (pregunta, respuesta, activa)
-values ('¿Pregunta inactiva de prueba?', 'No debe verse', false);
+insert into public.preguntas_frecuentes (pregunta, respuesta, activa) values
+  ('¿Pregunta inactiva de prueba?', 'No debe verse', false),
+  ('¿Pregunta activa de prueba?', 'Debe verse', true);
 
 -- Reservación del cliente para probar comprobantes
 insert into public.zonas (id, nombre, codigos_postales, cargo_traslado, traslado_min)
@@ -45,8 +46,8 @@ do $$ begin
   if exists (select 1 from public.preguntas_frecuentes where not activa) then
     raise exception 'PRUEBA FALLIDA C01: el visitante ve preguntas inactivas';
   end if;
-  if (select count(*) from public.preguntas_frecuentes) < 6 then
-    raise exception 'PRUEBA FALLIDA C01: faltan preguntas frecuentes';
+  if not exists (select 1 from public.preguntas_frecuentes where pregunta = '¿Pregunta activa de prueba?') then
+    raise exception 'PRUEBA FALLIDA C01: el visitante no ve una pregunta activa';
   end if;
   raise notice 'C01 ok: el visitante lee configuración, páginas publicadas y preguntas activas';
 end $$;

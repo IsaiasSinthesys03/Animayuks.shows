@@ -76,7 +76,8 @@ export default function Inicio() {
         </div>
         {shows.isLoading && <Cargando />}
         {shows.isError && <ErrorCarga onReintentar={shows.refetch} />}
-        {shows.data && (
+        {shows.data?.length === 0 && <p className="mt-8 rounded-2xl bg-butaca p-10 text-center text-lg font-semibold">Pronto publicaremos nuestros shows.</p>}
+        {shows.data?.length > 0 && (
           <div className="mt-8 grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3">
             {cartelera.map((s) => (
               <Link key={s.id} to={`/shows/${s.slug}`} className="group block">
