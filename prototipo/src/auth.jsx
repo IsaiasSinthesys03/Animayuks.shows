@@ -4,11 +4,15 @@ import { supabase } from './lib/supabase'
 
 const Ctx = createContext(null)
 
+// Un enlace vencido o ya usado llega con el error en la URL. Se lee al cargar,
+// antes de que el cliente de Supabase pueda limpiarla.
+const enlaceFallido = /error_code=(otp_expired|access_denied)/.test(window.location.hash)
+
 export function AuthProvider({ children }) {
   const queryClient = useQueryClient()
   const [sesion, setSesion] = useState(null)
   const [cargando, setCargando] = useState(true)
-  const [recuperando, setRecuperando] = useState(false)
+  const [recuperando, setRecuperando] = useState(enlaceFallido)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {

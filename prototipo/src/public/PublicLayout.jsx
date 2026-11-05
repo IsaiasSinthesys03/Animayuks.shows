@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { LayoutDashboard, Menu, MessageCircle, UserRound, X } from 'lucide-react'
 import { useAuth } from '../auth'
 import { enlaceWhatsapp, useConfiguracion, useZonas } from '../lib/consultas'
@@ -20,11 +20,21 @@ export function Logo({ claro = false }) {
 }
 
 export default function PublicLayout() {
-  const { usuario, esAdmin } = useAuth()
+  const { usuario, esAdmin, recuperando, terminarRecuperacion } = useAuth()
   const { data: cfg } = useConfiguracion()
   const { data: zonas } = useZonas()
   const [menu, setMenu] = useState(false)
   const { pathname } = useLocation()
+  const navigate = useNavigate()
+
+  // Un enlace de recuperar contraseña siempre termina donde se elige la nueva,
+  // aunque Supabase lo haya mandado a otra página
+  useEffect(() => {
+    if (!recuperando) return
+    terminarRecuperacion()
+    if (pathname !== '/restablecer') navigate('/restablecer', { replace: true })
+  }, [recuperando, pathname, navigate, terminarRecuperacion])
+
   const whatsapp = enlaceWhatsapp(cfg)
   const nombresZonas = (zonas ?? []).filter((z) => z.activa).map((z) => z.nombre)
 
