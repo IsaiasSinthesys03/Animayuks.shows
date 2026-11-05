@@ -1,5 +1,5 @@
 import { useZonas } from '../lib/consultas'
-import { pesos } from '../lib/format'
+import { pesos, resumenCobertura, resumenHorario } from '../lib/format'
 import { Cargando, ErrorCarga } from '../components/ui'
 import VerificadorCP from '../components/VerificadorCP'
 
@@ -34,6 +34,8 @@ export default function Cobertura() {
                 <td className="py-3 font-medium">
                   <span className="mr-2.5 inline-block size-2.5 rounded-full" style={{ background: z.color }} aria-hidden />
                   {z.nombre}
+                  <span className="mt-0.5 block text-sm font-normal text-tinta-soft">{resumenCobertura(z)}</span>
+                  {z.horario && <span className="num mt-0.5 block text-sm font-normal text-tinta-soft">{resumenHorario(z.horario)}</span>}
                 </td>
                 <td className="num py-3 text-right">{Number(z.cargo_traslado) ? pesos(z.cargo_traslado) : 'Sin cargo'}</td>
               </tr>
@@ -41,6 +43,9 @@ export default function Cobertura() {
           </tbody>
         </table>
       )}
+      <p className="mt-8 text-xs text-tinta-soft">
+        Catálogo de códigos postales: <a href="https://www.geonames.org" target="_blank" rel="noreferrer" className="underline">GeoNames</a>, licencia <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer" className="underline">CC BY 4.0</a>.
+      </p>
     </div>
   )
 }

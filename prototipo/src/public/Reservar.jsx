@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, ChevronLeft, Loader2, Timer } from 'lucide-react'
 import { useAuth } from '../auth'
-import { aceptarPaginas, apartarHorario, crearReservacion, horariosDisponibles, mensajeError } from '../lib/api'
+import { aceptarPaginas, apartarHorario, catalogoCpsPorCodigo, crearReservacion, horariosDisponibles, mensajeError } from '../lib/api'
 import { useConfiguracion, useExtras, useShows } from '../lib/consultas'
 import { fechaDeDia, fechaLarga, hora, pesos } from '../lib/format'
 import { Boton, Campo, Cargando, ErrorCarga, Input, Miniatura, Select, claseInput } from '../components/ui'
@@ -185,6 +185,7 @@ export default function Reservar() {
   const paquete = paquetes.find((p) => p.id === d.paqueteId) ?? null
   const extrasActivos = (extras ?? []).filter((e) => e.activo)
   const extrasSel = extrasActivos.filter((e) => d.extras.includes(e.id))
+  const lugarCP = useQuery({ queryKey: ['catalogo-codigos', [d.cp]], queryFn: () => catalogoCpsPorCodigo([d.cp]), enabled: !!d.zona && d.cp.length === 5, staleTime: 60 * 60 * 1000 })
   const total = Number(paquete?.precio ?? show?.precio_base ?? 0) + extrasSel.reduce((a, e) => a + Number(e.precio), 0) + Number(d.zona?.cargo_traslado ?? 0)
   const anticipoPct = Number(cfg?.anticipo_porcentaje ?? 30)
 
@@ -419,7 +420,10 @@ export default function Reservar() {
                   <Input value={d.calle} onChange={(e) => set('calle', e.target.value)} autoComplete="street-address" aria-invalid={!!errores.calle} />
                 </Campo>
                 <Campo etiqueta="Colonia" error={errores.colonia}>
-                  <Input value={d.colonia} onChange={(e) => set('colonia', e.target.value)} aria-invalid={!!errores.colonia} />
+                  <Input list="colonias-cp" value={d.colonia} onChange={(e) => set('colonia', e.target.value)} aria-invalid={!!errores.colonia} />
+                  <datalist id="colonias-cp">
+                    {(lugarCP.data?.[0]?.colonias ?? []).map((c) => <option key={c} value={c} />)}
+                  </datalist>
                 </Campo>
                 <Campo etiqueta="Referencias (opcional)" ayuda="Ayuda a los artistas a llegar: color de la casa, entre qué calles, nombre del salón.">
                   <Input value={d.referencias} onChange={(e) => set('referencias', e.target.value)} />

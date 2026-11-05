@@ -46,7 +46,7 @@ chequeos (orden, chequeo, esperado, obtenido) as (
   values
     (1,  'Tablas creadas',                        '22', (select count(*) from tablas)::text),
     (2,  'Tablas con RLS activo',                 '22', (select count(*) from tablas where relrowsecurity)::text),
-    (3,  'Políticas de seguridad en tablas',      '44', (select count(*) from pg_policies where schemaname = 'public')::text),
+    (3,  'Políticas de seguridad en tablas',      '45', (select count(*) from pg_policies where schemaname = 'public')::text),
     (4,  'Funciones de negocio',                  '42', (select count(*) from funciones)::text),
     (5,  'Trigger de nuevos usuarios',            '1',  (select count(*) from pg_trigger where tgname = 'al_crear_usuario')::text),
     (6,  'Regla anti-traslapes de reservaciones', '1',  (select count(*) from pg_constraint where conname = 'reservaciones_sin_traslape')::text),
@@ -65,7 +65,7 @@ chequeos (orden, chequeo, esperado, obtenido) as (
     (22, 'Visitante consulta disponibilidad',     'true', (has_function_privilege('anon', 'public.horarios_disponibles(uuid,uuid,uuid[],text,date)', 'execute')
                                                            and has_function_privilege('anon', 'public.disponibilidad_mes(uuid,uuid,uuid[],text,int,int)', 'execute'))::text),
     (23, 'Funciones internas cerradas al público','false', (has_function_privilege('anon', 'public.calcular_horario(uuid,uuid,uuid[],text,timestamptz,boolean)', 'execute')
-                                                           or has_function_privilege('authenticated', 'public.validar_horario(timestamptz,timestamptz,tstzrange,uuid)', 'execute')
+                                                           or has_function_privilege('authenticated', 'public.validar_horario(timestamptz,timestamptz,tstzrange,uuid,uuid)', 'execute')
                                                            or has_function_privilege('authenticated', 'public.bloquear_agenda()', 'execute'))::text),
     -- migración 6
     (24, 'Apartar exige sesión',                  'false', (has_function_privilege('anon', 'public.apartar_horario(uuid,uuid,uuid[],text,timestamptz)', 'execute'))::text),
@@ -80,7 +80,10 @@ chequeos (orden, chequeo, esperado, obtenido) as (
     (28, 'Plantillas de correo',                  '13', (select count(*) from public.plantillas_correo)::text),
     (29, 'API key de Resend en Vault',            '1',  (select count(*) from vault.decrypted_secrets where name = 'resend_api_key')::text),
     (30, 'Bandeja de salida cerrada al público',  'false', (has_function_privilege('authenticated', 'public.enviar_pendientes(int)', 'execute')
-                                                           or has_function_privilege('anon', 'public.encolar_correo(text,uuid,uuid,jsonb,text)', 'execute'))::text)
+                                                           or has_function_privilege('anon', 'public.encolar_correo(text,uuid,uuid,jsonb,text)', 'execute'))::text),
+    -- migración 13
+    (31, 'Catálogo de códigos postales cargado',  'true', ((select count(*) from public.catalogo_cp) > 30000)::text),
+    (32, 'Horario de zona es interno',            'false', (has_function_privilege('anon', 'public.horario_de_zona(uuid,int)', 'execute'))::text)
 )
 select orden, chequeo, esperado, obtenido, esperado = obtenido as ok
   from chequeos

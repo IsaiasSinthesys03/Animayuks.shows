@@ -27,3 +27,37 @@ export const fechaDeDia = (dia) => fLarga.format(new Date(`${dia}T18:00:00Z`))
 export const instanteLocal = (dia, horaTexto) => new Date(`${dia}T${horaTexto}:00-06:00`).toISOString()
 
 export const saldoDe = (r) => Math.max(Number(r.total) - Number(r.total_pagado), 0)
+
+const DIAS_CORTOS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+const horaCorta = (t) => t.replace(/^0/, '')
+
+/** "Lun a vie, 9:00 a 14:00 · Sáb, 16:00 a 22:00". Sin horario propio devuelve null. */
+export const resumenHorario = (horario) => {
+  if (!horario) return null
+  const grupos = []
+  for (const dia of [1, 2, 3, 4, 5, 6, 0]) {
+    const h = horario[dia]
+    if (!h) {
+      grupos.push(null)
+      continue
+    }
+    const ultimo = grupos[grupos.length - 1]
+    if (ultimo && ultimo.abre === h.abre && ultimo.cierra === h.cierra) ultimo.fin = dia
+    else grupos.push({ inicio: dia, fin: dia, abre: h.abre, cierra: h.cierra })
+  }
+  return grupos
+    .filter(Boolean)
+    .map((g) => `${DIAS_CORTOS[g.inicio]}${g.fin === g.inicio ? '' : ` a ${DIAS_CORTOS[g.fin].toLowerCase()}`}, ${horaCorta(g.abre)} a ${horaCorta(g.cierra)}`)
+    .join(' · ')
+}
+
+/** "Jalisco (todo), Guadalajara y 12 códigos postales" */
+export const resumenCobertura = (z) => {
+  const partes = [
+    ...(z.estados ?? []).map((e) => `${e} (todo el estado)`),
+    ...(z.municipios ?? []).map((m) => m.split('|')[1]),
+  ]
+  const cps = z.codigos_postales?.length ?? 0
+  if (cps) partes.push(cps === 1 ? `CP ${z.codigos_postales[0]}` : `${cps} códigos postales`)
+  return partes.join(', ')
+}

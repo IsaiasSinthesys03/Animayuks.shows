@@ -28,6 +28,7 @@ delete from storage.buckets b
    and not exists (select 1 from storage.objects o where o.bucket_id = b.id);
 
 -- Tablas (cascade elimina sus políticas, triggers e índices)
+drop table if exists public.catalogo_cp cascade;
 drop table if exists
   public.bitacora,
   public.pagos,
@@ -52,6 +53,13 @@ drop function if exists public.crear_reservacion(uuid, uuid, timestamptz, text, 
 drop function if exists public.cancelar_reservacion(uuid, text);
 drop function if exists public.ocupacion(date, date);
 drop function if exists public.zona_por_cp(text);
+drop function if exists public.horario_de_zona(uuid, int);
+drop function if exists public.zonas_validar_cobertura();
+drop function if exists public.horario_zona_valido(jsonb);
+drop function if exists public.catalogo_buscar(text, int);
+drop function if exists public.catalogo_municipios(text);
+drop function if exists public.catalogo_estados();
+drop function if exists public.normalizar_texto(text);
 drop function if exists public.es_admin();
 drop function if exists public.manejar_nuevo_usuario();
 drop function if exists public.recalcular_pagado();

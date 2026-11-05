@@ -53,6 +53,14 @@ export const zonaPorCP = async (cp) => {
   return zona?.id ? zona : null
 }
 
+export const catalogoEstados = () => datos(supabase.rpc('catalogo_estados'))
+export const catalogoMunicipios = (estado) => datos(supabase.rpc('catalogo_municipios', { p_estado: estado }))
+export const catalogoBuscar = (texto) => datos(supabase.rpc('catalogo_buscar', { p_texto: texto }))
+export const catalogoCps = (estado, municipio) =>
+  datos(supabase.from('catalogo_cp').select('codigo_postal, colonias').eq('estado', estado).eq('municipio', municipio).order('codigo_postal'))
+export const catalogoCpsPorCodigo = (codigos) =>
+  datos(supabase.from('catalogo_cp').select('codigo_postal, estado, municipio, colonias').in('codigo_postal', codigos))
+
 export const anotarInteres = (codigo_postal, contacto) =>
   datos(supabase.from('lista_interes').insert({ codigo_postal, contacto: contacto || null }))
 

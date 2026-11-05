@@ -31,12 +31,23 @@ Reglas:
 | 10 | [`20261104000010_ajustes_correos.sql`](migrations/20261104000010_ajustes_correos.sql) | Ajustes tras la prueba real: doble punto después de la hora y destino de los botones |
 | 11 | [`20261105000011_whatsapp_configurable.sql`](migrations/20261105000011_whatsapp_configurable.sql) | Quita el WhatsApp de ejemplo y valida su formato |
 | 12 | [`20261105000012_proteger_zonas.sql`](migrations/20261105000012_proteger_zonas.sql) | Una zona con reservaciones no se puede borrar |
+| 13 | [`20261105000013_zonas_regiones.sql`](migrations/20261105000013_zonas_regiones.sql) | Catálogo de CP; zonas por estado, municipio o CP (gana lo más específico); horario propio por zona |
 
 **Si algo quedó mal** con las migraciones 1–3 y todavía no hay datos reales, [`deshacer_migraciones.sql`](deshacer_migraciones.sql) las revierte. **Borra datos: no usarlo en producción.**
 
 ### Alternativa sin psql: SQL Editor
 
 Supabase → **SQL Editor → New query** → pegar el archivo completo → **Run**, en orden. Si sale un error, no seguir con el siguiente. Después, `verificacion.sql`.
+
+## Catálogo de códigos postales
+
+La migración 13 crea `catalogo_cp`, pero sus datos se cargan aparte porque son 32 mil filas. Se puede repetir sin problema:
+
+```bash
+cd supabase/datos && psql "$AY_DB_URL" -v ON_ERROR_STOP=1 -f cargar_catalogo_cp.sql
+```
+
+[`datos/catalogo_cp.csv`](datos/catalogo_cp.csv) sale de [GeoNames](https://www.geonames.org) (licencia [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)), por lo que el sitio debe conservar el crédito. Sus coordenadas no se cargaron: en ciudades como Guadalajara son demasiado imprecisas para decidir cobertura.
 
 ## Secretos
 

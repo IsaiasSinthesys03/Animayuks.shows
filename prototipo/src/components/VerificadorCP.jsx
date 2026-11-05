@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { CircleAlert, CircleCheck, Loader2 } from 'lucide-react'
 import { anotarInteres, mensajeError, zonaPorCP } from '../lib/api'
-import { pesos } from '../lib/format'
+import { pesos, resumenHorario } from '../lib/format'
 
 /**
  * Verificador de cobertura por código postal, contra la base de datos.
@@ -102,6 +102,7 @@ export default function VerificadorCP({ oscuro = false, onResultado, inicial = '
             </p>
             <p className={`mt-1 text-sm ${textoSuave}`}>
               {Number(estado.zona.cargo_traslado) ? `Cargo por traslado: ${pesos(estado.zona.cargo_traslado)}.` : 'Sin cargo por traslado.'}
+              {estado.zona.horario && ` En tu zona: ${resumenHorario(estado.zona.horario)}.`}
             </p>
             {!onResultado && (
               <Link to={`/reservar?cp=${cp}`} className={`mt-3 inline-flex h-10 items-center rounded-full px-4 text-sm font-semibold ${oscuro ? 'bg-white text-tinta' : 'bg-telon-600 text-white'}`}>
