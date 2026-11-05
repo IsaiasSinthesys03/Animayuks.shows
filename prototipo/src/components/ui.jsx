@@ -8,17 +8,17 @@ export const ESTADOS = {
   confirmada: { etiqueta: 'Confirmada', clase: 'bg-ok-soft text-ok' },
   realizada: { etiqueta: 'Realizada', clase: 'bg-butaca text-tinta-soft' },
   no_realizada: { etiqueta: 'No realizada', clase: 'bg-butaca text-tinta-soft' },
-  cancelada: { etiqueta: 'Cancelada', clase: 'bg-telon-50 text-telon-700' },
-  rechazada: { etiqueta: 'Rechazada', clase: 'bg-telon-50 text-telon-700' },
+  cancelada: { etiqueta: 'Cancelada', clase: 'bg-error-soft text-error' },
+  rechazada: { etiqueta: 'Rechazada', clase: 'bg-error-soft text-error' },
   expirada: { etiqueta: 'Expirada', clase: 'bg-butaca text-tinta-soft' },
 }
 
 const variantes = {
-  primario: 'bg-telon-600 text-white hover:bg-telon-700 active:bg-telon-900',
-  oscuro: 'bg-tinta text-white hover:bg-black',
+  primario: 'bg-selva-600 text-white hover:bg-selva-700 active:bg-selva-900',
+  oscuro: 'bg-selva-600 text-white hover:bg-selva-700',
   secundario: 'bg-white text-tinta ring-1 ring-inset ring-linea hover:bg-butaca',
   fantasma: 'text-tinta hover:bg-butaca',
-  peligro: 'bg-white text-telon-700 ring-1 ring-inset ring-telon-200 hover:bg-telon-50',
+  peligro: 'bg-white text-error ring-1 ring-inset ring-error/30 hover:bg-error-soft',
 }
 
 export function Boton({ variante = 'primario', tam = 'md', className = '', as: Tag = 'button', ...props }) {
@@ -37,7 +37,7 @@ export function Campo({ etiqueta, ayuda, error, children, className = '' }) {
       <span className="mb-1.5 block text-sm font-semibold text-tinta">{etiqueta}</span>
       {children}
       {error ? (
-        <span role="alert" className="mt-1.5 block text-sm text-telon-700">
+        <span role="alert" className="mt-1.5 block text-sm text-error">
           {error}
         </span>
       ) : ayuda ? (
@@ -48,7 +48,7 @@ export function Campo({ etiqueta, ayuda, error, children, className = '' }) {
 }
 
 export const claseInput =
-  'h-11 w-full rounded-xl border border-linea bg-white px-3.5 text-[15px] text-tinta placeholder:text-tinta-soft/70 transition-colors focus:border-telon-500 focus:outline-none focus:ring-3 focus:ring-telon-100 aria-invalid:border-telon-500'
+  'h-11 w-full rounded-xl border border-linea bg-white px-3.5 text-[15px] text-tinta placeholder:text-tinta-soft/70 transition-colors focus:border-selva-500 focus:outline-none focus:ring-3 focus:ring-selva-100 aria-invalid:border-error'
 
 export function Input(props) {
   return <input className={claseInput} {...props} />
@@ -74,9 +74,9 @@ export function Aviso() {
     <div
       key={aviso.id}
       role="status"
-      className="entra fixed inset-x-4 bottom-4 z-50 mx-auto flex max-w-md items-center gap-3 rounded-2xl bg-tinta px-4 py-3 text-sm font-medium text-white shadow-[0_12px_32px_-8px_rgba(30,26,46,0.45)] sm:bottom-6"
+      className="entra fixed inset-x-4 bottom-4 z-50 mx-auto flex max-w-md items-center gap-3 rounded-2xl bg-tinta px-4 py-3 text-sm font-medium text-white shadow-[0_12px_32px_-8px_rgba(22,36,28,0.45)] sm:bottom-6"
     >
-      <CheckCircle2 className="size-5 shrink-0 text-marquesina" aria-hidden />
+      <CheckCircle2 className="size-5 shrink-0 text-maiz" aria-hidden />
       {aviso.texto}
     </div>
   )
@@ -110,12 +110,12 @@ export function Cargando({ texto = 'Cargando…', className = '' }) {
 
 export function ErrorCarga({ onReintentar, texto = 'No pudimos cargar la información.' }) {
   return (
-    <div className="my-8 rounded-2xl bg-telon-50 p-6 text-center">
-      <p className="flex items-center justify-center gap-2 font-semibold text-telon-700">
+    <div className="my-8 rounded-2xl bg-error-soft p-6 text-center">
+      <p className="flex items-center justify-center gap-2 font-semibold text-error">
         <CircleAlert className="size-5" aria-hidden /> {texto}
       </p>
       {onReintentar && (
-        <button onClick={onReintentar} className="mt-2 text-sm font-semibold text-telon-700 underline">
+        <button onClick={onReintentar} className="mt-2 text-sm font-semibold text-error underline">
           Intentar de nuevo
         </button>
       )}
@@ -124,12 +124,12 @@ export function ErrorCarga({ onReintentar, texto = 'No pudimos cargar la informa
 }
 
 const PALETA = [
-  { fondo: 'bg-telon-600', texto: 'text-white', acento: 'text-marquesina' },
-  { fondo: 'bg-tinta', texto: 'text-white', acento: 'text-marquesina' },
-  { fondo: 'bg-marquesina', texto: 'text-tinta', acento: 'text-telon-700' },
-  { fondo: 'bg-ok', texto: 'text-white', acento: 'text-marquesina' },
-  { fondo: 'bg-telon-900', texto: 'text-white', acento: 'text-telon-200' },
-  { fondo: 'bg-[#3b2a8f]', texto: 'text-white', acento: 'text-marquesina' },
+  { fondo: 'bg-selva-600', texto: 'text-white', acento: 'text-white' },
+  { fondo: 'bg-selva-900', texto: 'text-white', acento: 'text-maiz' },
+  { fondo: 'bg-maiz', texto: 'text-tinta', acento: 'text-tinta' },
+  { fondo: 'bg-agua', texto: 'text-tinta', acento: 'text-tinta' },
+  { fondo: 'bg-selva-700', texto: 'text-white', acento: 'text-white' },
+  { fondo: 'bg-tinta', texto: 'text-white', acento: 'text-maiz' },
 ]
 
 /** Color estable por show mientras no tenga foto */

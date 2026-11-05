@@ -73,7 +73,7 @@ function Boleto({ datos, show, paquete, extrasSel, total, anticipoPct }) {
           ))}
           <div className="flex justify-between"><dt className="text-tinta-soft">Traslado</dt><dd>{datos.zona ? pesos(datos.zona.cargo_traslado) : 'Por confirmar'}</dd></div>
           <div className="flex justify-between border-t border-linea pt-2 text-lg font-bold"><dt>Total</dt><dd>{pesos(total)}</dd></div>
-          <div className="flex justify-between text-telon-700"><dt>Anticipo para apartar</dt><dd className="font-semibold">{pesos((total * anticipoPct) / 100)}</dd></div>
+          <div className="flex justify-between text-selva-700"><dt>Anticipo para apartar</dt><dd className="font-semibold">{pesos((total * anticipoPct) / 100)}</dd></div>
         </dl>
       </div>
     </div>
@@ -95,18 +95,18 @@ function Confirmacion({ reservacion, show, cfg }) {
         </p>
       </div>
 
-      <div className="mt-8 rounded-3xl bg-tinta text-white [--boleto-fondo:white]">
+      <div className="mt-8 rounded-3xl bg-selva-700 text-white [--boleto-fondo:white]">
         <div className="p-6">
-          <p className="text-sm text-white/60">Folio</p>
-          <p className="num font-cartel text-4xl font-extrabold tracking-wide text-marquesina">{reservacion.folio}</p>
+          <p className="text-sm text-white/85">Folio</p>
+          <p className="num font-cartel text-4xl font-extrabold tracking-wide text-maiz">{reservacion.folio}</p>
           <p className="mt-4 font-cartel text-3xl leading-none font-black uppercase">{show.nombre}</p>
-          <p className="mt-2 text-white/80 first-letter:uppercase">{fechaLarga(reservacion.inicio)}, {hora(reservacion.inicio)}</p>
-          <p className="mt-1 text-white/80">{reservacion.calle}, {reservacion.colonia}, {reservacion.codigo_postal}</p>
+          <p className="mt-2 text-white first-letter:uppercase">{fechaLarga(reservacion.inicio)}, {hora(reservacion.inicio)}</p>
+          <p className="mt-1 text-white">{reservacion.calle}, {reservacion.colonia}, {reservacion.codigo_postal}</p>
         </div>
         <div className="boleto-corte border-white/20 p-6">
           <dl className="num grid grid-cols-2 gap-3 text-sm">
-            <div><dt className="text-white/60">Total</dt><dd className="mt-0.5 text-lg font-bold">{pesos(reservacion.total)}</dd></div>
-            <div><dt className="text-white/60">Anticipo</dt><dd className="mt-0.5 text-lg font-bold">{pesos(reservacion.anticipo_requerido)}</dd></div>
+            <div><dt className="text-white/85">Total</dt><dd className="mt-0.5 text-lg font-bold">{pesos(reservacion.total)}</dd></div>
+            <div><dt className="text-white/85">Anticipo</dt><dd className="mt-0.5 text-lg font-bold">{pesos(reservacion.anticipo_requerido)}</dd></div>
           </dl>
         </div>
       </div>
@@ -325,7 +325,7 @@ export default function Reservar() {
       <div className="flex items-center justify-between gap-4">
         <h1 className="font-cartel text-4xl leading-none font-black uppercase sm:text-5xl">Reservar un show</h1>
         {mm && (
-          <p className={`num inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold ${restante < 120 ? 'bg-telon-50 text-telon-700' : 'bg-marquesina-soft text-tinta'}`}>
+          <p className={`num inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold ${restante < 120 ? 'bg-error-soft text-error' : 'bg-maiz-soft text-tinta'}`}>
             <Timer className="size-4" /> Apartado {mm}
           </p>
         )}
@@ -335,7 +335,7 @@ export default function Reservar() {
         {PASOS.map((p, i) => (
           <li key={p} className="flex-1">
             <button type="button" disabled={i > d.paso} onClick={() => irA(i)} className="group block w-full text-left disabled:cursor-default" aria-current={i === d.paso ? 'step' : undefined}>
-              <span className={`block h-1.5 rounded-full transition-colors ${i <= d.paso ? 'bg-telon-600' : 'bg-linea'}`} />
+              <span className={`block h-1.5 rounded-full transition-colors ${i <= d.paso ? 'bg-selva-600' : 'bg-linea'}`} />
               <span className={`mt-2 hidden text-sm sm:block ${i === d.paso ? 'font-semibold text-tinta' : 'text-tinta-soft'}`}>{i + 1}. {p}</span>
             </button>
           </li>
@@ -343,21 +343,21 @@ export default function Reservar() {
       </ol>
       <p className="mt-2 text-sm text-tinta-soft sm:hidden">Paso {d.paso + 1} de {PASOS.length}: <span className="font-semibold text-tinta">{PASOS[d.paso]}</span></p>
 
-      {errorGeneral && <p role="alert" className="mt-5 rounded-xl bg-telon-50 px-4 py-3 font-medium text-telon-700">{errorGeneral}</p>}
+      {errorGeneral && <p role="alert" className="mt-5 rounded-xl bg-error-soft px-4 py-3 font-medium text-error">{errorGeneral}</p>}
 
       <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_360px]">
         <div key={d.paso} className="entra">
           {d.paso === 0 && (
             <section>
               <h2 className="text-2xl font-bold">¿Qué show quieres?</h2>
-              {errores.show && <p role="alert" className="mt-2 text-telon-700">{errores.show}</p>}
+              {errores.show && <p role="alert" className="mt-2 text-error">{errores.show}</p>}
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 {activos.map((s) => (
                   <button
                     key={s.id}
                     type="button"
                     onClick={() => setD((x) => ({ ...x, ...reiniciarHorario, showId: s.id, paqueteId: s.paquetes.find((p) => p.activo)?.id ?? '' }))}
-                    className={`flex items-center gap-4 rounded-2xl border-2 p-3 text-left transition-colors ${d.showId === s.id ? 'border-telon-600 bg-telon-50/50' : 'border-linea hover:border-tinta-soft/40'}`}
+                    className={`flex items-center gap-4 rounded-2xl border-2 p-3 text-left transition-colors ${d.showId === s.id ? 'border-selva-600 bg-selva-50/50' : 'border-linea hover:border-tinta-soft/40'}`}
                   >
                     <Miniatura show={s} />
                     <span>
@@ -373,8 +373,8 @@ export default function Reservar() {
                   <legend className="text-lg font-bold">Paquete</legend>
                   <div className="mt-3 grid gap-3 sm:grid-cols-2">
                     {paquetes.map((p) => (
-                      <label key={p.id} className={`flex cursor-pointer gap-3 rounded-2xl border-2 p-4 ${d.paqueteId === p.id ? 'border-telon-600 bg-telon-50/50' : 'border-linea'}`}>
-                        <input type="radio" checked={d.paqueteId === p.id} onChange={() => setD((x) => ({ ...x, ...reiniciarHorario, paqueteId: p.id }))} className="mt-1 accent-telon-600" />
+                      <label key={p.id} className={`flex cursor-pointer gap-3 rounded-2xl border-2 p-4 ${d.paqueteId === p.id ? 'border-selva-600 bg-selva-50/50' : 'border-linea'}`}>
+                        <input type="radio" checked={d.paqueteId === p.id} onChange={() => setD((x) => ({ ...x, ...reiniciarHorario, paqueteId: p.id }))} className="mt-1 accent-selva-600" />
                         <span>
                           <span className="block font-semibold">{p.nombre} <span className="num">{pesos(p.precio)}</span></span>
                           {p.incluye.length > 0 && <span className="block text-sm text-tinta-soft">{p.incluye.join(', ')}</span>}
@@ -391,9 +391,9 @@ export default function Reservar() {
                     {extrasActivos.map((e) => {
                       const on = d.extras.includes(e.id)
                       return (
-                        <label key={e.id} className={`flex cursor-pointer items-center justify-between gap-3 rounded-2xl border-2 px-4 py-3 ${on ? 'border-telon-600 bg-telon-50/50' : 'border-linea'}`}>
+                        <label key={e.id} className={`flex cursor-pointer items-center justify-between gap-3 rounded-2xl border-2 px-4 py-3 ${on ? 'border-selva-600 bg-selva-50/50' : 'border-linea'}`}>
                           <span className="flex items-center gap-3">
-                            <input type="checkbox" checked={on} onChange={() => setD((x) => ({ ...x, ...reiniciarHorario, extras: on ? x.extras.filter((i) => i !== e.id) : [...x.extras, e.id] }))} className="size-4 accent-telon-600" />
+                            <input type="checkbox" checked={on} onChange={() => setD((x) => ({ ...x, ...reiniciarHorario, extras: on ? x.extras.filter((i) => i !== e.id) : [...x.extras, e.id] }))} className="size-4 accent-selva-600" />
                             {e.nombre}
                           </span>
                           <span className="num font-semibold">+{pesos(e.precio)}</span>
@@ -413,7 +413,7 @@ export default function Reservar() {
               <div className="mt-5">
                 <VerificadorCP inicial={d.cp} onResultado={(zona, cp) => setD((x) => ({ ...x, ...reiniciarHorario, zona, cp }))} />
                 {d.zona && !errores.cp && <p className="mt-2 text-sm font-medium text-ok">Zona: {d.zona.nombre}</p>}
-                {errores.cp && <p role="alert" className="mt-2 text-sm text-telon-700">{errores.cp}</p>}
+                {errores.cp && <p role="alert" className="mt-2 text-sm text-error">{errores.cp}</p>}
               </div>
               <fieldset disabled={!d.zona} className="mt-6 space-y-4 transition-opacity disabled:opacity-40">
                 <Campo etiqueta="Calle y número" error={errores.calle}>
@@ -458,7 +458,7 @@ export default function Reservar() {
                             type="button"
                             disabled={!!apartando}
                             onClick={() => elegirHora(h)}
-                            className={`num h-11 shrink-0 rounded-xl border-2 text-[15px] font-semibold transition-colors disabled:opacity-60 ${elegido ? 'border-telon-600 bg-telon-600 text-white' : 'border-linea hover:border-tinta-soft/50'}`}
+                            className={`num h-11 shrink-0 rounded-xl border-2 text-[15px] font-semibold transition-colors disabled:opacity-60 ${elegido ? 'border-selva-600 bg-selva-600 text-white' : 'border-linea hover:border-tinta-soft/50'}`}
                           >
                             {apartando === h.inicio ? 'Apartando…' : hora(h.inicio)}
                           </button>
@@ -466,7 +466,7 @@ export default function Reservar() {
                       })}
                     </div>
                   )}
-                  {errores.hora && <p role="alert" className="mt-2 text-sm text-telon-700">{errores.hora}</p>}
+                  {errores.hora && <p role="alert" className="mt-2 text-sm text-error">{errores.hora}</p>}
                   {d.inicio && <p className="mt-3 text-sm text-tinta-soft">Apartamos este horario {cfg?.retencion_minutos ?? 10} minutos mientras terminas.</p>}
                 </div>
               </div>
@@ -526,14 +526,14 @@ export default function Reservar() {
                 <div><dt className="inline text-tinta-soft">Contacto: </dt><dd className="inline">{d.nombre}, {d.telefono}</dd></div>
               </dl>
               <label className="mt-5 flex cursor-pointer gap-3 text-[15px]">
-                <input type="checkbox" checked={acepta} onChange={(e) => setAcepta(e.target.checked)} className="mt-1 size-4 accent-telon-600" />
+                <input type="checkbox" checked={acepta} onChange={(e) => setAcepta(e.target.checked)} className="mt-1 size-4 accent-selva-600" />
                 <span>
                   Acepto la <Link to="/paginas/politica-de-cancelacion" target="_blank" className="font-semibold underline">política de cancelación</Link>, el{' '}
                   <Link to="/paginas/aviso-de-privacidad" target="_blank" className="font-semibold underline">aviso de privacidad</Link> y los{' '}
                   <Link to="/paginas/terminos" target="_blank" className="font-semibold underline">términos</Link>.
                 </span>
               </label>
-              {errores.acepta && <p role="alert" className="mt-2 text-sm text-telon-700">{errores.acepta}</p>}
+              {errores.acepta && <p role="alert" className="mt-2 text-sm text-error">{errores.acepta}</p>}
             </section>
           )}
 

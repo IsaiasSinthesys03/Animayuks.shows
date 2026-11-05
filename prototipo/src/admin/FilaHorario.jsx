@@ -20,7 +20,7 @@ function ListaHoras({ valor, opciones, onCambio, etiqueta }) {
   // Una hora guardada fuera de las medias horas (9:15) se conserva como opción
   const lista = opciones.includes(valor) ? opciones : [...opciones, valor].sort()
   return (
-    <select value={valor} onChange={(e) => onCambio(e.target.value)} aria-label={etiqueta} className="num h-10 cursor-pointer rounded-lg border border-linea bg-white px-2 text-[15px] hover:border-tinta-soft focus:border-telon-500 focus:ring-2 focus:ring-telon-100 focus:outline-none">
+    <select value={valor} onChange={(e) => onCambio(e.target.value)} aria-label={etiqueta} className="num h-10 cursor-pointer rounded-lg border border-linea bg-white px-2 text-[15px] hover:border-tinta-soft focus:border-selva-500 focus:ring-2 focus:ring-selva-100 focus:outline-none">
       {PARTES.map((p) => {
         const horas = lista.filter((h) => h >= p.desde && h <= p.hasta)
         if (horas.length === 0) return null
@@ -54,7 +54,7 @@ export default function FilaHorario({ dia, activo, abre, cierra, onCambio, onCop
             a
             <ListaHoras valor={cierra} opciones={HORAS.filter((h) => h > abre)} onCambio={(h) => onCambio({ cierra: h })} etiqueta={`${dia}, hasta`} />
           </span>
-          <button type="button" onClick={onCopiar} aria-label={`Copiar el horario del ${dia.toLowerCase()} a los demás días encendidos`} className="text-sm font-semibold text-telon-700 underline">
+          <button type="button" onClick={onCopiar} aria-label={`Copiar el horario del ${dia.toLowerCase()} a los demás días encendidos`} className="text-sm font-semibold text-selva-700 underline">
             Copiar a todos
           </button>
         </>

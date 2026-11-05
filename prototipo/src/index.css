@@ -1,29 +1,36 @@
 @import "tailwindcss";
 
-/* Tokens del prototipo "Telón".
-   Telón (carmesí) es el color de marca; Marquesina (ámbar) marca disponibilidad
-   y momentos de celebración; Tinta es el texto y las superficies oscuras. */
+/* Paleta de marca 60/30/10:
+   Verde Selva (600) domina: superficies grandes, botones y enlaces.
+   Amarillo Maíz acompaña: bandas y llamadas a la acción; siempre con texto oscuro.
+   Verde Agua acentúa: selecciones, etiquetas y detalles; siempre con texto oscuro.
+   Error, alerta y ok son estados, no marca: el rojo de error avisa de un problema. */
 @theme {
-  --color-telon-50: #fdf2f3;
-  --color-telon-100: #fbe3e6;
-  --color-telon-200: #f5c2c9;
-  --color-telon-500: #c8203a;
-  --color-telon-600: #a3122a;
-  --color-telon-700: #860d22;
-  --color-telon-900: #4d0714;
+  --color-selva-50: #eef7f1;
+  --color-selva-100: #d8ecdf;
+  --color-selva-200: #b3d9c0;
+  --color-selva-500: #32924f;
+  --color-selva-600: #287a45;
+  --color-selva-700: #1f6237;
+  --color-selva-900: #123a21;
 
-  --color-tinta: #1e1a2e;
-  --color-tinta-soft: #5e5873;
-  --color-butaca: #f3f1f6;
-  --color-linea: #e3e0ea;
+  --color-maiz: #e9b83f;
+  --color-maiz-soft: #fbf1d3;
 
-  --color-marquesina: #f2b705;
-  --color-marquesina-soft: #fff4cc;
+  --color-agua: #75b9a0;
+  --color-agua-soft: #e4f2ec;
 
-  --color-ok: #0f7b6c;
-  --color-ok-soft: #dff3ef;
-  --color-alerta: #b45309;
-  --color-alerta-soft: #fdf0dc;
+  --color-tinta: #16241c;
+  --color-tinta-soft: #55645b;
+  --color-butaca: #f2f6f3;
+  --color-linea: #dfe7e1;
+
+  --color-ok: #1b6b4a;
+  --color-ok-soft: #e4f2ec;
+  --color-alerta: #92600a;
+  --color-alerta-soft: #fbf1d3;
+  --color-error: #b42318;
+  --color-error-soft: #fef1ef;
 
   --font-cartel: "Big Shoulders Display", "Figtree", sans-serif;
   --font-sans: "Figtree", ui-sans-serif, system-ui, sans-serif;
@@ -39,18 +46,20 @@
     @apply bg-white font-sans text-tinta antialiased;
   }
   ::selection {
-    background: var(--color-marquesina);
+    background: var(--color-maiz);
     color: var(--color-tinta);
   }
+  /* El borde oscuro hace visible el foco sobre blanco, verde o amarillo */
   :focus-visible {
-    outline: 3px solid var(--color-marquesina);
-    outline-offset: 2px;
+    outline: 3px solid var(--color-maiz);
+    outline-offset: 0;
+    box-shadow: 0 0 0 5px var(--color-tinta);
     border-radius: 6px;
   }
   input,
   select,
   textarea {
-    caret-color: var(--color-telon-600);
+    caret-color: var(--color-selva-600);
   }
   a {
     text-underline-offset: 3px;
@@ -60,7 +69,7 @@
   }
   * {
     scrollbar-width: thin;
-    scrollbar-color: #cdc8d8 transparent;
+    scrollbar-color: #c5d0c8 transparent;
   }
 }
 

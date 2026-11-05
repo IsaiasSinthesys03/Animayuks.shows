@@ -13,11 +13,11 @@ function Fila({ marcado, deshabilitado, onMarcar, titulo, detalle, nota, onAbrir
   return (
     <li className="flex items-center gap-1 pr-1">
       <label className={`flex min-w-0 flex-1 items-center gap-3 px-3 py-2.5 ${deshabilitado ? 'cursor-not-allowed' : 'cursor-pointer hover:bg-butaca'}`}>
-        <input type="checkbox" checked={marcado} disabled={deshabilitado} onChange={onMarcar} className="size-5 shrink-0 accent-telon-600" />
+        <input type="checkbox" checked={marcado} disabled={deshabilitado} onChange={onMarcar} className="size-5 shrink-0 accent-selva-600" />
         <span className="min-w-0">
           <span className={`line-clamp-3 font-medium ${deshabilitado && !marcado ? 'text-tinta-soft' : ''}`}>{titulo}</span>
           {detalle && <span className="block truncate text-sm text-tinta-soft">{detalle}</span>}
-          {nota && <span className="block text-sm font-medium text-telon-700">{nota}</span>}
+          {nota && <span className="block text-sm font-medium text-alerta">{nota}</span>}
         </span>
       </label>
       {mapa && (
@@ -153,7 +153,7 @@ export default function SelectorCobertura({ valor, onCambio, otras }) {
   const vacia = valor.estados.length + valor.municipios.length + valor.codigos.length === 0
 
   const Chip = ({ children, onQuitar, etiqueta, titulo }) => (
-    <li title={titulo} className="inline-flex max-w-full items-center gap-1 rounded-full bg-telon-50 py-1 pr-1 pl-3 text-sm font-medium text-telon-700">
+    <li title={titulo} className="inline-flex max-w-full items-center gap-1 rounded-full bg-agua-soft py-1 pr-1 pl-3 text-sm font-medium text-selva-900">
       <span className="truncate">{children}</span>
       <button type="button" onClick={onQuitar} aria-label={`Quitar ${etiqueta}`} className="shrink-0 rounded-full p-1 hover:bg-white">
         <X className="size-3.5" />
@@ -179,7 +179,7 @@ export default function SelectorCobertura({ valor, onCambio, otras }) {
               <p className="mb-1.5 flex flex-wrap items-baseline gap-x-3 text-sm font-semibold">
                 {k ? k.split('|')[1] : 'Otros códigos postales'}: {lista.length === 1 ? '1 código postal' : `${lista.length} códigos postales`}
                 {lista.length > 1 && (
-                  <button type="button" onClick={() => quitarCodigos(lista)} className="font-medium text-telon-700 underline">Quitar todos</button>
+                  <button type="button" onClick={() => quitarCodigos(lista)} className="font-medium text-selva-700 underline">Quitar todos</button>
                 )}
               </p>
               <ul className="flex max-h-44 flex-wrap gap-1.5 overflow-y-auto" aria-label={`Códigos postales de ${k ? k.split('|')[1] : 'otros lugares'}`}>
@@ -202,7 +202,7 @@ export default function SelectorCobertura({ valor, onCambio, otras }) {
         <div className="border-b border-linea p-2">
           {!enRaiz && (
             <div className="mb-2 flex flex-wrap items-center gap-1 text-sm">
-              <button type="button" onClick={() => abrir(ruta.municipio ? ruta.estado : null)} className="inline-flex items-center gap-0.5 rounded-full py-1 pr-2 font-semibold text-telon-700 hover:bg-butaca">
+              <button type="button" onClick={() => abrir(ruta.municipio ? ruta.estado : null)} className="inline-flex items-center gap-0.5 rounded-full py-1 pr-2 font-semibold text-selva-700 hover:bg-butaca">
                 <ChevronLeft className="size-4" /> {ruta.municipio ? ruta.estado : 'Todos los estados'}
               </button>
               <span className="font-semibold">{ruta.municipio ? `/ ${ruta.municipio}` : `/ ${ruta.estado}`}</span>
@@ -216,7 +216,7 @@ export default function SelectorCobertura({ valor, onCambio, otras }) {
               onChange={(e) => setTexto(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && e.preventDefault()}
               placeholder={enRaiz ? 'Busca un estado, ciudad, colonia o código postal' : `Filtrar en ${ruta.municipio ?? ruta.estado}`}
-              className="h-10 w-full rounded-xl bg-butaca pr-3 pl-9 text-[15px] focus:ring-2 focus:ring-telon-100 focus:outline-none"
+              className="h-10 w-full rounded-xl bg-butaca pr-3 pl-9 text-[15px] focus:ring-2 focus:ring-selva-100 focus:outline-none"
             />
           </label>
         </div>
@@ -230,7 +230,7 @@ export default function SelectorCobertura({ valor, onCambio, otras }) {
           <div className="border-b border-linea bg-butaca/60">
             <Fila {...filaMunicipio(ruta.estado, ruta.municipio)} onMarcar={() => marcarMunicipio(ruta.estado, ruta.municipio)} titulo={`Toda ${ruta.municipio}`} />
             {cpsLibres.length > 0 && !valor.municipios.includes(clave(ruta.estado, ruta.municipio)) && filtro && (
-              <button type="button" onClick={marcarVisibles} className="mb-2 ml-3 text-sm font-semibold text-telon-700 underline">
+              <button type="button" onClick={marcarVisibles} className="mb-2 ml-3 text-sm font-semibold text-selva-700 underline">
                 {todosMarcados ? 'Desmarcar' : 'Marcar'} {cpsLibres.length === 1 ? 'el resultado' : `los ${cpsLibres.length} resultados`}
               </button>
             )}
@@ -269,7 +269,7 @@ export default function SelectorCobertura({ valor, onCambio, otras }) {
           {cpManual && !resultados.isFetching && (
             <li className="px-3 py-3 text-sm">
               <span className="text-tinta-soft">El {cpManual} no está en el catálogo. </span>
-              <button type="button" onClick={() => onCambio({ ...valor, codigos: alternar(valor.codigos, cpManual) })} className="font-semibold text-telon-700 underline">
+              <button type="button" onClick={() => onCambio({ ...valor, codigos: alternar(valor.codigos, cpManual) })} className="font-semibold text-selva-700 underline">
                 {valor.codigos.includes(cpManual) ? 'Quitarlo' : 'Agregarlo de todos modos'}
               </button>
             </li>

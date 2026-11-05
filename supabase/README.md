@@ -32,6 +32,7 @@ Reglas:
 | 11 | [`20261105000011_whatsapp_configurable.sql`](migrations/20261105000011_whatsapp_configurable.sql) | Quita el WhatsApp de ejemplo y valida su formato |
 | 12 | [`20261105000012_proteger_zonas.sql`](migrations/20261105000012_proteger_zonas.sql) | Una zona con reservaciones no se puede borrar |
 | 13 | [`20261105000013_zonas_regiones.sql`](migrations/20261105000013_zonas_regiones.sql) | Catálogo de CP; zonas por estado, municipio o CP (gana lo más específico); horario propio por zona |
+| 14 | [`20261105000014_colores_correos.sql`](migrations/20261105000014_colores_correos.sql) | Paleta verde en los correos de reservación |
 
 **Si algo quedó mal** con las migraciones 1–3 y todavía no hay datos reales, [`deshacer_migraciones.sql`](deshacer_migraciones.sql) las revierte. **Borra datos: no usarlo en producción.**
 

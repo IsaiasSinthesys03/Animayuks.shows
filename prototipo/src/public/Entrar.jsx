@@ -74,7 +74,7 @@ export default function Entrar() {
   return (
     <div className="mx-auto max-w-md px-4 py-12 sm:px-6 lg:py-20">
       {paraPanel && (
-        <p role="status" className="mb-6 rounded-xl bg-marquesina-soft px-4 py-3 text-sm font-semibold text-tinta">
+        <p role="status" className="mb-6 rounded-xl bg-maiz-soft px-4 py-3 text-sm font-semibold text-tinta">
           Para abrir el panel, entra con la cuenta de administrador. <Link to="/entrar" className="underline">Soy cliente</Link>
         </p>
       )}
@@ -93,11 +93,11 @@ export default function Entrar() {
           <Input type="password" autoComplete={modo === 'entrar' ? 'current-password' : 'new-password'} value={f.contrasena} onChange={(e) => set('contrasena', e.target.value)} required />
         </Campo>
         {modo === 'entrar' && (
-          <p className="text-right text-sm"><Link to="/recuperar" className="font-semibold text-telon-700 underline">Olvidé mi contraseña</Link></p>
+          <p className="text-right text-sm"><Link to="/recuperar" className="font-semibold text-selva-700 underline">Olvidé mi contraseña</Link></p>
         )}
         {modo === 'registro' && (
           <label className="flex gap-3 text-sm">
-            <input type="checkbox" checked={f.acepta} onChange={(e) => set('acepta', e.target.checked)} className="mt-0.5 size-4 accent-telon-600" />
+            <input type="checkbox" checked={f.acepta} onChange={(e) => set('acepta', e.target.checked)} className="mt-0.5 size-4 accent-selva-600" />
             <span>
               Acepto el <Link to="/paginas/aviso-de-privacidad" target="_blank" className="font-semibold underline">aviso de privacidad</Link> y los{' '}
               <Link to="/paginas/terminos" target="_blank" className="font-semibold underline">términos</Link>.
@@ -105,14 +105,14 @@ export default function Entrar() {
           </label>
         )}
         <Turnstile onToken={setCaptcha} reinicio={reinicio} />
-        {error && <p role="alert" className="rounded-xl bg-telon-50 px-3 py-2 text-sm font-medium text-telon-700">{error}</p>}
+        {error && <p role="alert" className="rounded-xl bg-error-soft px-3 py-2 text-sm font-medium text-error">{error}</p>}
         <Boton type="submit" tam="lg" className="w-full" disabled={enviando}>
           {enviando ? 'Un momento…' : modo === 'entrar' ? 'Entrar' : 'Crear cuenta'}
         </Boton>
       </form>
       <p className="mt-6 text-center text-[15px]">
         {modo === 'entrar' ? '¿Primera vez?' : '¿Ya tienes cuenta?'}{' '}
-        <button className="font-semibold text-telon-700 underline" onClick={() => { setModo(modo === 'entrar' ? 'registro' : 'entrar'); setError('') }}>
+        <button className="font-semibold text-selva-700 underline" onClick={() => { setModo(modo === 'entrar' ? 'registro' : 'entrar'); setError('') }}>
           {modo === 'entrar' ? 'Crea tu cuenta' : 'Entra'}
         </button>
       </p>

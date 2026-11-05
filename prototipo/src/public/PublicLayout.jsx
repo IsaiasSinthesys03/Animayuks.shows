@@ -13,7 +13,7 @@ const enlaces = [
 export function Logo({ claro = false }) {
   const { data: cfg } = useConfiguracion()
   return (
-    <Link to="/" className={`font-cartel text-[1.9rem] leading-none font-black tracking-tight uppercase ${claro ? 'text-white' : 'text-telon-600'}`}>
+    <Link to="/" className={`font-cartel text-[1.9rem] leading-none font-black tracking-tight uppercase ${claro ? 'text-white' : 'text-selva-600'}`}>
       {cfg?.nombre_negocio ?? 'Animayuks'}
     </Link>
   )
@@ -44,7 +44,7 @@ export default function PublicLayout() {
                 key={e.to}
                 to={e.to}
                 className={({ isActive }) =>
-                  `rounded-full px-4 py-2 text-[15px] font-medium transition-colors ${isActive ? 'bg-telon-50 text-telon-700' : 'text-tinta hover:bg-butaca'}`
+                  `rounded-full px-4 py-2 text-[15px] font-medium transition-colors ${isActive ? 'bg-agua-soft text-selva-900' : 'text-tinta hover:bg-butaca'}`
                 }
               >
                 {e.texto}
@@ -64,7 +64,7 @@ export default function PublicLayout() {
             >
               <UserRound className="size-5" />
             </Link>
-            <Link to="/reservar" className="hidden h-10 items-center rounded-full bg-telon-600 px-5 text-[15px] font-semibold text-white hover:bg-telon-700 sm:inline-flex">
+            <Link to="/reservar" className="hidden h-10 items-center rounded-full bg-selva-600 px-5 text-[15px] font-semibold text-white hover:bg-selva-700 sm:inline-flex">
               Reservar
             </Link>
             <button className="inline-flex size-10 items-center justify-center rounded-full hover:bg-butaca md:hidden" onClick={() => setMenu(!menu)} aria-expanded={menu} aria-label="Menú">
@@ -80,7 +80,7 @@ export default function PublicLayout() {
               </NavLink>
             ))}
             {esAdmin && <Link to="/admin" className="block rounded-xl px-3 py-3 text-base font-medium hover:bg-butaca">Panel de administración</Link>}
-            <Link to="/reservar" className="mt-2 flex h-12 items-center justify-center rounded-full bg-telon-600 font-semibold text-white">
+            <Link to="/reservar" className="mt-2 flex h-12 items-center justify-center rounded-full bg-selva-600 font-semibold text-white">
               Reservar un show
             </Link>
           </nav>
@@ -91,7 +91,7 @@ export default function PublicLayout() {
         <Outlet />
       </main>
 
-      <footer className="bg-tinta text-white/80">
+      <footer className="bg-selva-700 text-white">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr]">
           <div>
             <Logo claro />
@@ -119,7 +119,7 @@ export default function PublicLayout() {
           href={whatsapp}
           target="_blank"
           rel="noreferrer"
-          className="fixed right-4 bottom-4 z-20 inline-flex size-14 items-center justify-center rounded-full bg-ok text-white shadow-[0_10px_24px_-6px_rgba(15,123,108,0.55)] hover:bg-[#0b6458] sm:right-6 sm:bottom-6"
+          className="fixed right-4 bottom-4 z-20 inline-flex size-14 items-center justify-center rounded-full bg-agua text-tinta ring-2 ring-white shadow-[0_10px_24px_-6px_rgba(15,123,108,0.55)] hover:bg-[#0b6458] sm:right-6 sm:bottom-6"
           aria-label="Escríbenos por WhatsApp"
         >
           <MessageCircle className="size-6" />

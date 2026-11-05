@@ -44,7 +44,7 @@ export default function VerificadorCP({ oscuro = false, onResultado, inicial = '
     }
   }
 
-  const textoSuave = oscuro ? 'text-white/75' : 'text-tinta-soft'
+  const textoSuave = oscuro ? 'text-white' : 'text-tinta-soft'
 
   return (
     <div>
@@ -64,15 +64,15 @@ export default function VerificadorCP({ oscuro = false, onResultado, inicial = '
           aria-invalid={estado === 'invalido'}
           className={`num h-12 min-w-0 flex-1 rounded-full border px-5 text-base focus:outline-none ${
             oscuro
-              ? 'border-white/20 bg-white text-tinta placeholder:text-tinta-soft focus:ring-3 focus:ring-marquesina/60'
-              : 'border-linea bg-white placeholder:text-tinta-soft/70 focus:border-telon-500 focus:ring-3 focus:ring-telon-100'
+              ? 'border-white/20 bg-white text-tinta placeholder:text-tinta-soft focus:ring-3 focus:ring-maiz'
+              : 'border-linea bg-white placeholder:text-tinta-soft/70 focus:border-selva-500 focus:ring-3 focus:ring-selva-100'
           }`}
         />
         <button
           type="submit"
           disabled={estado === 'cargando'}
           className={`h-12 shrink-0 rounded-full px-5 font-semibold transition-colors disabled:opacity-60 ${
-            oscuro ? 'bg-marquesina text-tinta hover:bg-[#ffc81f]' : 'bg-tinta text-white hover:bg-black'
+            oscuro ? 'bg-maiz text-tinta hover:bg-[#f0c453]' : 'bg-selva-600 text-white hover:bg-selva-700'
           }`}
         >
           Verificar
@@ -86,12 +86,12 @@ export default function VerificadorCP({ oscuro = false, onResultado, inicial = '
           </p>
         )}
         {estado === 'invalido' && (
-          <p className={`mt-4 flex items-center gap-2 text-sm font-medium ${oscuro ? 'text-marquesina' : 'text-telon-700'}`}>
+          <p className={`mt-4 flex items-center gap-2 text-sm font-medium ${oscuro ? 'text-white' : 'text-error'}`}>
             <CircleAlert className="size-4" /> Escribe los 5 dígitos del código postal donde será el evento.
           </p>
         )}
         {estado?.error && (
-          <p className={`mt-4 flex items-center gap-2 text-sm font-medium ${oscuro ? 'text-marquesina' : 'text-telon-700'}`}>
+          <p className={`mt-4 flex items-center gap-2 text-sm font-medium ${oscuro ? 'text-white' : 'text-error'}`}>
             <CircleAlert className="size-4" /> {estado.error}
           </p>
         )}
@@ -105,19 +105,19 @@ export default function VerificadorCP({ oscuro = false, onResultado, inicial = '
               {estado.zona.horario && ` En tu zona: ${resumenHorario(estado.zona.horario)}.`}
             </p>
             {!onResultado && (
-              <Link to={`/reservar?cp=${cp}`} className={`mt-3 inline-flex h-10 items-center rounded-full px-4 text-sm font-semibold ${oscuro ? 'bg-white text-tinta' : 'bg-telon-600 text-white'}`}>
+              <Link to={`/reservar?cp=${cp}`} className={`mt-3 inline-flex h-10 items-center rounded-full px-4 text-sm font-semibold ${oscuro ? 'bg-white text-tinta' : 'bg-selva-600 text-white'}`}>
                 Reservar con este código postal
               </Link>
             )}
           </div>
         )}
         {estado === 'fuera' && (
-          <div className={`entra mt-4 rounded-2xl p-4 ${oscuro ? 'bg-white/10' : 'bg-telon-50'}`}>
-            <p className={`flex items-center gap-2 font-semibold ${oscuro ? 'text-white' : 'text-telon-700'}`}>
+          <div className={`entra mt-4 rounded-2xl p-4 ${oscuro ? 'bg-white/10' : 'bg-error-soft'}`}>
+            <p className={`flex items-center gap-2 font-semibold ${oscuro ? 'text-white' : 'text-error'}`}>
               <CircleAlert className="size-5" /> Por ahora no damos servicio en ese código postal
             </p>
             {interes === 'listo' ? (
-              <p className={`mt-2 text-sm font-semibold ${oscuro ? 'text-marquesina' : 'text-ok'}`}>Listo. Te avisaremos cuando lleguemos a tu zona.</p>
+              <p className={`mt-2 text-sm font-semibold ${oscuro ? 'text-white' : 'text-ok'}`}>Listo. Te avisaremos cuando lleguemos a tu zona.</p>
             ) : (
               <form onSubmit={avisame} className="mt-3 flex gap-2">
                 <label className="sr-only" htmlFor="interes">Tu correo o teléfono</label>
@@ -129,7 +129,7 @@ export default function VerificadorCP({ oscuro = false, onResultado, inicial = '
                   required
                   className="h-10 min-w-0 flex-1 rounded-full border border-linea bg-white px-4 text-sm text-tinta focus:outline-none"
                 />
-                <button type="submit" disabled={interes === 'enviando'} className={`h-10 shrink-0 rounded-full px-4 text-sm font-semibold disabled:opacity-60 ${oscuro ? 'bg-white text-tinta' : 'bg-telon-600 text-white'}`}>
+                <button type="submit" disabled={interes === 'enviando'} className={`h-10 shrink-0 rounded-full px-4 text-sm font-semibold disabled:opacity-60 ${oscuro ? 'bg-white text-tinta' : 'bg-selva-600 text-white'}`}>
                   Avísame
                 </button>
               </form>

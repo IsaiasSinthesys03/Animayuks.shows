@@ -34,7 +34,7 @@ export default function Catalogo() {
               key={c}
               aria-pressed={categoria === c}
               onClick={() => setCategoria(c)}
-              className={`h-10 shrink-0 rounded-full px-4 text-[15px] font-medium transition-colors ${categoria === c ? 'bg-tinta text-white' : 'bg-butaca text-tinta hover:bg-linea'}`}
+              className={`h-10 shrink-0 rounded-full px-4 text-[15px] font-medium transition-colors ${categoria === c ? 'bg-selva-600 text-white' : 'bg-butaca text-tinta hover:bg-linea'}`}
             >
               {c}
             </button>
@@ -48,7 +48,7 @@ export default function Catalogo() {
               value={texto}
               onChange={(e) => setTexto(e.target.value)}
               placeholder="Buscar un show"
-              className="h-10 w-full rounded-full border border-linea pr-4 pl-10 text-[15px] focus:border-telon-500 focus:ring-3 focus:ring-telon-100 focus:outline-none"
+              className="h-10 w-full rounded-full border border-linea pr-4 pl-10 text-[15px] focus:border-selva-500 focus:ring-3 focus:ring-selva-100 focus:outline-none"
             />
           </label>
           <label>
@@ -73,7 +73,7 @@ export default function Catalogo() {
       {shows.data?.length > 0 && lista.length === 0 && (
         <div className="mt-12 rounded-2xl bg-butaca p-10 text-center">
           <p className="text-lg font-semibold">Ningún show coincide con tu búsqueda.</p>
-          <button onClick={() => { setTexto(''); setCategoria('Todos') }} className="mt-3 font-semibold text-telon-700 underline">
+          <button onClick={() => { setTexto(''); setCategoria('Todos') }} className="mt-3 font-semibold text-selva-700 underline">
             Ver toda la cartelera
           </button>
         </div>
@@ -95,7 +95,7 @@ export default function Catalogo() {
                   <p className="text-sm text-tinta-soft">
                     Desde <span className="num text-base font-bold text-tinta">{pesos(s.precio_base)}</span>
                   </p>
-                  <Link to={`/reservar?show=${s.slug}`} className="inline-flex h-9 items-center rounded-full bg-telon-600 px-4 text-sm font-semibold text-white hover:bg-telon-700">
+                  <Link to={`/reservar?show=${s.slug}`} className="inline-flex h-9 items-center rounded-full bg-selva-600 px-4 text-sm font-semibold text-white hover:bg-selva-700">
                     Reservar
                   </Link>
                 </div>

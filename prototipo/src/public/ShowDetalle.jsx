@@ -20,7 +20,7 @@ export default function ShowDetalle() {
     return (
       <div className="mx-auto max-w-xl px-4 py-24 text-center">
         <p className="text-xl font-semibold">Este show ya no está en cartelera.</p>
-        <Link to="/shows" className="mt-4 inline-block font-semibold text-telon-700 underline">Ver la cartelera</Link>
+        <Link to="/shows" className="mt-4 inline-block font-semibold text-selva-700 underline">Ver la cartelera</Link>
       </div>
     )
   }
@@ -46,7 +46,7 @@ export default function ShowDetalle() {
                 <img key={ruta} src={urlImagen(ruta)} alt={`Foto de ${show.nombre}`} loading="lazy" className="aspect-square w-full rounded-2xl object-cover" />
               ))}
               {show.video_url && (
-                <a href={show.video_url} target="_blank" rel="noreferrer" className="flex aspect-square flex-col items-center justify-center gap-1 rounded-2xl bg-tinta text-sm font-semibold text-white hover:bg-black">
+                <a href={show.video_url} target="_blank" rel="noreferrer" className="flex aspect-square flex-col items-center justify-center gap-1 rounded-2xl bg-tinta text-sm font-semibold text-white hover:bg-selva-700">
                   <Play className="size-6 fill-white" /> Ver video
                 </a>
               )}
@@ -88,9 +88,9 @@ export default function ShowDetalle() {
                 {paquetes.map((p) => (
                   <label
                     key={p.id}
-                    className={`flex cursor-pointer gap-3 rounded-2xl border-2 p-4 transition-colors ${elegido?.id === p.id ? 'border-telon-600 bg-telon-50/50' : 'border-linea hover:border-tinta-soft/40'}`}
+                    className={`flex cursor-pointer gap-3 rounded-2xl border-2 p-4 transition-colors ${elegido?.id === p.id ? 'border-selva-600 bg-selva-50/50' : 'border-linea hover:border-tinta-soft/40'}`}
                   >
-                    <input type="radio" name="paquete" checked={elegido?.id === p.id} onChange={() => setPaqueteId(p.id)} className="mt-1 accent-telon-600" />
+                    <input type="radio" name="paquete" checked={elegido?.id === p.id} onChange={() => setPaqueteId(p.id)} className="mt-1 accent-selva-600" />
                     <span className="flex-1">
                       <span className="flex items-baseline justify-between gap-2">
                         <span className="font-semibold">{p.nombre}</span>
@@ -112,7 +112,7 @@ export default function ShowDetalle() {
 
           <Link
             to={`/reservar?show=${show.slug}${elegido ? `&paquete=${elegido.id}` : ''}`}
-            className="mt-6 flex h-13 items-center justify-center rounded-full bg-telon-600 px-4 text-center text-base font-semibold text-white hover:bg-telon-700"
+            className="mt-6 flex h-13 items-center justify-center rounded-full bg-selva-600 px-4 text-center text-base font-semibold text-white hover:bg-selva-700"
           >
             Reservar por {pesos(precio)}
           </Link>

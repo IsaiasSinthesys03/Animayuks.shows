@@ -93,7 +93,7 @@ export default function DetalleReservacion({ r, onCerrar }) {
           {r.motivo_excepcion && <p className="mt-2 rounded-xl bg-alerta-soft px-3 py-2 text-sm">Excepción: {r.motivo_excepcion}</p>}
         </div>
 
-        {error && <p role="alert" className="rounded-xl bg-telon-50 px-3 py-2 text-sm font-medium text-telon-700">{error}</p>}
+        {error && <p role="alert" className="rounded-xl bg-error-soft px-3 py-2 text-sm font-medium text-error">{error}</p>}
 
         <div className="grid grid-cols-3 gap-2">
           {c?.telefono && <a href={`tel:${soloDigitos(c.telefono)}`} className="flex flex-col items-center gap-1 rounded-2xl bg-butaca py-3 text-sm font-medium hover:bg-linea"><Phone className="size-5" /> Llamar</a>}
@@ -126,12 +126,12 @@ export default function DetalleReservacion({ r, onCerrar }) {
                 <li key={p.id} className="px-3 py-2.5 text-sm">
                   <div className="flex items-center justify-between gap-3">
                     <span className="num font-semibold">{pesos(p.monto)} <span className="font-normal text-tinta-soft">{p.metodo}</span></span>
-                    <span className={p.estado === 'aprobado' ? 'text-ok' : p.estado === 'rechazado' ? 'text-telon-700' : 'font-semibold text-alerta'}>
+                    <span className={p.estado === 'aprobado' ? 'text-ok' : p.estado === 'rechazado' ? 'text-error' : 'font-semibold text-alerta'}>
                       {p.estado === 'aprobado' ? 'Aprobado' : p.estado === 'rechazado' ? 'Rechazado' : 'Por revisar'}
                     </span>
                   </div>
                   {p.comprobante_path && (
-                    <button onClick={() => abrirComprobante(p.comprobante_path)} className="mt-1 inline-flex items-center gap-1 font-medium text-telon-700 underline">
+                    <button onClick={() => abrirComprobante(p.comprobante_path)} className="mt-1 inline-flex items-center gap-1 font-medium text-selva-700 underline">
                       <FileText className="size-3.5" /> Ver comprobante <ExternalLink className="size-3" />
                     </button>
                   )}
@@ -192,7 +192,7 @@ export default function DetalleReservacion({ r, onCerrar }) {
           <h3 className="font-semibold">Notas internas</h3>
           {notas.length > 0 && (
             <ul className="mt-2 space-y-2">
-              {notas.map((n) => <li key={n.id} className="rounded-xl bg-marquesina-soft px-3 py-2 text-[15px]">{n.texto}</li>)}
+              {notas.map((n) => <li key={n.id} className="rounded-xl bg-maiz-soft px-3 py-2 text-[15px]">{n.texto}</li>)}
             </ul>
           )}
           <form
@@ -227,7 +227,7 @@ export default function DetalleReservacion({ r, onCerrar }) {
         )}
 
         {cancelando && (
-          <section className="rounded-2xl border border-telon-200 p-4">
+          <section className="rounded-2xl border border-error/30 p-4">
             <h3 className="font-semibold">Cancelar reservación</h3>
             <p className="mt-1 text-sm text-tinta-soft">El horario queda libre y se avisa al cliente por correo.</p>
             <Campo etiqueta="Motivo (opcional)" className="mt-3"><Input value={motivoCancelar} onChange={(e) => setMotivoCancelar(e.target.value)} /></Campo>

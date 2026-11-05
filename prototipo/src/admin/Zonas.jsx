@@ -13,8 +13,8 @@ import FilaHorario from './FilaHorario'
 import SelectorCobertura from './SelectorCobertura'
 
 const COLORES = [
-  '#a3122a', '#dc2626', '#ea580c', '#c2410c', '#d97706', '#f2b705',
-  '#a16207', '#65a30d', '#16a34a', '#0f7b6c', '#0d9488', '#0891b2',
+  '#287a45', '#e9b83f', '#75b9a0', '#dc2626', '#ea580c', '#a3122a',
+  '#a16207', '#65a30d', '#16a34a', '#f2b705', '#0d9488', '#0891b2',
   '#0369a1', '#2563eb', '#4f46e5', '#3b2a8f', '#7c3aed', '#a21caf',
   '#db2777', '#be185d', '#78350f', '#57534e', '#5e5873', '#0f172a',
 ]
@@ -139,14 +139,14 @@ function Editor({ zona, otras, general, onCerrar }) {
               ))}
             </div>
             {!f.propio && (
-              <p className="mt-2 text-sm text-tinta-soft">Usa lo que tengas en <Link to="/admin/disponibilidad" className="font-semibold text-telon-700 underline">Horarios y bloqueos</Link>.</p>
+              <p className="mt-2 text-sm text-tinta-soft">Usa lo que tengas en <Link to="/admin/disponibilidad" className="font-semibold text-selva-700 underline">Horarios y bloqueos</Link>.</p>
             )}
             {f.propio && (
               <div className="mt-3">
                 <p className="mb-2 text-sm text-tinta-soft">Este horario reemplaza al general en esta zona. Aplica una franja a los días encendidos o ajusta cada día:</p>
                 <div className="flex flex-wrap gap-2">
                   {FRANJAS.map((x) => (
-                    <button key={x.nombre} type="button" aria-pressed={franjaActual === x} onClick={() => aplicarFranja(x)} className={`h-9 rounded-full px-3 text-sm font-semibold transition-colors ${franjaActual === x ? 'bg-tinta text-white' : 'bg-butaca hover:bg-linea'}`}>
+                    <button key={x.nombre} type="button" aria-pressed={franjaActual === x} onClick={() => aplicarFranja(x)} className={`h-9 rounded-full px-3 text-sm font-semibold transition-colors ${franjaActual === x ? 'bg-selva-600 text-white' : 'bg-butaca hover:bg-linea'}`}>
                       {x.nombre}
                     </button>
                   ))}
@@ -188,7 +188,7 @@ function Editor({ zona, otras, general, onCerrar }) {
         </div>
 
         <div className="sticky bottom-0 border-t border-linea bg-white p-4">
-          {error && <p role="alert" className="mb-2 rounded-xl bg-telon-50 px-3 py-2 text-sm font-medium text-telon-700">{error}</p>}
+          {error && <p role="alert" className="mb-2 rounded-xl bg-error-soft px-3 py-2 text-sm font-medium text-error">{error}</p>}
           <Boton type="submit" className="w-full" disabled={guardando}>{guardando ? 'Guardando…' : zona ? 'Guardar cambios' : 'Agregar zona'}</Boton>
         </div>
       </form>
@@ -218,10 +218,10 @@ function ProbarCP() {
       <h2 className="mb-2 font-bold">Probar un código postal</h2>
       <Input inputMode="numeric" maxLength={5} value={cp} onChange={(e) => probar(e.target.value.replace(/\D/g, ''))} aria-label="Código postal de prueba" placeholder="45110" />
       <div aria-live="polite">
-        {error && <p className="mt-2 text-sm font-semibold text-telon-700">{error}</p>}
+        {error && <p className="mt-2 text-sm font-semibold text-error">{error}</p>}
         {lugar && <p className="mt-2 text-sm text-tinta-soft">{lugar.municipio}, {lugar.estado}: {lugar.colonias.slice(0, 3).join(', ')}{lugar.colonias.length > 3 ? '…' : ''}</p>}
         {zona && <p className="mt-1 text-sm font-semibold text-ok">Cae en {zona.nombre}. Costo extra {pesos(zona.cargo_traslado)}. {resumenHorario(zona.horario) ?? 'Horario general'}.</p>}
-        {resultado && !zona && !error && <p className="mt-1 text-sm font-semibold text-telon-700">Sin cobertura: el sitio rechazará la reservación.</p>}
+        {resultado && !zona && !error && <p className="mt-1 text-sm font-semibold text-error">Sin cobertura: el sitio rechazará la reservación.</p>}
       </div>
     </section>
   )
@@ -262,7 +262,7 @@ export default function Zonas() {
       {zonas.isLoading && <Cargando />}
       {zonas.isError && <ErrorCarga onReintentar={zonas.refetch} />}
 
-      {errorBorrar && <p role="alert" className="mb-3 rounded-xl bg-telon-50 px-4 py-3 text-sm font-medium text-telon-700">{errorBorrar}</p>}
+      {errorBorrar && <p role="alert" className="mb-3 rounded-xl bg-error-soft px-4 py-3 text-sm font-medium text-error">{errorBorrar}</p>}
 
       {zonas.data?.length === 0 && <div className="rounded-2xl bg-white p-10 text-center font-semibold ring-1 ring-linea">Sin zonas, nadie puede reservar en línea. Agrega la primera.</div>}
 
@@ -280,19 +280,19 @@ export default function Zonas() {
                     <div className="flex gap-2"><dt><Clock className="mt-0.5 size-4" aria-label="Horario" /></dt><dd className="num">{resumenHorario(z.horario) ?? 'Horario general'}</dd></div>
                   </dl>
                   {!z.horario && generalApagado && (
-                    <p className="mt-2 rounded-xl bg-telon-50 px-3 py-2 text-sm font-medium text-telon-700">
+                    <p className="mt-2 rounded-xl bg-error-soft px-3 py-2 text-sm font-medium text-error">
                       Sin fechas disponibles: el horario general no tiene días encendidos. <Link to="/admin/disponibilidad" className="underline">Enciéndelos</Link> o dale a esta zona un horario propio.
                     </p>
                   )}
                 </div>
                 <div className="flex items-center gap-3">
-                  <button onClick={() => setEditando(z.id)} className="text-sm font-semibold text-telon-700 underline">Editar</button>
+                  <button onClick={() => setEditando(z.id)} className="text-sm font-semibold text-selva-700 underline">Editar</button>
                   <Interruptor activo={z.activa} etiqueta={`Aceptar reservaciones en ${z.nombre}`} onCambio={async () => {
                     await guardarZona(z.id, { activa: !z.activa })
                     await queryClient.invalidateQueries({ queryKey: ['zonas'] })
                     avisar(z.activa ? `${z.nombre} pausada` : `${z.nombre} activada`)
                   }} />
-                  <button onClick={() => eliminar(z)} aria-label={`Eliminar ${z.nombre}`} className="rounded-full p-2 text-tinta-soft hover:bg-telon-50 hover:text-telon-700">
+                  <button onClick={() => eliminar(z)} aria-label={`Eliminar ${z.nombre}`} className="rounded-full p-2 text-tinta-soft hover:bg-error-soft hover:text-error">
                     <Trash2 className="size-4" />
                   </button>
                 </div>

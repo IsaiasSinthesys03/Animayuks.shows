@@ -10,7 +10,7 @@ import DetalleReservacion from './DetalleReservacion'
 
 const COLOR_ESTADO = {
   pendiente: 'bg-alerta-soft text-alerta ring-alerta/30',
-  confirmada: 'bg-telon-50 text-telon-700 ring-telon-200',
+  confirmada: 'bg-selva-50 text-selva-700 ring-selva-200',
   realizada: 'bg-butaca text-tinta-soft ring-linea',
 }
 const OTRO = 'bg-white text-tinta-soft/60 line-through ring-linea'
@@ -73,11 +73,11 @@ export default function Agenda() {
             {(zonas ?? []).map((z) => <option key={z.id} value={z.id}>{z.nombre}</option>)}
           </select>
           <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={verCanceladas} onChange={(e) => setVerCanceladas(e.target.checked)} className="accent-telon-600" /> Canceladas
+            <input type="checkbox" checked={verCanceladas} onChange={(e) => setVerCanceladas(e.target.checked)} className="accent-selva-600" /> Canceladas
           </label>
           <div className="flex rounded-full bg-white p-1 ring-1 ring-linea" role="group" aria-label="Vista">
             {[['mes', 'Mes'], ['lista', 'Lista']].map(([id, t]) => (
-              <button key={id} aria-pressed={vista === id} onClick={() => setVista(id)} className={`h-7 rounded-full px-3 text-sm font-medium ${vista === id ? 'bg-tinta text-white' : 'text-tinta-soft'}`}>{t}</button>
+              <button key={id} aria-pressed={vista === id} onClick={() => setVista(id)} className={`h-7 rounded-full px-3 text-sm font-medium ${vista === id ? 'bg-selva-600 text-white' : 'text-tinta-soft'}`}>{t}</button>
             ))}
           </div>
         </div>
@@ -95,7 +95,7 @@ export default function Agenda() {
               const bloqueo = bloqueoDe(dia)
               return (
                 <div key={dia} className={`min-h-24 border-r border-b border-linea p-1 sm:min-h-28 sm:p-1.5 ${bloqueo ? 'bg-butaca' : ''}`}>
-                  <span className={`num inline-flex size-6 items-center justify-center rounded-full text-xs font-semibold ${dia === hoy() ? 'bg-telon-600 text-white' : ''}`}>{Number(dia.slice(8))}</span>
+                  <span className={`num inline-flex size-6 items-center justify-center rounded-full text-xs font-semibold ${dia === hoy() ? 'bg-selva-600 text-white' : ''}`}>{Number(dia.slice(8))}</span>
                   {bloqueo && <p className="mt-0.5 hidden text-[11px] leading-tight text-tinta-soft sm:block">Bloqueado: {bloqueo.motivo}</p>}
                   <div className="mt-0.5 space-y-1">
                     {eventos.map((r) => (
@@ -140,7 +140,7 @@ export default function Agenda() {
       )}
 
       <div className="mt-4 flex flex-wrap gap-4 text-sm text-tinta-soft print:hidden">
-        <span className="inline-flex items-center gap-1.5"><span className="size-3 rounded bg-telon-50 ring-1 ring-telon-200" /> Confirmada</span>
+        <span className="inline-flex items-center gap-1.5"><span className="size-3 rounded bg-selva-50 ring-1 ring-selva-200" /> Confirmada</span>
         <span className="inline-flex items-center gap-1.5"><span className="size-3 rounded bg-alerta-soft ring-1 ring-alerta/30" /> Pendiente de anticipo</span>
         <span className="inline-flex items-center gap-1.5"><span className="size-3 rounded bg-butaca ring-1 ring-linea" /> Realizada o día bloqueado</span>
       </div>

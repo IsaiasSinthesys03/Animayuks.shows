@@ -65,7 +65,7 @@ function PanelCancelar({ r, cfg, onCerrar }) {
           <option>Otro</option>
         </select>
       </label>
-      {error && <p role="alert" className="rounded-xl bg-telon-50 px-3 py-2 text-sm font-medium text-telon-700">{error}</p>}
+      {error && <p role="alert" className="rounded-xl bg-error-soft px-3 py-2 text-sm font-medium text-error">{error}</p>}
       <div className="flex flex-col gap-2">
         <Boton onClick={cancelar} disabled={enviando}>{enviando ? 'Cancelando…' : 'Cancelar reservación'}</Boton>
         <Boton variante="fantasma" onClick={onCerrar}>Conservar mi reservación</Boton>
@@ -109,7 +109,7 @@ function PanelCambiarFecha({ r, onCerrar }) {
     <div className="space-y-5 p-5">
       <p className="text-[15px] text-tinta-soft">Actualmente: {fechaLarga(r.inicio)}, {hora(r.inicio)}. El precio no cambia. Solo puedes cambiar la fecha una vez.</p>
       <Calendario showId={r.show_id} paqueteId={r.paquete_id} extras={extras} cp={r.codigo_postal} valor={fecha} onCambio={setFecha} />
-      {error && <p role="alert" className="rounded-xl bg-telon-50 px-3 py-2 text-sm font-medium text-telon-700">{error}</p>}
+      {error && <p role="alert" className="rounded-xl bg-error-soft px-3 py-2 text-sm font-medium text-error">{error}</p>}
       {fecha && (
         <div>
           <p className="font-semibold">Elige la hora nueva</p>
@@ -153,7 +153,7 @@ export default function MisReservaciones() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:py-14">
       {sinPermisoPanel && (
-        <p role="status" className="mb-6 rounded-xl bg-marquesina-soft px-4 py-3 text-[15px]">
+        <p role="status" className="mb-6 rounded-xl bg-maiz-soft px-4 py-3 text-[15px]">
           Esta es una cuenta de cliente. Para abrir el panel, cierra sesión y entra con la cuenta de administrador.
         </p>
       )}
@@ -169,7 +169,7 @@ export default function MisReservaciones() {
 
       <div className="mt-8 flex gap-2" role="group" aria-label="Filtrar reservaciones">
         {[['proximas', `Próximas (${proximas.length})`], ['historial', `Historial (${historial.length})`]].map(([id, t]) => (
-          <button key={id} aria-pressed={pestana === id} onClick={() => setPestana(id)} className={`h-10 rounded-full px-4 font-medium ${pestana === id ? 'bg-tinta text-white' : 'bg-butaca hover:bg-linea'}`}>
+          <button key={id} aria-pressed={pestana === id} onClick={() => setPestana(id)} className={`h-10 rounded-full px-4 font-medium ${pestana === id ? 'bg-selva-600 text-white' : 'bg-butaca hover:bg-linea'}`}>
             {t}
           </button>
         ))}
@@ -181,7 +181,7 @@ export default function MisReservaciones() {
       {consulta.data && lista.length === 0 && (
         <div className="mt-8 rounded-3xl bg-butaca p-10 text-center">
           <p className="text-lg font-semibold">{pestana === 'proximas' ? 'No tienes funciones próximas.' : 'Aún no hay funciones en tu historial.'}</p>
-          <Link to="/shows" className="mt-4 inline-flex h-11 items-center rounded-full bg-telon-600 px-5 font-semibold text-white">Ver la cartelera</Link>
+          <Link to="/shows" className="mt-4 inline-flex h-11 items-center rounded-full bg-selva-600 px-5 font-semibold text-white">Ver la cartelera</Link>
         </div>
       )}
 

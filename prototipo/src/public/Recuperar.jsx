@@ -37,11 +37,11 @@ export default function Recuperar() {
         <form className="mt-8 space-y-4" onSubmit={enviar}>
           <Campo etiqueta="Correo de tu cuenta"><Input type="email" autoComplete="email" value={correo} onChange={(e) => setCorreo(e.target.value)} required /></Campo>
           <Turnstile onToken={setCaptcha} reinicio={reinicio} />
-          {error && <p role="alert" className="rounded-xl bg-telon-50 px-3 py-2 text-sm font-medium text-telon-700">{error}</p>}
+          {error && <p role="alert" className="rounded-xl bg-error-soft px-3 py-2 text-sm font-medium text-error">{error}</p>}
           <Boton type="submit" tam="lg" className="w-full" disabled={estado === 'enviando'}>Enviar enlace</Boton>
         </form>
       )}
-      <p className="mt-6 text-center text-[15px]"><Link to="/entrar" className="font-semibold text-telon-700 underline">Volver a entrar</Link></p>
+      <p className="mt-6 text-center text-[15px]"><Link to="/entrar" className="font-semibold text-selva-700 underline">Volver a entrar</Link></p>
     </div>
   )
 }

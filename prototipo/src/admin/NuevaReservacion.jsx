@@ -156,7 +156,7 @@ export default function NuevaReservacion() {
                 <Campo etiqueta="Nombre"><Input value={nc.nombre} onChange={(e) => setNc({ ...nc, nombre: e.target.value })} autoFocus /></Campo>
                 <Campo etiqueta="Teléfono"><Input type="tel" value={nc.telefono} onChange={(e) => setNc({ ...nc, telefono: e.target.value })} /></Campo>
                 <Campo etiqueta="Correo (opcional)"><Input type="email" value={nc.correo} onChange={(e) => setNc({ ...nc, correo: e.target.value })} /></Campo>
-                <button type="button" onClick={() => setNuevo(false)} className="text-left text-sm font-semibold text-telon-700 underline sm:col-span-3">Buscar un cliente existente</button>
+                <button type="button" onClick={() => setNuevo(false)} className="text-left text-sm font-semibold text-selva-700 underline sm:col-span-3">Buscar un cliente existente</button>
               </div>
             ) : (
               <div>
@@ -174,7 +174,7 @@ export default function NuevaReservacion() {
                   </ul>
                 )}
                 {busqueda.trim().length > 1 && coincidencias.length === 0 && <p className="mt-2 text-sm text-tinta-soft">No encontramos a nadie con esos datos.</p>}
-                <button type="button" onClick={() => setNuevo(true)} className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-telon-700">
+                <button type="button" onClick={() => setNuevo(true)} className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-selva-700">
                   <UserPlus className="size-4" /> Registrar cliente nuevo
                 </button>
               </div>
@@ -204,7 +204,7 @@ export default function NuevaReservacion() {
                 {extrasActivos.map((e) => {
                   const on = f.extras.includes(e.id)
                   return (
-                    <button key={e.id} type="button" aria-pressed={on} onClick={() => set('extras', on ? f.extras.filter((x) => x !== e.id) : [...f.extras, e.id])} className={`h-9 rounded-full px-3.5 text-sm font-medium ring-1 ring-inset ${on ? 'bg-tinta text-white ring-tinta' : 'bg-white ring-linea hover:bg-butaca'}`}>
+                    <button key={e.id} type="button" aria-pressed={on} onClick={() => set('extras', on ? f.extras.filter((x) => x !== e.id) : [...f.extras, e.id])} className={`h-9 rounded-full px-3.5 text-sm font-medium ring-1 ring-inset ${on ? 'bg-selva-600 text-white ring-selva-600' : 'bg-white ring-linea hover:bg-butaca'}`}>
                       {e.nombre} <span className="num opacity-70">+{pesos(e.precio)}</span>
                     </button>
                   )
@@ -236,7 +236,7 @@ export default function NuevaReservacion() {
                   {libres.data.map((h) => {
                     const t = new Intl.DateTimeFormat('en-GB', { timeZone: 'America/Mexico_City', hour: '2-digit', minute: '2-digit' }).format(new Date(h.inicio))
                     return (
-                      <button key={h.inicio} type="button" onClick={() => set('hora', t)} className={`num h-8 rounded-full px-3 text-sm font-medium ring-1 ring-inset ${f.hora === t ? 'bg-tinta text-white ring-tinta' : 'bg-white ring-linea hover:bg-butaca'}`}>
+                      <button key={h.inicio} type="button" onClick={() => set('hora', t)} className={`num h-8 rounded-full px-3 text-sm font-medium ring-1 ring-inset ${f.hora === t ? 'bg-selva-600 text-white ring-selva-600' : 'bg-white ring-linea hover:bg-butaca'}`}>
                         {hora(h.inicio)}
                       </button>
                     )
@@ -276,7 +276,7 @@ export default function NuevaReservacion() {
               <div className="flex justify-between"><dt className="text-tinta-soft">Total</dt><dd className="text-lg font-bold">{pesos(total)}</dd></div>
               <div className="flex justify-between"><dt className="text-tinta-soft">Saldo</dt><dd className="font-semibold">{pesos(Math.max(0, total - (Number(f.pago) || 0)))}</dd></div>
             </dl>
-            {error && <p role="alert" className="mt-4 rounded-xl bg-telon-50 px-3 py-2 text-sm font-medium text-telon-700">{error}</p>}
+            {error && <p role="alert" className="mt-4 rounded-xl bg-error-soft px-3 py-2 text-sm font-medium text-error">{error}</p>}
             <Boton type="submit" className="mt-4 w-full" disabled={guardando}>{guardando ? 'Guardando…' : 'Guardar reservación'}</Boton>
             <p className="mt-2 text-center text-xs text-tinta-soft">Si el cliente tiene correo, le avisamos automáticamente.</p>
           </Bloque>

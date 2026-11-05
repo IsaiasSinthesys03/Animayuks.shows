@@ -11,7 +11,7 @@ export default function Preguntas() {
       <div className="mt-8 divide-y divide-linea">
         {(preguntas.data ?? []).map((p) => (
           <details key={p.id} className="group py-4">
-            <summary className="cursor-pointer text-lg font-semibold marker:text-telon-600">{p.pregunta}</summary>
+            <summary className="cursor-pointer text-lg font-semibold marker:text-selva-600">{p.pregunta}</summary>
             <p className="mt-2 leading-relaxed whitespace-pre-line text-tinta-soft">{p.respuesta}</p>
           </details>
         ))}

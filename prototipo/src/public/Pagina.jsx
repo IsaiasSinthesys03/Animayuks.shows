@@ -21,7 +21,7 @@ function Contenido({ texto }) {
       return <ol key={i} className="my-4 list-decimal space-y-1.5 pl-6">{lineas.map((l, j) => <li key={j}>{enLinea(l.replace(/^\d+\. /, ''))}</li>)}</ol>
     }
     if (bloque.startsWith('> ')) {
-      return <p key={i} className="my-4 rounded-xl bg-marquesina-soft px-4 py-3 text-[15px]">{enLinea(bloque.slice(2))}</p>
+      return <p key={i} className="my-4 rounded-xl bg-maiz-soft px-4 py-3 text-[15px]">{enLinea(bloque.slice(2))}</p>
     }
     if (lineas[0].startsWith('## ')) {
       return (
@@ -45,7 +45,7 @@ export default function Pagina() {
     return (
       <div className="mx-auto max-w-xl px-4 py-24 text-center">
         <p className="text-xl font-semibold">No encontramos esta página.</p>
-        <Link to="/" className="mt-4 inline-block font-semibold text-telon-700 underline">Ir al inicio</Link>
+        <Link to="/" className="mt-4 inline-block font-semibold text-selva-700 underline">Ir al inicio</Link>
       </div>
     )
   }

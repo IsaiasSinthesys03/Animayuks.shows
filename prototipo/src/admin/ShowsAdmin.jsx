@@ -46,7 +46,7 @@ function EditorPaquete({ showId, paquete, onListo }) {
         <Campo etiqueta="Minutos"><Input inputMode="numeric" value={f.duracion_min} onChange={(e) => setF({ ...f, duracion_min: e.target.value.replace(/\D/g, '') })} placeholder="igual" /></Campo>
       </div>
       <Campo etiqueta="Qué incluye (uno por línea)"><textarea rows={2} value={f.incluye} onChange={(e) => setF({ ...f, incluye: e.target.value })} className={`${claseInput} h-auto py-2`} /></Campo>
-      {error && <p role="alert" className="text-sm text-telon-700">{error}</p>}
+      {error && <p role="alert" className="text-sm text-error">{error}</p>}
       <div className="flex gap-2">
         <Boton type="button" tam="sm" onClick={guardar}>Guardar paquete</Boton>
         <Boton type="button" tam="sm" variante="fantasma" onClick={onListo}>Cerrar</Boton>
@@ -103,7 +103,7 @@ function NuevaCategoria({ categorias, onCreada, onCancelar }) {
         <Boton type="button" onClick={crear} disabled={guardando}>{guardando ? 'Creando…' : 'Crear'}</Boton>
         <Boton type="button" variante="fantasma" onClick={onCancelar}>Cancelar</Boton>
       </div>
-      {error && <p role="alert" className="mt-2 text-sm font-medium text-telon-700">{error}</p>}
+      {error && <p role="alert" className="mt-2 text-sm font-medium text-error">{error}</p>}
     </div>
   )
 }
@@ -217,7 +217,7 @@ function EditorShow({ show, onCerrar }) {
                 <ImagePlus className="size-4" /> {subiendo ? 'Subiendo…' : imagen ? 'Cambiar foto' : 'Subir foto'}
                 <input type="file" accept="image/*" className="sr-only" disabled={subiendo} onChange={(e) => { if (e.target.files.length) subir(e.target.files, ([r]) => setImagen(r)); e.target.value = '' }} />
               </label>
-              {imagen && <button type="button" onClick={() => setImagen(null)} className="text-sm font-medium text-telon-700 underline">Quitar foto</button>}
+              {imagen && <button type="button" onClick={() => setImagen(null)} className="text-sm font-medium text-selva-700 underline">Quitar foto</button>}
             </div>
           </div>
         </div>
@@ -228,7 +228,7 @@ function EditorShow({ show, onCerrar }) {
             {galeria.map((ruta) => (
               <div key={ruta} className="relative">
                 <img src={urlImagen(ruta)} alt="" className="aspect-square w-full rounded-xl object-cover" />
-                <button type="button" onClick={() => setGaleria(galeria.filter((x) => x !== ruta))} className="absolute top-1 right-1 rounded-full bg-white/90 p-1 text-telon-700" aria-label="Quitar foto"><Trash2 className="size-3.5" /></button>
+                <button type="button" onClick={() => setGaleria(galeria.filter((x) => x !== ruta))} className="absolute top-1 right-1 rounded-full bg-white/90 p-1 text-selva-700" aria-label="Quitar foto"><Trash2 className="size-3.5" /></button>
               </div>
             ))}
             <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-linea text-xs text-tinta-soft hover:bg-butaca">
@@ -240,10 +240,10 @@ function EditorShow({ show, onCerrar }) {
 
         <Campo etiqueta="Video (enlace de YouTube o Vimeo, opcional)"><Input type="url" value={f.video_url} onChange={(e) => set('video_url', e.target.value)} /></Campo>
         <label className="flex items-center gap-2 text-sm font-medium">
-          <input type="checkbox" checked={f.destacado} onChange={(e) => set('destacado', e.target.checked)} className="size-4 accent-telon-600" /> Destacar en la página de inicio
+          <input type="checkbox" checked={f.destacado} onChange={(e) => set('destacado', e.target.checked)} className="size-4 accent-selva-600" /> Destacar en la página de inicio
         </label>
 
-        {error && <p role="alert" className="rounded-xl bg-telon-50 px-3 py-2 text-sm font-medium text-telon-700">{error}</p>}
+        {error && <p role="alert" className="rounded-xl bg-error-soft px-3 py-2 text-sm font-medium text-error">{error}</p>}
         <div className="flex gap-2">
           <Boton type="submit" disabled={guardando || subiendo}>{guardando ? 'Guardando…' : actual ? 'Guardar cambios' : 'Agregar show'}</Boton>
           <Boton type="button" variante="fantasma" onClick={onCerrar}>Cerrar</Boton>
@@ -266,9 +266,9 @@ function EditorShow({ show, onCerrar }) {
                         <span className="block font-medium">{p.nombre}</span>
                         <span className="num block text-sm text-tinta-soft">{pesos(p.precio)}{p.duracion_min ? `, ${p.duracion_min} min` : ''}</span>
                       </span>
-                      <button type="button" onClick={() => setEditandoPaquete(p.id)} className="text-sm font-semibold text-telon-700 underline">Editar</button>
+                      <button type="button" onClick={() => setEditandoPaquete(p.id)} className="text-sm font-semibold text-selva-700 underline">Editar</button>
                       <Interruptor activo={p.activo} etiqueta={`Ofrecer ${p.nombre}`} onCambio={async () => { await guardarPaquete(p.id, { activo: !p.activo }); await invalidar() }} />
-                      <button type="button" aria-label={`Borrar ${p.nombre}`} className="rounded-full p-1.5 text-tinta-soft hover:bg-telon-50 hover:text-telon-700" onClick={async () => {
+                      <button type="button" aria-label={`Borrar ${p.nombre}`} className="rounded-full p-1.5 text-tinta-soft hover:bg-error-soft hover:text-error" onClick={async () => {
                         try {
                           await borrarPaquete(p.id)
                           await invalidar()
@@ -331,7 +331,7 @@ function SeccionExtras() {
         <Campo etiqueta="Minutos"><Input inputMode="numeric" value={f.minutos} onChange={(e) => setF({ ...f, minutos: e.target.value.replace(/\D/g, '') })} /></Campo>
         <Boton type="submit" variante="secundario">Agregar</Boton>
       </form>
-      {error && <p role="alert" className="mt-2 text-sm text-telon-700">{error}</p>}
+      {error && <p role="alert" className="mt-2 text-sm text-error">{error}</p>}
     </section>
   )
 }
@@ -362,7 +362,7 @@ function SeccionCategorias() {
         <Input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Nueva categoría" aria-label="Nueva categoría" />
         <Boton type="submit" variante="secundario">Agregar</Boton>
       </form>
-      {error && <p role="alert" className="mt-2 text-sm text-telon-700">{error}</p>}
+      {error && <p role="alert" className="mt-2 text-sm text-error">{error}</p>}
     </section>
   )
 }
@@ -399,7 +399,7 @@ export default function ShowsAdmin() {
                 </div>
                 <p className="text-sm text-tinta-soft">{s.categorias?.nombre ?? 'Sin categoría'}, {s.duracion_min} min, {s.paquetes.length} {s.paquetes.length === 1 ? 'paquete' : 'paquetes'}</p>
                 <p className="num mt-1 text-sm">Desde <span className="font-semibold">{pesos(s.precio_base)}</span></p>
-                <button onClick={() => setEditando(s.id)} className="mt-2 text-sm font-semibold text-telon-700 underline">Editar</button>
+                <button onClick={() => setEditando(s.id)} className="mt-2 text-sm font-semibold text-selva-700 underline">Editar</button>
               </div>
             </li>
           ))}

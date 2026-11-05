@@ -163,7 +163,7 @@ function Parametros() {
 
       <div className="flex items-center gap-3">
         <Boton type="submit" disabled={guardando}>{guardando ? 'Guardando…' : 'Guardar configuración'}</Boton>
-        {error && <p role="alert" className="text-sm font-medium text-telon-700">{error}</p>}
+        {error && <p role="alert" className="text-sm font-medium text-error">{error}</p>}
       </div>
     </form>
   )
@@ -188,7 +188,7 @@ function TextosLegales() {
                 <span className="block font-medium">{p.titulo}</span>
                 <span className="num block text-sm text-tinta-soft">Versión {p.version}{p.contenido.includes('BORRADOR') ? ', borrador sin revisar' : ''}</span>
               </span>
-              <button className="text-sm font-semibold text-telon-700 underline" onClick={() => { setAbierta(abierta === p.slug ? null : p.slug); setTexto(p.contenido); setError('') }}>
+              <button className="text-sm font-semibold text-selva-700 underline" onClick={() => { setAbierta(abierta === p.slug ? null : p.slug); setTexto(p.contenido); setError('') }}>
                 {abierta === p.slug ? 'Cerrar' : 'Editar'}
               </button>
             </div>
@@ -196,7 +196,7 @@ function TextosLegales() {
               <div className="border-t border-linea p-4">
                 <textarea rows={10} value={texto} onChange={(e) => setTexto(e.target.value)} aria-label={`Contenido de ${p.titulo}`} className={`${claseInput} h-auto py-3 font-mono text-sm`} />
                 <p className="mt-1 text-xs text-tinta-soft">Usa ## para títulos, ** para negritas y guiones para listas.</p>
-                {error && <p role="alert" className="mt-2 text-sm text-telon-700">{error}</p>}
+                {error && <p role="alert" className="mt-2 text-sm text-error">{error}</p>}
                 <Boton tam="sm" className="mt-2" onClick={async () => {
                   try {
                     await guardarPagina(p.slug, { contenido: texto })
@@ -233,7 +233,7 @@ function PreguntasFrecuentes() {
               <span className="block font-medium">{p.pregunta}</span>
               <span className="block text-sm text-tinta-soft">{p.respuesta}</span>
             </span>
-            <button aria-label={`Borrar: ${p.pregunta}`} className="rounded-full p-2 text-tinta-soft hover:bg-telon-50 hover:text-telon-700" onClick={async () => { await borrarPregunta(p.id); await refrescar() }}>
+            <button aria-label={`Borrar: ${p.pregunta}`} className="rounded-full p-2 text-tinta-soft hover:bg-error-soft hover:text-error" onClick={async () => { await borrarPregunta(p.id); await refrescar() }}>
               <Trash2 className="size-4" />
             </button>
           </li>
@@ -253,7 +253,7 @@ function PreguntasFrecuentes() {
       }}>
         <Input value={f.pregunta} onChange={(e) => setF({ ...f, pregunta: e.target.value })} placeholder="Pregunta nueva" aria-label="Pregunta nueva" />
         <textarea rows={2} value={f.respuesta} onChange={(e) => setF({ ...f, respuesta: e.target.value })} placeholder="Respuesta" aria-label="Respuesta" className={`${claseInput} h-auto py-3`} />
-        {error && <p role="alert" className="text-sm text-telon-700">{error}</p>}
+        {error && <p role="alert" className="text-sm text-error">{error}</p>}
         <Boton type="submit" tam="sm" variante="secundario">Agregar pregunta</Boton>
       </form>
     </Seccion>

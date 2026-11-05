@@ -105,7 +105,7 @@ export default function Disponibilidad() {
               )
             })}
           </ul>
-          {error && <p role="alert" className="mt-2 rounded-xl bg-telon-50 px-3 py-2 text-sm font-medium text-telon-700">{error}</p>}
+          {error && <p role="alert" className="mt-2 rounded-xl bg-error-soft px-3 py-2 text-sm font-medium text-error">{error}</p>}
           <Boton className="mt-4" onClick={guardar} disabled={guardando}>{guardando ? 'Guardando…' : 'Guardar horario'}</Boton>
         </section>
 
@@ -117,7 +117,7 @@ export default function Disponibilidad() {
             <Campo etiqueta="Hasta (opcional)"><Input type="date" min={desde || hoy()} value={hasta} onChange={(e) => setHasta(e.target.value)} /></Campo>
             <Campo etiqueta="Motivo" className="sm:col-span-2"><Input value={motivo} onChange={(e) => setMotivo(e.target.value)} placeholder="Vacaciones" /></Campo>
             <div className="sm:col-span-2">
-              {errorBloqueo && <p role="alert" className="mb-2 rounded-xl bg-telon-50 px-3 py-2 text-sm font-medium text-telon-700">{errorBloqueo}</p>}
+              {errorBloqueo && <p role="alert" className="mb-2 rounded-xl bg-error-soft px-3 py-2 text-sm font-medium text-error">{errorBloqueo}</p>}
               <Boton type="submit">Bloquear fechas</Boton>
             </div>
           </form>
@@ -141,7 +141,7 @@ export default function Disponibilidad() {
                       refrescar()
                       avisar('Bloqueo eliminado')
                     }}
-                    className="rounded-full p-2 text-tinta-soft hover:bg-telon-50 hover:text-telon-700"
+                    className="rounded-full p-2 text-tinta-soft hover:bg-error-soft hover:text-error"
                     aria-label={`Quitar bloqueo: ${b.motivo}`}
                   >
                     <Trash2 className="size-4" />

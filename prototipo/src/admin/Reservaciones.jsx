@@ -56,7 +56,7 @@ export default function Reservaciones() {
         <label className="relative min-w-60 flex-1">
           <span className="sr-only">Buscar</span>
           <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-tinta-soft" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Folio, cliente, teléfono o correo" className="h-10 w-full rounded-full border border-linea bg-white pr-4 pl-10 text-sm focus:border-telon-500 focus:outline-none" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Folio, cliente, teléfono o correo" className="h-10 w-full rounded-full border border-linea bg-white pr-4 pl-10 text-sm focus:border-selva-500 focus:outline-none" />
         </label>
         <select value={estado} onChange={(e) => setEstado(e.target.value)} className={filtro} aria-label="Estado">
           <option value="todos">Todos los estados</option>
@@ -78,7 +78,7 @@ export default function Reservaciones() {
       {consulta.data && lista.length === 0 && (
         <div className="rounded-2xl bg-white p-10 text-center ring-1 ring-linea">
           <p className="font-semibold">{todas.length ? 'Ninguna reservación coincide con los filtros.' : 'Todavía no hay reservaciones.'}</p>
-          {todas.length > 0 && <button className="mt-2 text-sm font-semibold text-telon-700 underline" onClick={() => { setQ(''); setEstado('todos'); setShow('todos'); setCanal('todos') }}>Quitar filtros</button>}
+          {todas.length > 0 && <button className="mt-2 text-sm font-semibold text-selva-700 underline" onClick={() => { setQ(''); setEstado('todos'); setShow('todos'); setCanal('todos') }}>Quitar filtros</button>}
         </div>
       )}
 

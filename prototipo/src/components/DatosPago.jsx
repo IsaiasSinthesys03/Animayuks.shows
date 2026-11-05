@@ -22,7 +22,7 @@ export function DatosTransferencia({ cfg, folio }) {
   return (
     <p className="rounded-2xl bg-butaca p-4 text-[15px]">
       Te enviaremos los datos para transferir.{' '}
-      {whatsapp ? <a href={whatsapp} target="_blank" rel="noreferrer" className="font-semibold text-telon-700 underline">Pídelos por WhatsApp</a> : cfg?.correo_contacto ? <>Escríbenos a <span className="font-semibold">{cfg.correo_contacto}</span>.</> : null}
+      {whatsapp ? <a href={whatsapp} target="_blank" rel="noreferrer" className="font-semibold text-selva-700 underline">Pídelos por WhatsApp</a> : cfg?.correo_contacto ? <>Escríbenos a <span className="font-semibold">{cfg.correo_contacto}</span>.</> : null}
     </p>
   )
 }

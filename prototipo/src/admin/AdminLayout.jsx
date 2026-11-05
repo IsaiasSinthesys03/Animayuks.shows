@@ -37,18 +37,18 @@ export default function AdminLayout() {
   }
 
   const enlace = ({ isActive }) =>
-    `flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-medium transition-colors ${isActive ? 'bg-white/12 text-white' : 'text-white/65 hover:bg-white/6 hover:text-white'}`
+    `flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-medium transition-colors ${isActive ? 'bg-white/12 text-white' : 'text-white/90 hover:bg-white/10 hover:text-white'}`
 
   const nombre = cfg?.nombre_negocio ?? 'Animayuks'
 
   return (
     <div className="min-h-dvh bg-butaca lg:grid lg:grid-cols-[248px_1fr]">
-      <aside className="sticky top-0 hidden h-dvh flex-col bg-tinta px-3 py-5 lg:flex">
+      <aside className="sticky top-0 hidden h-dvh flex-col bg-selva-700 px-3 py-5 lg:flex">
         <div className="flex items-baseline gap-2 px-3">
           <span className="font-cartel text-3xl leading-none font-black text-white uppercase">{nombre}</span>
-          <span className="text-sm text-white/50">Panel</span>
+          <span className="text-sm text-white/85">Panel</span>
         </div>
-        <Link to="/admin/reservaciones/nueva" className="mx-1 mt-6 flex h-11 items-center justify-center gap-2 rounded-full bg-marquesina font-semibold text-tinta hover:bg-[#ffc81f]">
+        <Link to="/admin/reservaciones/nueva" className="mx-1 mt-6 flex h-11 items-center justify-center gap-2 rounded-full bg-maiz font-semibold text-tinta hover:bg-[#f0c453]">
           <Plus className="size-4" strokeWidth={2.5} /> Nueva reservación
         </Link>
         <nav className="mt-6 flex-1 space-y-0.5 overflow-y-auto" aria-label="Panel">
@@ -59,10 +59,10 @@ export default function AdminLayout() {
           ))}
         </nav>
         <div className="space-y-0.5 border-t border-white/10 pt-3">
-          <Link to="/" className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] text-white/65 hover:text-white">
+          <Link to="/" className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] text-white/90 hover:text-white">
             <ExternalLink className="size-[18px]" /> Ver sitio público
           </Link>
-          <button onClick={cerrarSesion} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] text-white/65 hover:text-white">
+          <button onClick={cerrarSesion} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] text-white/90 hover:text-white">
             <LogOut className="size-[18px]" /> Cerrar sesión
           </button>
         </div>
@@ -70,7 +70,7 @@ export default function AdminLayout() {
 
       <div className="min-w-0">
         <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 border-b border-linea bg-white px-4 sm:px-6">
-          <span className="font-cartel text-2xl leading-none font-black text-telon-600 uppercase lg:hidden">{nombre}</span>
+          <span className="font-cartel text-2xl leading-none font-black text-selva-600 uppercase lg:hidden">{nombre}</span>
           <p className="hidden text-[15px] text-tinta-soft first-letter:uppercase lg:block">{fechaLarga(new Date())}</p>
           <span className="truncate text-sm text-tinta-soft">{usuario.email}</span>
         </header>
@@ -83,16 +83,16 @@ export default function AdminLayout() {
       {/* Navegación inferior en móvil */}
       <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-linea bg-white pb-[env(safe-area-inset-bottom)] lg:hidden" aria-label="Panel móvil">
         {[NAV[0], NAV[1]].map(({ to, texto, icono: Icono, fin }) => (
-          <NavLink key={to} to={to} end={fin} className={({ isActive }) => `flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium ${isActive ? 'text-telon-600' : 'text-tinta-soft'}`}>
+          <NavLink key={to} to={to} end={fin} className={({ isActive }) => `flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium ${isActive ? 'text-selva-600' : 'text-tinta-soft'}`}>
             <Icono className="size-5" /> {texto}
           </NavLink>
         ))}
         <Link to="/admin/reservaciones/nueva" className="flex flex-col items-center justify-center" aria-label="Nueva reservación">
-          <span className="flex size-11 items-center justify-center rounded-full bg-telon-600 text-white">
+          <span className="flex size-11 items-center justify-center rounded-full bg-selva-600 text-white">
             <Plus className="size-5" strokeWidth={2.5} />
           </span>
         </Link>
-        <NavLink to="/admin/reservaciones" className={({ isActive }) => `flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium ${isActive ? 'text-telon-600' : 'text-tinta-soft'}`}>
+        <NavLink to="/admin/reservaciones" className={({ isActive }) => `flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium ${isActive ? 'text-selva-600' : 'text-tinta-soft'}`}>
           <ClipboardList className="size-5" /> Reservas
         </NavLink>
         <button onClick={() => setMas(true)} className="flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium text-tinta-soft">

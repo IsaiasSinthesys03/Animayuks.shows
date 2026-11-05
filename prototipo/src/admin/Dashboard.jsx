@@ -56,13 +56,13 @@ export default function Dashboard() {
         <Link to="/admin/disponibilidad" className="inline-flex h-10 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold ring-1 ring-linea ring-inset hover:bg-butaca">
           <CalendarOff className="size-4" /> Bloquear fecha
         </Link>
-        <Link to="/admin/reservaciones/nueva" className="inline-flex h-10 items-center gap-2 rounded-full bg-telon-600 px-4 text-sm font-semibold text-white hover:bg-telon-700">
+        <Link to="/admin/reservaciones/nueva" className="inline-flex h-10 items-center gap-2 rounded-full bg-selva-600 px-4 text-sm font-semibold text-white hover:bg-selva-700">
           <Plus className="size-4" /> Nueva reservación
         </Link>
       </Encabezado>
 
       {(faltanDatosPago || faltaWhatsapp) && (
-        <Link to="/admin/configuracion" className="mb-6 flex items-center gap-3 rounded-2xl bg-marquesina-soft px-4 py-3 text-[15px] font-medium hover:brightness-[0.98]">
+        <Link to="/admin/configuracion" className="mb-6 flex items-center gap-3 rounded-2xl bg-maiz-soft px-4 py-3 text-[15px] font-medium hover:brightness-[0.98]">
           <AlertTriangle className="size-5 shrink-0" />
           Falta capturar {[faltanDatosPago && 'los datos bancarios', faltaWhatsapp && 'el WhatsApp del negocio'].filter(Boolean).join(' y ')}. Los clientes los necesitan para pagar.
         </Link>
@@ -86,7 +86,7 @@ export default function Dashboard() {
         <section className="rounded-2xl bg-white ring-1 ring-linea">
           <div className="flex items-center justify-between px-5 pt-4">
             <h2 className="font-bold">Próximas funciones</h2>
-            <Link to="/admin/agenda" className="text-sm font-semibold text-telon-700 underline">Abrir agenda</Link>
+            <Link to="/admin/agenda" className="text-sm font-semibold text-selva-700 underline">Abrir agenda</Link>
           </div>
           {proximas.length === 0 ? (
             <p className="px-5 pt-2 pb-5 text-tinta-soft">Cuando alguien reserve, aparecerá aquí.</p>
@@ -121,7 +121,7 @@ export default function Dashboard() {
             <ul className="mt-3 space-y-2">
               {comprobantes.map((p) => (
                 <li key={p.id}>
-                  <button onClick={() => setAbiertaId(p.r.id)} className="flex w-full gap-3 rounded-xl bg-marquesina-soft px-3 py-2.5 text-left text-sm hover:brightness-[0.98]">
+                  <button onClick={() => setAbiertaId(p.r.id)} className="flex w-full gap-3 rounded-xl bg-maiz-soft px-3 py-2.5 text-left text-sm hover:brightness-[0.98]">
                     <CircleDollarSign className="mt-0.5 size-4 shrink-0" />
                     <span>Comprobante de <span className="num font-semibold">{pesos(p.monto)}</span> por revisar: {p.r.folio}</span>
                   </button>
@@ -136,8 +136,8 @@ export default function Dashboard() {
                 </li>
               ))}
               {(correos.data ?? []).map((n) => (
-                <li key={n.id} className="flex items-start gap-3 rounded-xl bg-telon-50 px-3 py-2.5 text-sm">
-                  <MailWarning className="mt-0.5 size-4 shrink-0 text-telon-700" />
+                <li key={n.id} className="flex items-start gap-3 rounded-xl bg-error-soft px-3 py-2.5 text-sm">
+                  <MailWarning className="mt-0.5 size-4 shrink-0 text-error" />
                   <span className="min-w-0 flex-1">No salió un correo a {n.destinatario}.{' '}
                     <button className="font-semibold underline" onClick={async () => {
                       await reintentarCorreo(n.id)
@@ -156,7 +156,7 @@ export default function Dashboard() {
                 <div key={m.clave} className="flex h-full flex-1 flex-col items-center gap-1.5">
                   <div className="flex w-full flex-1 flex-col items-center justify-end gap-1">
                     <span className="num text-[11px] text-tinta-soft">{m.total >= 1000 ? `${Math.round(m.total / 1000)}k` : m.total || ''}</span>
-                    <div className={`w-full rounded-t-md ${i === meses.length - 1 ? 'bg-telon-600' : 'bg-telon-200'}`} style={{ height: `${(Math.max(m.total, 0) / maximo) * 80}%` }} />
+                    <div className={`w-full rounded-t-md ${i === meses.length - 1 ? 'bg-selva-600' : 'bg-selva-200'}`} style={{ height: `${(Math.max(m.total, 0) / maximo) * 80}%` }} />
                   </div>
                   <span className="text-xs text-tinta-soft">{m.nombre}</span>
                 </div>

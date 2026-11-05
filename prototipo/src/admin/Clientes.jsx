@@ -66,7 +66,7 @@ function Ficha({ c, onCerrar }) {
             <Campo etiqueta="Correo"><Input type="email" value={f.correo} onChange={(e) => setF({ ...f, correo: e.target.value })} /></Campo>
           </div>
           <Campo etiqueta="Notas internas"><Input value={f.notas} onChange={(e) => setF({ ...f, notas: e.target.value })} /></Campo>
-          {error && <p role="alert" className="rounded-xl bg-telon-50 px-3 py-2 text-sm font-medium text-telon-700">{error}</p>}
+          {error && <p role="alert" className="rounded-xl bg-error-soft px-3 py-2 text-sm font-medium text-error">{error}</p>}
           <Boton type="submit" tam="sm" disabled={guardando}>Guardar cambios</Boton>
         </form>
 
@@ -76,7 +76,7 @@ function Ficha({ c, onCerrar }) {
             {ETIQUETAS.map((t) => {
               const on = c.etiquetas.includes(t)
               return (
-                <button key={t} aria-pressed={on} onClick={() => guardar({ etiquetas: on ? c.etiquetas.filter((x) => x !== t) : [...c.etiquetas, t] })} className={`rounded-full px-3 py-1 text-sm font-medium ${on ? 'bg-tinta text-white' : 'bg-butaca text-tinta-soft hover:bg-linea'}`}>{t}</button>
+                <button key={t} aria-pressed={on} onClick={() => guardar({ etiquetas: on ? c.etiquetas.filter((x) => x !== t) : [...c.etiquetas, t] })} className={`rounded-full px-3 py-1 text-sm font-medium ${on ? 'bg-selva-600 text-white' : 'bg-butaca text-tinta-soft hover:bg-linea'}`}>{t}</button>
               )
             })}
           </div>
@@ -137,7 +137,7 @@ function NuevoCliente({ onCerrar }) {
         <Campo etiqueta="Nombre"><Input value={f.nombre} onChange={(e) => setF({ ...f, nombre: e.target.value })} autoFocus /></Campo>
         <Campo etiqueta="Teléfono"><Input type="tel" value={f.telefono} onChange={(e) => setF({ ...f, telefono: e.target.value })} /></Campo>
         <Campo etiqueta="Correo (opcional)" ayuda="Si después crea una cuenta con este correo, su historial se une solo."><Input type="email" value={f.correo} onChange={(e) => setF({ ...f, correo: e.target.value })} /></Campo>
-        {error && <p role="alert" className="rounded-xl bg-telon-50 px-3 py-2 text-sm font-medium text-telon-700">{error}</p>}
+        {error && <p role="alert" className="rounded-xl bg-error-soft px-3 py-2 text-sm font-medium text-error">{error}</p>}
         <Boton type="submit">Registrar cliente</Boton>
       </form>
     </Panel>
@@ -172,7 +172,7 @@ export default function Clientes() {
       <label className="relative mb-4 block max-w-md">
         <span className="sr-only">Buscar cliente</span>
         <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-tinta-soft" />
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Nombre, teléfono o correo" className="h-10 w-full rounded-full border border-linea bg-white pr-4 pl-10 text-sm focus:border-telon-500 focus:outline-none" />
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Nombre, teléfono o correo" className="h-10 w-full rounded-full border border-linea bg-white pr-4 pl-10 text-sm focus:border-selva-500 focus:outline-none" />
       </label>
 
       {consulta.isLoading && <Cargando />}
@@ -194,8 +194,8 @@ export default function Clientes() {
                   <tr key={c.id} onClick={() => setAbiertoId(c.id)} className="cursor-pointer hover:bg-butaca/50">
                     <td className="px-4 py-3">
                       <button className="font-semibold hover:underline">{c.nombre}</button>
-                      {c.bloqueado && <span className="ml-2 rounded-full bg-telon-50 px-2 py-0.5 text-xs font-semibold text-telon-700">Bloqueado</span>}
-                      {c.etiquetas.map((e) => <span key={e} className="ml-2 rounded-full bg-marquesina-soft px-2 py-0.5 text-xs font-semibold">{e}</span>)}
+                      {c.bloqueado && <span className="ml-2 rounded-full bg-error-soft px-2 py-0.5 text-xs font-semibold text-error">Bloqueado</span>}
+                      {c.etiquetas.map((e) => <span key={e} className="ml-2 rounded-full bg-maiz-soft px-2 py-0.5 text-xs font-semibold">{e}</span>)}
                     </td>
                     <td className="num px-4 py-3">{c.telefono}</td>
                     <td className="px-4 py-3">{c.correo}</td>

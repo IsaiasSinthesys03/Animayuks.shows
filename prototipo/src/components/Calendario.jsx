@@ -71,14 +71,14 @@ export default function Calendario({ showId, paqueteId, extras, cp, valor, onCam
                 aria-pressed={sel}
                 aria-label={`${numero} de ${MESES[mes - 1]}${d.estado === 'lleno' ? ', sin horarios' : d.estado === 'pocos' ? ', pocos horarios' : d.estado === 'no_disponible' ? ', no disponible' : ''}`}
                 className={`num relative flex aspect-square flex-col items-center justify-center rounded-xl text-[15px] font-semibold transition-colors ${
-                  sel ? 'bg-telon-600 text-white'
+                  sel ? 'bg-selva-600 text-white'
                     : d.estado === 'no_disponible' ? 'text-tinta-soft/40'
                     : d.estado === 'lleno' ? 'text-tinta-soft/50 line-through'
                     : 'hover:bg-butaca'
                 }`}
               >
                 {numero}
-                {!deshab && !sel && <span className={`absolute bottom-1.5 size-1.5 rounded-full ${d.estado === 'pocos' ? 'bg-marquesina' : 'bg-ok'}`} aria-hidden />}
+                {!deshab && !sel && <span className={`absolute bottom-1.5 size-1.5 rounded-full ${d.estado === 'pocos' ? 'bg-maiz' : 'bg-agua'}`} aria-hidden />}
               </button>
             )
           })}
@@ -92,7 +92,7 @@ export default function Calendario({ showId, paqueteId, extras, cp, valor, onCam
 
       <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-tinta-soft">
         <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-ok" /> Disponible</span>
-        <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-marquesina" /> Pocos horarios</span>
+        <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-maiz" /> Pocos horarios</span>
         <span className="inline-flex items-center gap-1.5"><span className="line-through">15</span> Sin horarios</span>
       </div>
     </div>
