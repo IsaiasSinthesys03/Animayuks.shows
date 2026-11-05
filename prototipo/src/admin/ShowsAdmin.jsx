@@ -55,6 +55,59 @@ function EditorPaquete({ showId, paquete, onListo }) {
   )
 }
 
+const CREAR_CATEGORIA = '__crear'
+
+/** Va dentro del formulario del show: Enter crea la categoría sin guardar el show */
+function NuevaCategoria({ categorias, onCreada, onCancelar }) {
+  const invalidar = usarInvalidar()
+  const [nombre, setNombre] = useState('')
+  const [error, setError] = useState('')
+  const [guardando, setGuardando] = useState(false)
+
+  const crear = async () => {
+    const limpio = nombre.trim()
+    setError('')
+    if (!limpio) return setError('Escribe el nombre de la categoría.')
+    const existente = categorias.find((c) => c.nombre.toLowerCase() === limpio.toLowerCase())
+    if (existente) return onCreada(existente.id)
+    setGuardando(true)
+    try {
+      const nueva = await guardarCategoria(limpio)
+      await invalidar()
+      onCreada(nueva.id)
+    } catch (err) {
+      setError(err.code === '23505' ? 'Esa categoría ya existe.' : mensajeError(err))
+      setGuardando(false)
+    }
+  }
+
+  return (
+    <div className="col-span-2 rounded-xl bg-butaca p-3">
+      <label className="mb-1.5 block text-sm font-semibold" htmlFor="nueva-categoria">Nueva categoría</label>
+      <div className="flex flex-wrap gap-2">
+        <input
+          id="nueva-categoria"
+          autoFocus
+          value={nombre}
+          onChange={(e) => setNombre(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              crear()
+            }
+            if (e.key === 'Escape') onCancelar()
+          }}
+          placeholder="Infantil, bodas, XV años…"
+          className={`${claseInput} min-w-40 flex-1`}
+        />
+        <Boton type="button" onClick={crear} disabled={guardando}>{guardando ? 'Creando…' : 'Crear'}</Boton>
+        <Boton type="button" variante="fantasma" onClick={onCancelar}>Cancelar</Boton>
+      </div>
+      {error && <p role="alert" className="mt-2 text-sm font-medium text-telon-700">{error}</p>}
+    </div>
+  )
+}
+
 function EditorShow({ show, onCerrar }) {
   const invalidar = usarInvalidar()
   const { avisar } = useStore()
@@ -72,6 +125,7 @@ function EditorShow({ show, onCerrar }) {
   const [guardando, setGuardando] = useState(false)
   const [error, setError] = useState('')
   const [editandoPaquete, setEditandoPaquete] = useState(null) // id, 'nuevo' o null
+  const [creandoCategoria, setCreandoCategoria] = useState(false)
   const set = (k, v) => setF((x) => ({ ...x, [k]: v }))
   const { data: shows } = useShows()
   const paquetes = (shows ?? []).find((s) => s.id === actual?.id)?.paquetes ?? []
@@ -127,12 +181,23 @@ function EditorShow({ show, onCerrar }) {
         <Campo etiqueta="Nombre"><Input value={f.nombre} onChange={(e) => set('nombre', e.target.value)} /></Campo>
         <div className="grid grid-cols-2 gap-3">
           <Campo etiqueta="Categoría">
-            <Select value={f.categoria_id} onChange={(e) => set('categoria_id', e.target.value)}>
+            <Select value={f.categoria_id} onChange={(e) => (e.target.value === CREAR_CATEGORIA ? setCreandoCategoria(true) : set('categoria_id', e.target.value))}>
               <option value="">Sin categoría</option>
               {(categorias ?? []).map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+              <option value={CREAR_CATEGORIA}>+ Crear categoría</option>
             </Select>
           </Campo>
           <Campo etiqueta="Precio base"><Input inputMode="decimal" value={f.precio_base} onChange={(e) => set('precio_base', e.target.value.replace(/[^\d.]/g, ''))} /></Campo>
+          {creandoCategoria && (
+            <NuevaCategoria
+              categorias={categorias ?? []}
+              onCreada={(id) => {
+                set('categoria_id', id)
+                setCreandoCategoria(false)
+              }}
+              onCancelar={() => setCreandoCategoria(false)}
+            />
+          )}
           <Campo etiqueta="Duración (min)"><Input inputMode="numeric" value={f.duracion_min} onChange={(e) => set('duracion_min', e.target.value.replace(/\D/g, ''))} /></Campo>
           <Campo etiqueta="Artistas"><Input inputMode="numeric" value={f.artistas} onChange={(e) => set('artistas', e.target.value.replace(/\D/g, ''))} /></Campo>
           <Campo etiqueta="Montaje (min)" ayuda="Se bloquea en la agenda."><Input inputMode="numeric" value={f.montaje_min} onChange={(e) => set('montaje_min', e.target.value.replace(/\D/g, ''))} /></Campo>

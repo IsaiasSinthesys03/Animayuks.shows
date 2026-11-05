@@ -43,7 +43,7 @@ export const guardarShow = (id, s) =>
 export const guardarPaquete = (id, p) => (id ? datos(supabase.from('paquetes').update(p).eq('id', id)) : datos(supabase.from('paquetes').insert(p)))
 export const borrarPaquete = (id) => datos(supabase.from('paquetes').delete().eq('id', id))
 export const guardarExtra = (id, e) => (id ? datos(supabase.from('extras').update(e).eq('id', id)) : datos(supabase.from('extras').insert(e)))
-export const guardarCategoria = (nombre) => datos(supabase.from('categorias').insert({ nombre }))
+export const guardarCategoria = (nombre) => datos(supabase.from('categorias').insert({ nombre }).select().single())
 
 export async function subirImagen(archivo, carpeta) {
   const extension = archivo.name.split('.').pop()?.toLowerCase() || 'jpg'
