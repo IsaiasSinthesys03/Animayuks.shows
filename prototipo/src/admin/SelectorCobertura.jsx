@@ -152,8 +152,8 @@ export default function SelectorCobertura({ valor, onCambio, otras }) {
   const quitarCodigos = (lista) => onCambio({ ...valor, codigos: valor.codigos.filter((c) => !lista.includes(c)) })
   const vacia = valor.estados.length + valor.municipios.length + valor.codigos.length === 0
 
-  const Chip = ({ children, onQuitar, etiqueta }) => (
-    <li className="inline-flex max-w-full items-center gap-1 rounded-full bg-telon-50 py-1 pr-1 pl-3 text-sm font-medium text-telon-700">
+  const Chip = ({ children, onQuitar, etiqueta, titulo }) => (
+    <li title={titulo} className="inline-flex max-w-full items-center gap-1 rounded-full bg-telon-50 py-1 pr-1 pl-3 text-sm font-medium text-telon-700">
       <span className="truncate">{children}</span>
       <button type="button" onClick={onQuitar} aria-label={`Quitar ${etiqueta}`} className="shrink-0 rounded-full p-1 hover:bg-white">
         <X className="size-3.5" />
@@ -174,11 +174,27 @@ export default function SelectorCobertura({ valor, onCambio, otras }) {
             const [e, n] = m.split('|')
             return <Chip key={m} etiqueta={n} onQuitar={() => marcarMunicipio(e, n)}>{n}, {e}</Chip>
           })}
-          {grupos.map(([k, lista]) => {
-            const n = k ? k.split('|')[1] : null
-            const texto = n ? `${n}: ${lista.length === 1 ? lista[0] : `${lista.length} códigos postales`}` : lista.join(', ')
-            return <Chip key={k || 'sueltos'} etiqueta={texto} onQuitar={() => quitarCodigos(lista)}>{texto}</Chip>
-          })}
+          {grupos.map(([k, lista]) => (
+            <li key={k || 'sueltos'} className="mt-1 w-full">
+              <p className="mb-1.5 flex flex-wrap items-baseline gap-x-3 text-sm font-semibold">
+                {k ? k.split('|')[1] : 'Otros códigos postales'}: {lista.length === 1 ? '1 código postal' : `${lista.length} códigos postales`}
+                {lista.length > 1 && (
+                  <button type="button" onClick={() => quitarCodigos(lista)} className="font-medium text-telon-700 underline">Quitar todos</button>
+                )}
+              </p>
+              <ul className="flex max-h-44 flex-wrap gap-1.5 overflow-y-auto" aria-label={`Códigos postales de ${k ? k.split('|')[1] : 'otros lugares'}`}>
+                {[...lista].sort().map((c) => {
+                  const colonias = detalle[c]?.colonias ?? []
+                  return (
+                    <Chip key={c} etiqueta={`el código postal ${c}`} titulo={colonias.join(', ')} onQuitar={() => quitarCodigos([c])}>
+                      <span className="num font-bold">{c}</span>
+                      {colonias.length > 0 && ` ${colonias[0]}${colonias.length > 1 ? ` y ${colonias.length - 1} más` : ''}`}
+                    </Chip>
+                  )
+                })}
+              </ul>
+            </li>
+          ))}
         </ul>
       )}
 

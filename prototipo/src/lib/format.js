@@ -58,6 +58,9 @@ export const resumenCobertura = (z) => {
     ...(z.municipios ?? []).map((m) => m.split('|')[1]),
   ]
   const cps = z.codigos_postales?.length ?? 0
-  if (cps) partes.push(cps === 1 ? `CP ${z.codigos_postales[0]}` : `${cps} códigos postales`)
+  if (cps) {
+    const lista = [...z.codigos_postales].sort()
+    partes.push(`CP ${lista.slice(0, 12).join(', ')}${cps > 12 ? ` y ${cps - 12} más` : ''}`)
+  }
   return partes.join(', ')
 }

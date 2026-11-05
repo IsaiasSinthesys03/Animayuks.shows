@@ -7,7 +7,8 @@ import { borrarBloqueo, crearBloqueo, guardarHorario, obtenerBloqueos, obtenerHo
 import { fechaLarga, hoy, instanteLocal } from '../lib/format'
 import { useStore } from '../store'
 import { Boton, Campo, Cargando, ErrorCarga, Input } from '../components/ui'
-import { Encabezado, Interruptor } from './AdminLayout'
+import { Encabezado } from './AdminLayout'
+import FilaHorario from './FilaHorario'
 
 const DIAS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
 const ORDEN = [1, 2, 3, 4, 5, 6, 0] // la semana empieza en lunes
@@ -92,19 +93,15 @@ export default function Disponibilidad() {
               const d = semana?.find((x) => x.dia_semana === n)
               if (!d) return null
               return (
-                <li key={n} className="flex flex-wrap items-center gap-3 py-3">
-                  <Interruptor activo={d.activo} etiqueta={`Dar servicio los ${DIAS[n].toLowerCase()}`} onCambio={() => cambiar(n, { activo: !d.activo })} />
-                  <span className="w-24 font-medium">{DIAS[n]}</span>
-                  {d.activo ? (
-                    <span className="flex items-center gap-2 text-sm">
-                      <input type="time" value={d.abre.slice(0, 5)} onChange={(e) => cambiar(n, { abre: e.target.value })} className="num h-9 rounded-lg border border-linea px-2" aria-label={`${DIAS[n]} abre`} />
-                      a
-                      <input type="time" value={d.cierra.slice(0, 5)} onChange={(e) => cambiar(n, { cierra: e.target.value })} className="num h-9 rounded-lg border border-linea px-2" aria-label={`${DIAS[n]} cierra`} />
-                    </span>
-                  ) : (
-                    <span className="text-sm text-tinta-soft">Sin servicio</span>
-                  )}
-                </li>
+                <FilaHorario
+                  key={n}
+                  dia={DIAS[n]}
+                  activo={d.activo}
+                  abre={d.abre.slice(0, 5)}
+                  cierra={d.cierra.slice(0, 5)}
+                  onCambio={(cambios) => cambiar(n, cambios)}
+                  onCopiar={() => setSemana((s) => s.map((x) => (x.activo ? { ...x, abre: d.abre, cierra: d.cierra } : x)))}
+                />
               )
             })}
           </ul>

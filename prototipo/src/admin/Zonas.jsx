@@ -9,6 +9,7 @@ import { pesos, resumenCobertura, resumenHorario } from '../lib/format'
 import { useStore } from '../store'
 import { Boton, Campo, Cargando, ErrorCarga, Input, Panel } from '../components/ui'
 import { Encabezado, Interruptor } from './AdminLayout'
+import FilaHorario from './FilaHorario'
 import SelectorCobertura from './SelectorCobertura'
 
 const COLORES = [
@@ -152,19 +153,15 @@ function Editor({ zona, otras, general, onCerrar }) {
                 </div>
                 <ul className="mt-2 divide-y divide-linea">
                   {semana.map((d) => (
-                    <li key={d.dia} className="flex flex-wrap items-center gap-3 py-2.5">
-                      <Interruptor activo={d.activo} etiqueta={`Dar servicio los ${DIAS[d.dia].toLowerCase()} en esta zona`} onCambio={() => cambiarDia(d.dia, { activo: !d.activo })} />
-                      <span className="w-24 font-medium">{DIAS[d.dia]}</span>
-                      {d.activo ? (
-                        <span className="flex items-center gap-2 text-sm">
-                          <input type="time" value={d.abre} onChange={(e) => cambiarDia(d.dia, { abre: e.target.value })} className="num h-9 rounded-lg border border-linea px-2" aria-label={`${DIAS[d.dia]} desde`} />
-                          a
-                          <input type="time" value={d.cierra} onChange={(e) => cambiarDia(d.dia, { cierra: e.target.value })} className="num h-9 rounded-lg border border-linea px-2" aria-label={`${DIAS[d.dia]} hasta`} />
-                        </span>
-                      ) : (
-                        <span className="text-sm text-tinta-soft">Sin servicio</span>
-                      )}
-                    </li>
+                    <FilaHorario
+                      key={d.dia}
+                      dia={DIAS[d.dia]}
+                      activo={d.activo}
+                      abre={d.abre}
+                      cierra={d.cierra}
+                      onCambio={(cambios) => cambiarDia(d.dia, cambios)}
+                      onCopiar={() => aplicarFranja(d)}
+                    />
                   ))}
                 </ul>
               </div>
