@@ -157,6 +157,11 @@ export default function MisReservaciones() {
           Esta es una cuenta de cliente. Para abrir el panel, cierra sesión y entra con la cuenta de administrador.
         </p>
       )}
+      {esAdmin && (
+        <Link to="/admin" className="mb-6 flex h-12 items-center justify-center rounded-full bg-selva-600 font-semibold text-white hover:bg-selva-700">
+          Ir al panel de administración
+        </Link>
+      )}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           {cliente?.nombre && <p className="text-tinta-soft">Hola, {cliente.nombre.split(' ')[0]}</p>}

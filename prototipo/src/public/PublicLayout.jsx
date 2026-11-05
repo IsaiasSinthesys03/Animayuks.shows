@@ -46,7 +46,7 @@ export default function PublicLayout() {
   return (
     <div className="flex min-h-dvh flex-col">
       <header className="sticky top-0 z-30 border-b border-linea/70 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:gap-4 sm:px-6">
           <Logo />
           <nav className="hidden items-center gap-1 md:flex" aria-label="Principal">
             {enlaces.map((e) => (
@@ -61,10 +61,10 @@ export default function PublicLayout() {
               </NavLink>
             ))}
           </nav>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             {esAdmin && (
-              <Link to="/admin" className="hidden items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold text-tinta-soft hover:bg-butaca sm:inline-flex">
-                <LayoutDashboard className="size-4" /> Panel
+              <Link to="/admin" aria-label="Panel de administración" className="inline-flex h-10 min-w-10 items-center justify-center gap-1.5 rounded-full bg-agua-soft px-2.5 text-sm font-semibold text-selva-900 hover:bg-agua">
+                <LayoutDashboard className="size-5" /> <span className="hidden min-[420px]:inline">Panel</span>
               </Link>
             )}
             <Link
@@ -84,12 +84,16 @@ export default function PublicLayout() {
         </div>
         {menu && (
           <nav className="entra border-t border-linea px-4 pt-2 pb-4 md:hidden" aria-label="Menú móvil">
+            {esAdmin && (
+              <Link to="/admin" className="flex items-center gap-2 rounded-xl bg-agua-soft px-3 py-3 text-base font-semibold text-selva-900">
+                <LayoutDashboard className="size-5" /> Panel de administración
+              </Link>
+            )}
             {enlaces.map((e) => (
               <NavLink key={e.to} to={e.to} className="block rounded-xl px-3 py-3 text-base font-medium hover:bg-butaca">
                 {e.texto}
               </NavLink>
             ))}
-            {esAdmin && <Link to="/admin" className="block rounded-xl px-3 py-3 text-base font-medium hover:bg-butaca">Panel de administración</Link>}
             <Link to="/reservar" className="mt-2 flex h-12 items-center justify-center rounded-full bg-selva-600 font-semibold text-white">
               Reservar un show
             </Link>
