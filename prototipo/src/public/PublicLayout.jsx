@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { LayoutDashboard, Menu, MessageCircle, UserRound, X } from 'lucide-react'
-import { NEGOCIO } from '../data/mock'
-import { useStore } from '../store'
+import { useAuth } from '../auth'
+import { enlaceWhatsapp, useConfiguracion, useZonas } from '../lib/consultas'
 
 const enlaces = [
   { to: '/shows', texto: 'Shows' },
@@ -11,17 +11,22 @@ const enlaces = [
 ]
 
 export function Logo({ claro = false }) {
+  const { data: cfg } = useConfiguracion()
   return (
     <Link to="/" className={`font-cartel text-[1.9rem] leading-none font-black tracking-tight uppercase ${claro ? 'text-white' : 'text-telon-600'}`}>
-      Telón
+      {cfg?.nombre_negocio ?? 'Animayuks'}
     </Link>
   )
 }
 
 export default function PublicLayout() {
-  const { sesion } = useStore()
+  const { usuario, esAdmin } = useAuth()
+  const { data: cfg } = useConfiguracion()
+  const { data: zonas } = useZonas()
   const [menu, setMenu] = useState(false)
   const { pathname } = useLocation()
+  const whatsapp = enlaceWhatsapp(cfg)
+  const nombresZonas = (zonas ?? []).filter((z) => z.activa).map((z) => z.nombre)
 
   useEffect(() => {
     setMenu(false)
@@ -47,15 +52,15 @@ export default function PublicLayout() {
             ))}
           </nav>
           <div className="flex items-center gap-2">
-            {sesion?.rol === 'admin' && (
+            {esAdmin && (
               <Link to="/admin" className="hidden items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold text-tinta-soft hover:bg-butaca sm:inline-flex">
                 <LayoutDashboard className="size-4" /> Panel
               </Link>
             )}
             <Link
-              to={sesion ? '/mi-cuenta' : '/entrar'}
+              to={usuario ? '/mi-cuenta' : '/entrar'}
               className="inline-flex size-10 items-center justify-center rounded-full bg-butaca text-tinta hover:bg-linea"
-              aria-label={sesion ? 'Mi cuenta' : 'Entrar'}
+              aria-label={usuario ? 'Mi cuenta' : 'Entrar'}
             >
               <UserRound className="size-5" />
             </Link>
@@ -74,6 +79,7 @@ export default function PublicLayout() {
                 {e.texto}
               </NavLink>
             ))}
+            {esAdmin && <Link to="/admin" className="block rounded-xl px-3 py-3 text-base font-medium hover:bg-butaca">Panel de administración</Link>}
             <Link to="/reservar" className="mt-2 flex h-12 items-center justify-center rounded-full bg-telon-600 font-semibold text-white">
               Reservar un show
             </Link>
@@ -90,32 +96,35 @@ export default function PublicLayout() {
           <div>
             <Logo claro />
             <p className="mt-3 max-w-xs text-sm leading-relaxed">
-              Shows en vivo para fiestas y eventos en {NEGOCIO.ciudad}, Zapopan, Tlaquepaque y Tonalá.
+              Shows en vivo para fiestas y eventos{nombresZonas.length > 0 && ` en ${nombresZonas.join(', ')}`}.
             </p>
           </div>
           <div className="text-sm">
             <p className="font-semibold text-white">Contacto</p>
-            <p className="mt-2">{NEGOCIO.correo}</p>
-            <p className="mt-1">WhatsApp {NEGOCIO.whatsapp}</p>
+            {cfg?.correo_contacto && <p className="mt-2">{cfg.correo_contacto}</p>}
+            {whatsapp && <a href={whatsapp} target="_blank" rel="noreferrer" className="mt-1 block hover:text-white">WhatsApp</a>}
           </div>
           <div className="flex flex-col gap-1.5 text-sm">
             <p className="font-semibold text-white">Información</p>
-            <a href="#" className="hover:text-white">Preguntas frecuentes</a>
-            <a href="#" className="hover:text-white">Política de cancelación</a>
-            <a href="#" className="hover:text-white">Aviso de privacidad</a>
-            <Link to="/entrar" className="hover:text-white">Acceso administrador</Link>
+            <Link to="/preguntas-frecuentes" className="hover:text-white">Preguntas frecuentes</Link>
+            <Link to="/paginas/politica-de-cancelacion" className="hover:text-white">Política de cancelación</Link>
+            <Link to="/paginas/aviso-de-privacidad" className="hover:text-white">Aviso de privacidad</Link>
+            <Link to="/paginas/terminos" className="hover:text-white">Términos y condiciones</Link>
           </div>
         </div>
       </footer>
 
-      <a
-        href="#"
-        onClick={(e) => e.preventDefault()}
-        className="fixed right-4 bottom-4 z-20 inline-flex size-14 items-center justify-center rounded-full bg-ok text-white shadow-[0_10px_24px_-6px_rgba(15,123,108,0.55)] hover:bg-[#0b6458] sm:right-6 sm:bottom-6"
-        aria-label="Escríbenos por WhatsApp"
-      >
-        <MessageCircle className="size-6" />
-      </a>
+      {whatsapp && (
+        <a
+          href={whatsapp}
+          target="_blank"
+          rel="noreferrer"
+          className="fixed right-4 bottom-4 z-20 inline-flex size-14 items-center justify-center rounded-full bg-ok text-white shadow-[0_10px_24px_-6px_rgba(15,123,108,0.55)] hover:bg-[#0b6458] sm:right-6 sm:bottom-6"
+          aria-label="Escríbenos por WhatsApp"
+        >
+          <MessageCircle className="size-6" />
+        </a>
+      )}
     </div>
   )
 }

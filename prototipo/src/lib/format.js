@@ -1,29 +1,29 @@
-const moneda = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 })
+const moneda = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 2, minimumFractionDigits: 0 })
 
-export const pesos = (n) => moneda.format(n)
+export const pesos = (n) => moneda.format(Number(n) || 0)
 
-export const isoFecha = (d) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+// El negocio opera en hora de Guadalajara, sin importar dónde esté quien mira la página
+export const ZONA_HORARIA = 'America/Mexico_City'
 
-export const deISO = (iso) => {
-  const [y, m, d] = iso.split('-').map(Number)
-  return new Date(y, m - 1, d)
-}
+const conZona = (opciones) => new Intl.DateTimeFormat('es-MX', { timeZone: ZONA_HORARIA, ...opciones })
+const fLarga = conZona({ weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+const fCorta = conZona({ weekday: 'short', day: 'numeric', month: 'short' })
+const fHora = conZona({ hour: 'numeric', minute: '2-digit', hour12: true })
+const fDia = new Intl.DateTimeFormat('en-CA', { timeZone: ZONA_HORARIA, year: 'numeric', month: '2-digit', day: '2-digit' })
 
-export const fechaLarga = (iso) =>
-  deISO(iso).toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+/** "sábado, 14 de noviembre de 2026" a partir de un timestamp */
+export const fechaLarga = (ts) => fLarga.format(new Date(ts))
+export const fechaCorta = (ts) => fCorta.format(new Date(ts))
+/** "4:00 p.m." */
+export const hora = (ts) => fHora.format(new Date(ts))
+/** "2026-11-14": el día en Guadalajara */
+export const diaDe = (ts) => fDia.format(new Date(ts))
+export const hoy = () => diaDe(new Date())
 
-export const fechaCorta = (iso) => deISO(iso).toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' })
+/** Convierte "YYYY-MM-DD" a texto largo sin que la zona horaria lo mueva de día */
+export const fechaDeDia = (dia) => fLarga.format(new Date(`${dia}T18:00:00Z`))
 
-export const hora12 = (h) => {
-  const [hh, mm] = h.split(':').map(Number)
-  const sufijo = hh >= 12 ? 'p. m.' : 'a. m.'
-  return `${hh % 12 || 12}:${String(mm).padStart(2, '0')} ${sufijo}`
-}
+/** Convierte día y hora de Guadalajara ("2026-11-14", "16:00") a instante. México usa UTC−6 todo el año. */
+export const instanteLocal = (dia, horaTexto) => new Date(`${dia}T${horaTexto}:00-06:00`).toISOString()
 
-export const nuevoFolio = () => {
-  const abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-  let s = ''
-  for (let i = 0; i < 5; i++) s += abc[Math.floor(Math.random() * abc.length)]
-  return `SHW-26-${s}`
-}
+export const saldoDe = (r) => Math.max(Number(r.total) - Number(r.total_pagado), 0)

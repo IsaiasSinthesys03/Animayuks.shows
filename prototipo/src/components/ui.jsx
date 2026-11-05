@@ -1,6 +1,17 @@
-import { CheckCircle2, X } from 'lucide-react'
-import { ESTADOS } from '../data/mock'
+import { useState } from 'react'
+import { CheckCircle2, CircleAlert, Loader2, X } from 'lucide-react'
+import { urlImagen } from '../lib/api'
 import { useStore } from '../store'
+
+export const ESTADOS = {
+  pendiente: { etiqueta: 'Pendiente', clase: 'bg-alerta-soft text-alerta' },
+  confirmada: { etiqueta: 'Confirmada', clase: 'bg-ok-soft text-ok' },
+  realizada: { etiqueta: 'Realizada', clase: 'bg-butaca text-tinta-soft' },
+  no_realizada: { etiqueta: 'No realizada', clase: 'bg-butaca text-tinta-soft' },
+  cancelada: { etiqueta: 'Cancelada', clase: 'bg-telon-50 text-telon-700' },
+  rechazada: { etiqueta: 'Rechazada', clase: 'bg-telon-50 text-telon-700' },
+  expirada: { etiqueta: 'Expirada', clase: 'bg-butaca text-tinta-soft' },
+}
 
 const variantes = {
   primario: 'bg-telon-600 text-white hover:bg-telon-700 active:bg-telon-900',
@@ -52,7 +63,7 @@ export function Select({ children, ...props }) {
 }
 
 export function Estado({ estado }) {
-  const e = ESTADOS[estado]
+  const e = ESTADOS[estado] ?? { etiqueta: estado, clase: 'bg-butaca text-tinta-soft' }
   return <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${e.clase}`}>{e.etiqueta}</span>
 }
 
@@ -89,17 +100,77 @@ export function Panel({ abierto, onCerrar, titulo, children, ancho = 'max-w-lg' 
   )
 }
 
-/** Cartel tipográfico de un show: sustituye a la fotografía en el prototipo. */
-export function Cartel({ show, tam = 'md', className = '' }) {
-  const { fondo, texto, acento } = show.cartel
-  const tamTitulo = { sm: 'text-2xl', md: 'text-[2.6rem]', lg: 'text-6xl sm:text-7xl' }[tam]
+export function Cargando({ texto = 'Cargando…', className = '' }) {
   return (
-    <div className={`relative flex flex-col justify-between overflow-hidden ${fondo} ${texto} ${className}`}>
-      <div className={`flex items-center justify-between px-4 pt-3 text-xs font-semibold ${acento}`}>
-        <span>{show.categoria}</span>
-        <span className="num">{show.duracion} min</span>
-      </div>
-      <p className={`font-cartel ${tamTitulo} px-4 pb-4 leading-[0.88] font-black tracking-[-0.01em] text-balance uppercase`}>{show.nombre}</p>
+    <p className={`flex items-center justify-center gap-2 py-16 text-tinta-soft ${className}`} role="status">
+      <Loader2 className="size-5 animate-spin" aria-hidden /> {texto}
+    </p>
+  )
+}
+
+export function ErrorCarga({ onReintentar, texto = 'No pudimos cargar la información.' }) {
+  return (
+    <div className="my-8 rounded-2xl bg-telon-50 p-6 text-center">
+      <p className="flex items-center justify-center gap-2 font-semibold text-telon-700">
+        <CircleAlert className="size-5" aria-hidden /> {texto}
+      </p>
+      {onReintentar && (
+        <button onClick={onReintentar} className="mt-2 text-sm font-semibold text-telon-700 underline">
+          Intentar de nuevo
+        </button>
+      )}
     </div>
+  )
+}
+
+const PALETA = [
+  { fondo: 'bg-telon-600', texto: 'text-white', acento: 'text-marquesina' },
+  { fondo: 'bg-tinta', texto: 'text-white', acento: 'text-marquesina' },
+  { fondo: 'bg-marquesina', texto: 'text-tinta', acento: 'text-telon-700' },
+  { fondo: 'bg-ok', texto: 'text-white', acento: 'text-marquesina' },
+  { fondo: 'bg-telon-900', texto: 'text-white', acento: 'text-telon-200' },
+  { fondo: 'bg-[#3b2a8f]', texto: 'text-white', acento: 'text-marquesina' },
+]
+
+/** Color estable por show mientras no tenga foto */
+export const colorDeShow = (show) => {
+  const texto = show?.slug ?? show?.nombre ?? ''
+  let suma = 0
+  for (const c of texto) suma += c.charCodeAt(0)
+  return PALETA[suma % PALETA.length]
+}
+
+/** Cartel vertical de un show: su foto con el nombre encima o, sin foto, un cartel tipográfico de color. */
+export function Cartel({ show, tam = 'md', className = '' }) {
+  const [fallo, setFallo] = useState(false)
+  const imagen = fallo ? null : urlImagen(show.imagen_principal)
+  const { fondo, texto, acento } = colorDeShow(show)
+  const tamTitulo = { sm: 'text-2xl', md: 'text-[2.2rem] sm:text-[2.6rem]', lg: 'text-6xl sm:text-7xl' }[tam]
+  return (
+    <div className={`relative flex flex-col justify-between overflow-hidden ${imagen ? 'bg-tinta text-white' : `${fondo} ${texto}`} ${className}`}>
+      {imagen && (
+        <>
+          <img src={imagen} alt="" loading="lazy" onError={() => setFallo(true)} className="absolute inset-0 size-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-black/35" aria-hidden />
+        </>
+      )}
+      <div className={`relative flex items-center justify-between gap-2 px-4 pt-3 text-xs font-semibold ${imagen ? 'text-white' : acento}`}>
+        <span className="truncate">{show.categorias?.nombre}</span>
+        <span className="num shrink-0">{show.duracion_min} min</span>
+      </div>
+      <p className={`relative font-cartel ${tamTitulo} px-4 pb-4 leading-[0.88] font-black tracking-[-0.01em] text-balance uppercase`}>{show.nombre}</p>
+    </div>
+  )
+}
+
+/** Miniatura cuadrada para listas */
+export function Miniatura({ show, className = 'size-16' }) {
+  const imagen = urlImagen(show?.imagen_principal)
+  const { fondo, texto } = colorDeShow(show)
+  if (imagen) return <img src={imagen} alt="" loading="lazy" className={`shrink-0 rounded-xl object-cover ${className}`} />
+  return (
+    <span className={`flex shrink-0 items-end rounded-xl p-1.5 ${fondo} ${texto} ${className}`}>
+      <span className="font-cartel text-sm leading-none font-black uppercase">{show?.nombre}</span>
+    </span>
   )
 }

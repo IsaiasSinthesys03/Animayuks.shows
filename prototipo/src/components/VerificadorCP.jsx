@@ -1,48 +1,54 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { CircleAlert, CircleCheck, LocateFixed, Loader2 } from 'lucide-react'
-import { zonaPorCP } from '../data/mock'
+import { CircleAlert, CircleCheck, Loader2 } from 'lucide-react'
+import { anotarInteres, mensajeError, zonaPorCP } from '../lib/api'
 import { pesos } from '../lib/format'
 
 /**
- * Verificador de cobertura por código postal.
+ * Verificador de cobertura por código postal, contra la base de datos.
  * `oscuro` lo adapta a fondos tinta; `onResultado` permite a un formulario reaccionar.
  */
-export default function VerificadorCP({ oscuro = false, onResultado, inicial = '', compacto = false }) {
+export default function VerificadorCP({ oscuro = false, onResultado, inicial = '' }) {
   const [cp, setCp] = useState(inicial)
-  const [estado, setEstado] = useState(null) // null | 'cargando' | { zona } | 'fuera' | 'invalido'
-  const [interes, setInteres] = useState(false)
+  const [estado, setEstado] = useState(null) // null | 'cargando' | 'invalido' | 'fuera' | { zona } | { error }
+  const [contacto, setContacto] = useState('')
+  const [interes, setInteres] = useState('inicial') // 'inicial' | 'enviando' | 'listo' | 'error'
 
-  const verificar = (valor = cp) => {
-    if (!/^\d{5}$/.test(valor)) {
+  const verificar = async (e) => {
+    e.preventDefault()
+    setInteres('inicial')
+    if (!/^\d{5}$/.test(cp)) {
       setEstado('invalido')
-      onResultado?.(null, valor)
+      onResultado?.(null, cp)
       return
     }
     setEstado('cargando')
-    setTimeout(() => {
-      const zona = zonaPorCP(valor)
+    try {
+      const zona = await zonaPorCP(cp)
       setEstado(zona ? { zona } : 'fuera')
-      onResultado?.(zona, valor)
-    }, 450)
+      onResultado?.(zona, cp)
+    } catch (error) {
+      setEstado({ error: mensajeError(error) })
+      onResultado?.(null, cp)
+    }
   }
 
-  const usarUbicacion = () => {
-    setCp('44160')
-    verificar('44160')
+  const avisame = async (e) => {
+    e.preventDefault()
+    setInteres('enviando')
+    try {
+      await anotarInteres(cp, contacto.trim())
+      setInteres('listo')
+    } catch {
+      setInteres('error')
+    }
   }
 
   const textoSuave = oscuro ? 'text-white/75' : 'text-tinta-soft'
 
   return (
     <div>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault()
-          verificar()
-        }}
-        className="flex gap-2"
-      >
+      <form onSubmit={verificar} className="flex gap-2" noValidate>
         <label className="sr-only" htmlFor="cp">Código postal del evento</label>
         <input
           id="cp"
@@ -64,7 +70,8 @@ export default function VerificadorCP({ oscuro = false, onResultado, inicial = '
         />
         <button
           type="submit"
-          className={`h-12 shrink-0 rounded-full px-5 font-semibold transition-colors ${
+          disabled={estado === 'cargando'}
+          className={`h-12 shrink-0 rounded-full px-5 font-semibold transition-colors disabled:opacity-60 ${
             oscuro ? 'bg-marquesina text-tinta hover:bg-[#ffc81f]' : 'bg-tinta text-white hover:bg-black'
           }`}
         >
@@ -72,13 +79,7 @@ export default function VerificadorCP({ oscuro = false, onResultado, inicial = '
         </button>
       </form>
 
-      {!compacto && (
-        <button type="button" onClick={usarUbicacion} className={`mt-3 inline-flex items-center gap-1.5 text-sm font-medium underline ${textoSuave} hover:opacity-100`}>
-          <LocateFixed className="size-4" /> Usar mi ubicación actual
-        </button>
-      )}
-
-      <div aria-live="polite" className="min-h-0">
+      <div aria-live="polite">
         {estado === 'cargando' && (
           <p className={`mt-4 flex items-center gap-2 text-sm ${textoSuave}`}>
             <Loader2 className="size-4 animate-spin" /> Buscando tu zona…
@@ -89,13 +90,18 @@ export default function VerificadorCP({ oscuro = false, onResultado, inicial = '
             <CircleAlert className="size-4" /> Escribe los 5 dígitos del código postal donde será el evento.
           </p>
         )}
+        {estado?.error && (
+          <p className={`mt-4 flex items-center gap-2 text-sm font-medium ${oscuro ? 'text-marquesina' : 'text-telon-700'}`}>
+            <CircleAlert className="size-4" /> {estado.error}
+          </p>
+        )}
         {estado?.zona && (
           <div className={`entra mt-4 rounded-2xl p-4 ${oscuro ? 'bg-white/10' : 'bg-ok-soft'}`}>
             <p className={`flex items-center gap-2 font-semibold ${oscuro ? 'text-white' : 'text-ok'}`}>
               <CircleCheck className="size-5" /> Sí llegamos a {estado.zona.nombre}
             </p>
             <p className={`mt-1 text-sm ${textoSuave}`}>
-              {estado.zona.cargo ? `Cargo por traslado: ${pesos(estado.zona.cargo)}.` : 'Sin cargo por traslado.'}
+              {Number(estado.zona.cargo_traslado) ? `Cargo por traslado: ${pesos(estado.zona.cargo_traslado)}.` : 'Sin cargo por traslado.'}
             </p>
             {!onResultado && (
               <Link to={`/reservar?cp=${cp}`} className={`mt-3 inline-flex h-10 items-center rounded-full px-4 text-sm font-semibold ${oscuro ? 'bg-white text-tinta' : 'bg-telon-600 text-white'}`}>
@@ -109,16 +115,25 @@ export default function VerificadorCP({ oscuro = false, onResultado, inicial = '
             <p className={`flex items-center gap-2 font-semibold ${oscuro ? 'text-white' : 'text-telon-700'}`}>
               <CircleAlert className="size-5" /> Por ahora no damos servicio en ese código postal
             </p>
-            <p className={`mt-1 text-sm ${textoSuave}`}>
-              Solo hacemos eventos en Guadalajara, Zapopan, Tlaquepaque y Tonalá.
-            </p>
-            {interes ? (
-              <p className={`mt-3 text-sm font-semibold ${oscuro ? 'text-marquesina' : 'text-ok'}`}>Listo. Te avisaremos cuando lleguemos a tu zona.</p>
+            {interes === 'listo' ? (
+              <p className={`mt-2 text-sm font-semibold ${oscuro ? 'text-marquesina' : 'text-ok'}`}>Listo. Te avisaremos cuando lleguemos a tu zona.</p>
             ) : (
-              <button type="button" onClick={() => setInteres(true)} className={`mt-3 text-sm font-semibold underline ${oscuro ? 'text-white' : 'text-telon-700'}`}>
-                Avísame cuando lleguen a mi zona
-              </button>
+              <form onSubmit={avisame} className="mt-3 flex gap-2">
+                <label className="sr-only" htmlFor="interes">Tu correo o teléfono</label>
+                <input
+                  id="interes"
+                  value={contacto}
+                  onChange={(e) => setContacto(e.target.value)}
+                  placeholder="Tu correo o teléfono"
+                  required
+                  className="h-10 min-w-0 flex-1 rounded-full border border-linea bg-white px-4 text-sm text-tinta focus:outline-none"
+                />
+                <button type="submit" disabled={interes === 'enviando'} className={`h-10 shrink-0 rounded-full px-4 text-sm font-semibold disabled:opacity-60 ${oscuro ? 'bg-white text-tinta' : 'bg-telon-600 text-white'}`}>
+                  Avísame
+                </button>
+              </form>
             )}
+            {interes === 'error' && <p className={`mt-2 text-sm ${textoSuave}`}>No pudimos guardarlo. Intenta de nuevo.</p>}
           </div>
         )}
       </div>
