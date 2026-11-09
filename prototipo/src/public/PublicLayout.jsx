@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { LayoutDashboard, Menu, MessageCircle, UserRound, X } from 'lucide-react'
 import { useAuth } from '../auth'
-import { enlaceWhatsapp, useConfiguracion, useZonas } from '../lib/consultas'
+import { enlaceWhatsapp, useConfiguracion } from '../lib/consultas'
 
 const enlaces = [
   { to: '/shows', texto: 'Shows' },
@@ -22,7 +22,6 @@ export function Logo({ claro = false }) {
 export default function PublicLayout() {
   const { usuario, esAdmin, recuperando, terminarRecuperacion } = useAuth()
   const { data: cfg } = useConfiguracion()
-  const { data: zonas } = useZonas()
   const [menu, setMenu] = useState(false)
   const { pathname } = useLocation()
   const navigate = useNavigate()
@@ -36,7 +35,6 @@ export default function PublicLayout() {
   }, [recuperando, pathname, navigate, terminarRecuperacion])
 
   const whatsapp = enlaceWhatsapp(cfg)
-  const nombresZonas = (zonas ?? []).filter((z) => z.activa).map((z) => z.nombre)
 
   useEffect(() => {
     setMenu(false)
@@ -110,7 +108,7 @@ export default function PublicLayout() {
           <div>
             <Logo claro />
             <p className="mt-3 max-w-xs text-sm leading-relaxed">
-              Shows en vivo para fiestas y eventos{nombresZonas.length > 0 && ` en ${nombresZonas.join(', ')}`}.
+              Shows en vivo para fiestas y eventos.
             </p>
           </div>
           <div className="text-sm">
