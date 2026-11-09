@@ -177,7 +177,7 @@ function TarjetaVideo({ video, oculta }) {
       tabIndex={oculta ? -1 : 0}
       aria-hidden={oculta || undefined}
       aria-label={`Ver en YouTube: ${video.titulo}`}
-      className="group relative flex aspect-video w-48 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#150800] sm:w-60 xl:w-72"
+      className="group relative flex aspect-video w-48 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#150800] sm:w-60 xl:w-80"
     >
       <img src={`https://img.youtube.com/vi/${video.youtube_id}/hqdefault.jpg`} alt="" className="absolute inset-0 size-full object-cover opacity-80 transition-all duration-500 group-hover:scale-105 group-hover:opacity-55" />
       <span className="relative z-10 flex size-11 items-center justify-center rounded-full border-2 border-[#251206] bg-maiz transition-transform group-hover:scale-110 xl:size-12"><Play className="ml-0.5 size-5 text-[#251206]" aria-hidden /></span>
@@ -185,6 +185,10 @@ function TarjetaVideo({ video, oculta }) {
     </a>
   )
 }
+
+const Claqueta = () => (
+  <div aria-hidden className="h-3.5 rounded-sm bg-[repeating-linear-gradient(-45deg,#251206_0_12px,#e9b83f_12px_24px)]" />
+)
 
 const Perforaciones = () => (
   <div aria-hidden className="h-3.5 rounded-sm bg-[repeating-linear-gradient(90deg,#251206_0_16px,transparent_16px_34px)]" />
@@ -195,9 +199,9 @@ function CintaVideos({ videos }) {
   const tanda = []
   while (tanda.length < 6) tanda.push(...videos)
   return (
-    <div className="relative rounded-[20px_26px_18px_24px] border-4 border-[#251206] bg-gradient-to-b from-[#c69a6b] to-[#a87a4d] px-4 py-3 shadow-[0_7px_0_#251206,0_18px_30px_rgba(0,0,0,0.5)] sm:px-6">
+    <div className="relative flex flex-col rounded-[20px_26px_18px_24px] border-4 border-[#251206] bg-gradient-to-b from-[#c69a6b] to-[#a87a4d] px-4 py-3 shadow-[0_7px_0_#251206,0_18px_30px_rgba(0,0,0,0.5)] sm:px-6">
       <Perforaciones />
-      <div className="cinta-marco my-2.5 overflow-hidden rounded-md border-[3px] border-[#251206] bg-[#150800] p-2 sm:p-2.5">
+      <div className="cinta-marco my-2.5 flex flex-1 items-center overflow-hidden rounded-md border-[3px] border-[#251206] bg-[#150800] p-2 sm:p-2.5">
         <div className="cinta-mov flex gap-2 sm:gap-2.5" style={{ animationDuration: `${tanda.length * 7}s` }}>
           {tanda.map((v, i) => <TarjetaVideo key={`a-${i}`} video={v} oculta={i >= videos.length} />)}
           {tanda.map((v, i) => <TarjetaVideo key={`b-${i}`} video={v} oculta />)}
@@ -211,13 +215,17 @@ function CintaVideos({ videos }) {
 function Experiencia({ contenido, videos }) {
   return (
     <div className="relative z-30 mx-auto mt-8 w-full max-w-6xl px-4 pb-14 sm:px-6 lg:pb-20">
-      <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-10">
-        <div className="space-y-4 text-center lg:text-left">
-          <h2 className="font-bungee text-2xl leading-[1.2] tracking-tight text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)] sm:text-3xl">
+      <div className="grid grid-cols-1 items-stretch gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-8">
+        <div className="flex flex-col rounded-[24px_18px_26px_20px] border-4 border-[#251206] bg-gradient-to-b from-[#c69a6b] to-[#a87a4d] px-4 py-3 shadow-[0_7px_0_#251206,0_18px_30px_rgba(0,0,0,0.5)] sm:px-6">
+          <Claqueta />
+          <div className="my-2.5 flex flex-1 flex-col justify-center gap-3 rounded-md border-[3px] border-[#251206] bg-[#150800] p-5 text-center lg:text-left">
+          <h2 className="font-bungee text-2xl leading-[1.2] tracking-tight text-white sm:text-3xl lg:text-2xl xl:text-3xl">
             {contenido.videos_titulo} <span className="block text-maiz">{contenido.videos_resaltado}</span>
           </h2>
           {contenido.videos_descripcion && <p className="mx-auto max-w-xl text-sm leading-relaxed font-semibold text-white sm:text-base lg:mx-0">{contenido.videos_descripcion}</p>}
-          {contenido.videos_boton && <Link to="/reservar" className={claseBoton3D}>{contenido.videos_boton} <Play className="size-4" aria-hidden /></Link>}
+            {contenido.videos_boton && <div><Link to="/reservar" className={claseBoton3D}>{contenido.videos_boton} <Play className="size-4" aria-hidden /></Link></div>}
+          </div>
+          <Claqueta />
         </div>
         {videos.length > 0 && <CintaVideos videos={videos} />}
       </div>
