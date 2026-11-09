@@ -150,15 +150,16 @@ export function Cartel({ show, tam = 'md', className = '' }) {
     <div className={`relative flex flex-col justify-between overflow-hidden ${imagen ? 'bg-tinta text-white' : `${fondo} ${texto}`} ${className}`}>
       {imagen && (
         <>
-          <img src={imagen} alt="" loading="lazy" onError={() => setFallo(true)} className="absolute inset-0 size-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-black/35" aria-hidden />
+          <img src={imagen} alt={show.nombre} loading="lazy" onError={() => setFallo(true)} className="absolute inset-0 size-full object-cover" />
+          <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/55 to-transparent" aria-hidden />
         </>
       )}
       <div className={`relative flex items-center justify-between gap-2 px-4 pt-3 text-xs font-semibold ${imagen ? 'text-white' : acento}`}>
         <span className="truncate">{show.categorias?.nombre}</span>
         <span className="num shrink-0">{show.duracion_min} min</span>
       </div>
-      <p className={`relative font-cartel ${tamTitulo} px-4 pb-4 leading-[0.88] font-black tracking-[-0.01em] text-balance uppercase`}>{show.nombre}</p>
+      {/* Con foto el título ya viene en la imagen */}
+      {!imagen && <p className={`relative font-cartel ${tamTitulo} px-4 pb-4 leading-[0.88] font-black tracking-[-0.01em] text-balance uppercase`}>{show.nombre}</p>}
     </div>
   )
 }

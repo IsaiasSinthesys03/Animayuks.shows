@@ -45,8 +45,8 @@ export default function AdminLayout() {
   return (
     <div className="min-h-dvh bg-butaca lg:grid lg:grid-cols-[248px_1fr]">
       <aside className="sticky top-0 hidden h-dvh flex-col bg-selva-700 px-3 py-5 lg:flex">
-        <div className="flex items-baseline gap-2 px-3">
-          <span className="font-cartel text-3xl leading-none font-black text-white uppercase">{nombre}</span>
+        <div className="flex items-end gap-2 px-3">
+          <img src="/landing/logo-320.webp" srcSet="/landing/logo-320.webp 320w, /landing/logo-640.webp 640w" sizes="200px" alt={nombre} className="h-10 w-auto" />
           <span className="text-sm text-white/85">Panel</span>
         </div>
         <Link to="/admin/reservaciones/nueva" className="mx-1 mt-6 flex h-11 items-center justify-center gap-2 rounded-full bg-maiz font-semibold text-tinta hover:bg-[#f0c453]">
@@ -71,7 +71,7 @@ export default function AdminLayout() {
 
       <div className="min-w-0">
         <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 border-b border-linea bg-white px-4 sm:px-6">
-          <span className="font-cartel text-2xl leading-none font-black text-selva-600 uppercase lg:hidden">{nombre}</span>
+          <img src="/landing/logo-320.webp" srcSet="/landing/logo-320.webp 320w, /landing/logo-640.webp 640w" sizes="200px" alt={nombre} className="h-7 lg:hidden w-auto" />
           <p className="hidden text-[15px] text-tinta-soft first-letter:uppercase lg:block">{fechaLarga(new Date())}</p>
           <span className="truncate text-sm text-tinta-soft">{usuario.email}</span>
         </header>

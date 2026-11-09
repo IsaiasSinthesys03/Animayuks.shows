@@ -13,8 +13,8 @@ const enlaces = [
 export function Logo({ claro = false }) {
   const { data: cfg } = useConfiguracion()
   return (
-    <Link to="/" className={`font-cartel text-[1.9rem] leading-none font-black tracking-tight uppercase ${claro ? 'text-white' : 'text-selva-600'}`}>
-      {cfg?.nombre_negocio ?? 'Animayuks'}
+    <Link to="/" aria-label={`${cfg?.nombre_negocio ?? 'Animayuks'}, inicio`} className="shrink-0">
+      <img src="/landing/logo-320.webp" srcSet="/landing/logo-320.webp 320w, /landing/logo-640.webp 640w" sizes="200px" alt="" className={`${claro ? 'h-12' : 'h-8 sm:h-10'} w-auto`} />
     </Link>
   )
 }
