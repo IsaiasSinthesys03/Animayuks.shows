@@ -131,6 +131,44 @@ async function esVideoReal(archivo) {
   return archivo.type === 'video/webm' ? webm : archivo.type === 'video/mp4' && mp4
 }
 
+const LIENZOS = { escritorio: { ancho: 1100, alto: 520 }, telefono: { ancho: 359, alto: 365 } }
+
+/** Dibuja el banner a su tamaño real y lo reduce para que quepa, así se ve igual que en el sitio */
+function VistaPrevia({ banner }) {
+  const [modo, setModo] = useState('escritorio')
+  const [disponible, setDisponible] = useState(0)
+  const caja = useRef(null)
+
+  useEffect(() => {
+    const observador = new ResizeObserver(([e]) => setDisponible(e.contentRect.width))
+    observador.observe(caja.current)
+    return () => observador.disconnect()
+  }, [])
+
+  const { ancho, alto } = LIENZOS[modo]
+  const escala = disponible ? Math.min(1, disponible / ancho) : 0
+
+  return (
+    <div>
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <span className="text-sm font-semibold">Vista previa</span>
+        <div role="group" aria-label="Tamaño de la vista previa" className="inline-flex rounded-lg bg-butaca p-0.5">
+          {[['escritorio', 'Computadora'], ['telefono', 'Teléfono']].map(([id, texto]) => (
+            <button key={id} type="button" aria-pressed={modo === id} onClick={() => setModo(id)} className={`h-8 rounded-md px-3 text-sm font-semibold ${modo === id ? 'bg-white shadow-sm' : 'text-tinta-soft'}`}>{texto}</button>
+          ))}
+        </div>
+      </div>
+      <div ref={caja} className="flex justify-center rounded-2xl bg-selva-900 p-2">
+        <div className="relative overflow-hidden" style={{ width: ancho * escala, height: alto * escala }}>
+          <div className="absolute top-0 left-0 origin-top-left font-quicksand" style={{ width: ancho, height: alto, transform: `scale(${escala})` }}>
+            <CarruselBanners banners={[banner]} vistaPrevia={modo} />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function EditorBanner({ banner, siguienteOrden, onCerrar }) {
   const refrescar = useRefrescar()
   const { avisar } = useStore()
@@ -213,7 +251,7 @@ function EditorBanner({ banner, siguienteOrden, onCerrar }) {
     <Panel abierto onCerrar={onCerrar} titulo={banner ? 'Editar banner' : 'Agregar banner'} ancho="max-w-3xl">
       <form onSubmit={guardar} noValidate>
         <div className="space-y-4 p-5">
-          <div className="overflow-hidden rounded-2xl bg-selva-900 font-quicksand"><CarruselBanners banners={[vista]} vistaPrevia /></div>
+          <VistaPrevia banner={vista} />
           <div className="grid gap-3 sm:grid-cols-2">
             <Campo etiqueta="Título"><Input value={f.titulo} onChange={(e) => set('titulo', e.target.value)} /></Campo>
             <Campo etiqueta="Texto resaltado"><Input value={f.titulo_resaltado} onChange={(e) => set('titulo_resaltado', e.target.value)} /></Campo>
