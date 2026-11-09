@@ -37,6 +37,7 @@ Reglas:
 | 16 | [`20261109000016_landing_permisos.sql`](migrations/20261109000016_landing_permisos.sql) | Permisos mínimos en las tablas de la página de inicio |
 | 17 | [`20261109000017_mapa_zonas.sql`](migrations/20261109000017_mapa_zonas.sql) | Contornos de códigos postales y funciones del mapa |
 | 18 | [`20261109000018_cerrar_zonas.sql`](migrations/20261109000018_cerrar_zonas.sql) | Zonas legibles solo por el admin. **Se aplica al publicar** |
+| 19 | [`20261110000019_cuadricula_cp.sql`](migrations/20261110000019_cuadricula_cp.sql) | Cuadrícula de todos los códigos postales para el mapa del panel |
 
 **Si algo quedó mal** con las migraciones 1–3 y todavía no hay datos reales, [`deshacer_migraciones.sql`](deshacer_migraciones.sql) las revierte. **Borra datos: no usarlo en producción.**
 

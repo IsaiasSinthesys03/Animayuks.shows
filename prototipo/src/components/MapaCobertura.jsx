@@ -22,7 +22,7 @@ function limitesDe(datos) {
  * modo 'publico': un solo color y sin clic. modo 'admin': color por zona, y al
  * hacer clic llama a `alSeleccionar` con las propiedades del área.
  */
-export default function MapaCobertura({ datos, modo = 'publico', ocultas = [], alSeleccionar, className = 'h-[28rem]' }) {
+export default function MapaCobertura({ datos, cuadricula = null, modo = 'publico', ocultas = [], alSeleccionar, className = 'h-[28rem]' }) {
   const caja = useRef(null)
   const mapa = useRef(null)
   const [listo, setListo] = useState(false)
@@ -54,10 +54,22 @@ export default function MapaCobertura({ datos, modo = 'publico', ocultas = [], a
           instancia.addLayer({ id: 'area', type: 'fill', source: 'cobertura', paint: { 'fill-color': admin ? ['get', 'color'] : '#287a45', 'fill-opacity': admin ? 0.5 : 0.45 } })
           instancia.addLayer({ id: 'borde', type: 'line', source: 'cobertura', filter: admin ? ['==', ['get', 'activa'], true] : ['literal', true], paint: { 'line-color': admin ? ['get', 'color'] : '#1f6237', 'line-width': 1.2 } })
           if (admin) {
+            // Cuadrícula de todos los códigos: debajo de las zonas, oculta hasta que se pida
+            const oculta = { visibility: 'none' }
+            instancia.addSource('cuadricula', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } })
+            instancia.addLayer({ id: 'cuadricula-relleno', type: 'fill', source: 'cuadricula', layout: oculta, paint: { 'fill-color': '#000000', 'fill-opacity': 0 } }, 'area')
+            instancia.addLayer({ id: 'cuadricula-borde', type: 'line', source: 'cuadricula', layout: oculta, paint: { 'line-color': '#18181b', 'line-width': 1.4, 'line-opacity': 0.75, 'line-dasharray': [3, 2] } }, 'area')
+            instancia.addLayer({ id: 'cuadricula-etiqueta', type: 'symbol', source: 'cuadricula', minzoom: 12, layout: { ...oculta, 'text-field': ['get', 'cp'], 'text-font': ['Noto Sans Regular'], 'text-size': 12 }, paint: { 'text-color': '#27272a', 'text-halo-color': '#ffffff', 'text-halo-width': 1.5 } })
             instancia.addLayer({ id: 'borde-pausada', type: 'line', source: 'cobertura', filter: ['==', ['get', 'activa'], false], paint: { 'line-color': ['get', 'color'], 'line-width': 2, 'line-dasharray': [2, 2] } })
-            instancia.on('click', 'area', (e) => seleccionar.current?.(e.features[0].properties))
-            instancia.on('mouseenter', 'area', () => { instancia.getCanvas().style.cursor = 'pointer' })
-            instancia.on('mouseleave', 'area', () => { instancia.getCanvas().style.cursor = '' })
+            // Una zona tiene prioridad; si no hay zona, el código de la cuadrícula
+            const capaEn = (punto) => ['area', 'cuadricula-relleno'].map((capa) => instancia.queryRenderedFeatures(punto, { layers: [capa] })).find((l) => l.length)
+            instancia.on('click', (e) => {
+              const encontrado = capaEn(e.point)
+              if (!encontrado) return
+              const p = encontrado[0].properties
+              seleccionar.current?.(encontrado[0].layer.id === 'area' ? p : { ...p, sinZona: !p.zona_id })
+            })
+            instancia.on('mousemove', (e) => { instancia.getCanvas().style.cursor = capaEn(e.point) ? 'pointer' : '' })
           }
           setListo(true)
         })
@@ -90,6 +102,14 @@ export default function MapaCobertura({ datos, modo = 'publico', ocultas = [], a
     m.setFilter('borde', ['all', visible, ['==', ['get', 'activa'], true]])
     m.setFilter('borde-pausada', ['all', visible, ['==', ['get', 'activa'], false]])
   }, [listo, modo, ocultas])
+
+  useEffect(() => {
+    if (!listo || modo !== 'admin') return
+    const m = mapa.current
+    if (!m?.getSource('cuadricula')) return
+    if (cuadricula) m.getSource('cuadricula').setData(cuadricula)
+    for (const capa of ['cuadricula-relleno', 'cuadricula-borde', 'cuadricula-etiqueta']) m.setLayoutProperty(capa, 'visibility', cuadricula ? 'visible' : 'none')
+  }, [listo, modo, cuadricula])
 
   if (fallo) {
     return <p className="flex items-center gap-2 rounded-2xl bg-butaca p-6 text-sm font-medium"><CircleAlert className="size-5 shrink-0" /> No pudimos cargar el mapa en este dispositivo. El verificador de código postal sigue funcionando.</p>

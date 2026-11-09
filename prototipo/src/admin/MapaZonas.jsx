@@ -1,14 +1,24 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { obtenerMapaZonas } from '../lib/apiAdmin'
+import { obtenerCuadriculaCP, obtenerMapaZonas } from '../lib/apiAdmin'
 import { pesos, resumenHorario } from '../lib/format'
 import { Cargando, ErrorCarga, Panel } from '../components/ui'
+import { Interruptor } from './AdminLayout'
 import MapaCobertura from '../components/MapaCobertura'
 
 export default function MapaZonas({ onCerrar }) {
   const consulta = useQuery({ queryKey: ['admin-mapa-zonas'], queryFn: obtenerMapaZonas, staleTime: 0, refetchOnMount: 'always' })
   const [ocultas, setOcultas] = useState([])
   const [area, setArea] = useState(null)
+  const [verTodos, setVerTodos] = useState(false)
+  const [pedida, setPedida] = useState(false)
+  // Se descarga una sola vez, la primera vez que se enciende
+  const cuadricula = useQuery({ queryKey: ['admin-cuadricula-cp'], queryFn: obtenerCuadriculaCP, enabled: pedida, staleTime: Infinity, gcTime: Infinity })
+  const sinZona = useMemo(() => (cuadricula.data?.features ?? []).filter((f) => !f.properties.zona_id).length, [cuadricula.data])
+  const alternarTodos = () => {
+    setPedida(true)
+    setVerTodos((v) => !v)
+  }
 
   const zonas = useMemo(() => {
     const m = new Map()
@@ -29,9 +39,22 @@ export default function MapaZonas({ onCerrar }) {
         <div className="min-h-[24rem]">
           {consulta.isLoading && <Cargando />}
           {consulta.isError && <ErrorCarga onReintentar={consulta.refetch} />}
-          {consulta.data && <MapaCobertura datos={consulta.data} modo="admin" ocultas={ocultas} alSeleccionar={setArea} className="h-full min-h-[24rem]" />}
+          {consulta.data && <MapaCobertura datos={consulta.data} modo="admin" ocultas={ocultas} cuadricula={verTodos ? cuadricula.data ?? null : null} alSeleccionar={setArea} className="h-full min-h-[24rem]" />}
         </div>
         <aside className="space-y-5 overflow-y-auto">
+          <section className="rounded-xl bg-butaca p-3">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-sm font-semibold">Mostrar todos los códigos</span>
+              <Interruptor activo={verTodos} etiqueta="Mostrar todos los códigos postales" disabled={cuadricula.isFetching} onCambio={alternarTodos} />
+            </div>
+            {cuadricula.isFetching && <p className="mt-2 text-sm text-tinta-soft" role="status">Cargando códigos…</p>}
+            {cuadricula.isError && (
+              <p className="mt-2 text-sm text-error">No se pudieron cargar. <button type="button" onClick={() => cuadricula.refetch()} className="font-semibold underline">Reintentar</button></p>
+            )}
+            {verTodos && cuadricula.data && (
+              <p className="mt-2 flex items-center gap-2 text-sm"><span className="w-5 border-t-2 border-dashed border-zinc-800" aria-hidden /> Borde punteado: código postal. Sin zona: <span className="num font-semibold">{sinZona}</span></p>
+            )}
+          </section>
           <section>
             <h3 className="font-bold">Zonas</h3>
             {consulta.data && zonas.length === 0 && <p className="mt-1 text-sm text-tinta-soft">Aún no hay lugares con forma en el mapa.</p>}
@@ -51,7 +74,14 @@ export default function MapaZonas({ onCerrar }) {
           <section aria-live="polite">
             <h3 className="font-bold">Detalle</h3>
             {!area && <p className="mt-1 text-sm text-tinta-soft">Haz clic en un área del mapa.</p>}
-            {area && (
+            {area?.sinZona && (
+              <dl className="mt-1 space-y-1 text-sm">
+                <div><dt className="inline font-semibold">CP: </dt><dd className="num inline">{area.cp}{area.municipio ? ` · ${area.municipio}` : ''}</dd></div>
+                <div><dd className="font-semibold text-alerta">Sin zona</dd></div>
+                <div><dt className="font-semibold">Colonias</dt><dd>{area.colonias || 'Sin datos'}</dd></div>
+              </dl>
+            )}
+            {area && !area.sinZona && area.zona && (
               <dl className="mt-1 space-y-1 text-sm">
                 <div><dt className="inline font-semibold">CP: </dt><dd className="num inline">{area.cp}</dd></div>
                 <div><dt className="inline font-semibold">Zona: </dt><dd className="inline">{area.zona}{area.activa ? '' : ' (pausada)'}</dd></div>

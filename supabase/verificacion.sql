@@ -90,7 +90,9 @@ chequeos (orden, chequeo, esperado, obtenido) as (
     (32, 'Horario de zona es interno',            'false', (has_function_privilege('anon', 'public.horario_de_zona(uuid,int)', 'execute'))::text),
     -- migración 17
     (33, 'Contornos de Yucatán cargados',         '468', (select count(*) from public.cp_contornos)::text),
-    (34, 'Mapa del panel cerrado al público',     'false', (has_function_privilege('anon', 'public.mapa_zonas_admin()', 'execute'))::text)
+    (34, 'Mapa del panel cerrado al público',     'false', (has_function_privilege('anon', 'public.mapa_zonas_admin()', 'execute'))::text),
+    -- migración 19
+    (35, 'Cuadrícula cerrada al público',         'false', (has_function_privilege('anon', 'public.cuadricula_cp_admin()', 'execute'))::text)
 )
 select orden, chequeo, esperado, obtenido, esperado = obtenido as ok
   from chequeos

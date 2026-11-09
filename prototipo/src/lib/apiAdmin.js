@@ -161,3 +161,4 @@ export async function subirVideoBanner(archivo, onProgreso) {
 export const borrarVideoBanner = (url) => llamarFirma({ accion: 'borrar', url })
 
 export const obtenerMapaZonas = () => datos(supabase.rpc('mapa_zonas_admin'))
+export const obtenerCuadriculaCP = () => datos(supabase.rpc('cuadricula_cp_admin'))
