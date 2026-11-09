@@ -76,6 +76,7 @@ export default function MapaCobertura({ datos, modo = 'publico', ocultas = [], a
   useEffect(() => {
     if (!listo || !datos) return
     const m = mapa.current
+    if (!m?.getSource('cobertura')) return
     m.getSource('cobertura').setData(datos)
     m.fitBounds(limitesDe(datos), { padding: 32, maxZoom: 12, animate: false })
   }, [listo, datos])
@@ -83,6 +84,7 @@ export default function MapaCobertura({ datos, modo = 'publico', ocultas = [], a
   useEffect(() => {
     if (!listo || modo !== 'admin') return
     const m = mapa.current
+    if (!m?.getSource('cobertura')) return
     const visible = ['!', ['in', ['get', 'zona_id'], ['literal', ocultas]]]
     m.setFilter('area', visible)
     m.setFilter('borde', ['all', visible, ['==', ['get', 'activa'], true]])
