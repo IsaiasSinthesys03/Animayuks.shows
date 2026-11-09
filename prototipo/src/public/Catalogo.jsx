@@ -24,7 +24,7 @@ export default function Catalogo() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:py-14">
-      <h1 className="font-cartel text-6xl leading-none font-black uppercase sm:text-7xl">Cartelera</h1>
+      <h1 className="font-bungee text-4xl leading-[1.05] uppercase sm:text-5xl">Cartelera</h1>
       <p className="mt-3 max-w-[60ch] text-lg text-tinta-soft">Todos los shows se presentan en tu casa, salón o jardín.</p>
 
       <div className="mt-8 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -90,7 +90,7 @@ export default function Catalogo() {
                 <p className="inline-flex items-center gap-1 text-sm text-tinta-soft">
                   <Users className="size-4" aria-hidden /> {s.artistas} {s.artistas === 1 ? 'artista' : 'artistas'}
                 </p>
-                <h2 className="mt-1.5 text-lg leading-snug font-bold">{s.nombre}</h2>
+                <h2 className="mt-1.5 font-bungee text-base leading-tight">{s.nombre}</h2>
                 <p className="mt-1 flex-1 leading-snug">{s.resumen}</p>
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                   <p className="text-sm text-tinta-soft">

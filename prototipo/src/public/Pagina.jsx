@@ -51,7 +51,7 @@ export default function Pagina() {
   }
   return (
     <article className="mx-auto max-w-[70ch] px-4 py-10 text-[17px] leading-relaxed sm:px-6 lg:py-14">
-      <h1 className="font-cartel text-5xl leading-none font-black uppercase sm:text-6xl">{pagina.data.titulo}</h1>
+      <h1 className="font-bungee text-4xl leading-[1.05] uppercase sm:text-4xl">{pagina.data.titulo}</h1>
       <div className="mt-6"><Contenido texto={pagina.data.contenido} /></div>
     </article>
   )

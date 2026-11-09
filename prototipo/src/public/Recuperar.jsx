@@ -28,7 +28,7 @@ export default function Recuperar() {
 
   return (
     <div className="mx-auto max-w-md px-4 py-12 sm:px-6 lg:py-20">
-      <h1 className="font-cartel text-6xl leading-[0.9] font-black uppercase">Recupera tu contraseña</h1>
+      <h1 className="font-bungee text-4xl leading-[1.05] uppercase">Recupera tu contraseña</h1>
       {estado === 'listo' ? (
         <p role="status" className="mt-6 rounded-2xl bg-ok-soft p-4">
           Si <span className="font-semibold">{correo}</span> tiene cuenta, te llegará un correo con un enlace para elegir una contraseña nueva. Vence en 1 hora.

@@ -63,7 +63,7 @@ export default function Entrar() {
         <span className="mx-auto inline-flex size-14 items-center justify-center rounded-full bg-ok text-white">
           <MailCheck className="size-7" />
         </span>
-        <h1 className="mt-5 font-cartel text-5xl leading-none font-black uppercase">Revisa tu correo</h1>
+        <h1 className="mt-5 font-bungee text-4xl leading-[1.05] uppercase">Revisa tu correo</h1>
         <p className="mt-3 text-tinta-soft">
           Te enviamos un enlace a <span className="font-semibold text-tinta">{f.correo}</span> para confirmar tu cuenta. Si no lo ves, busca en spam.
         </p>
@@ -78,7 +78,7 @@ export default function Entrar() {
           Para abrir el panel, entra con la cuenta de administrador. <Link to="/entrar" className="underline">Soy cliente</Link>
         </p>
       )}
-      <h1 className="font-cartel text-6xl leading-[0.9] font-black uppercase">{modo === 'entrar' ? 'Entra a tu cuenta' : 'Crea tu cuenta'}</h1>
+      <h1 className="font-bungee text-4xl leading-[1.05] uppercase">{modo === 'entrar' ? 'Entra a tu cuenta' : 'Crea tu cuenta'}</h1>
       <p className="mt-3 text-tinta-soft">Para reservar, pagar y seguir tus funciones.</p>
 
       <form className="mt-8 space-y-4" onSubmit={enviar} noValidate>

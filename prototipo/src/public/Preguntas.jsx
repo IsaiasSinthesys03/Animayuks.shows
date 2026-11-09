@@ -5,7 +5,7 @@ export default function Preguntas() {
   const preguntas = usePreguntas()
   return (
     <div className="mx-auto max-w-[70ch] px-4 py-10 sm:px-6 lg:py-14">
-      <h1 className="font-cartel text-5xl leading-none font-black uppercase sm:text-6xl">Preguntas frecuentes</h1>
+      <h1 className="font-bungee text-4xl leading-[1.05] uppercase sm:text-4xl">Preguntas frecuentes</h1>
       {preguntas.isLoading && <Cargando />}
       {preguntas.isError && <ErrorCarga onReintentar={preguntas.refetch} />}
       <div className="mt-8 divide-y divide-linea">

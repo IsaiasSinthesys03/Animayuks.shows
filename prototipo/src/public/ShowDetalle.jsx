@@ -75,7 +75,7 @@ export default function ShowDetalle() {
         </div>
 
         <aside className="lg:sticky lg:top-24 lg:self-start">
-          <h1 className="font-cartel text-5xl leading-[0.9] font-black uppercase sm:text-6xl">{show.nombre}</h1>
+          <h1 className="font-bungee text-4xl leading-[1.05] uppercase sm:text-4xl">{show.nombre}</h1>
           <div className="mt-3 flex flex-wrap gap-4 text-tinta-soft">
             <span className="inline-flex items-center gap-1.5"><Clock className="size-4" /> {duracion} min</span>
             <span className="inline-flex items-center gap-1.5"><Users className="size-4" /> {show.artistas} {show.artistas === 1 ? 'artista' : 'artistas'}</span>

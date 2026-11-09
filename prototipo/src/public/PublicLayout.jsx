@@ -42,7 +42,7 @@ export default function PublicLayout() {
   }, [pathname])
 
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div className="flex min-h-dvh flex-col font-quicksand">
       <header className="sticky top-0 z-30 border-b border-linea/70 bg-white/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:gap-4 sm:px-6">
           <Logo />

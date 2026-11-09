@@ -44,7 +44,7 @@ export default function Restablecer() {
 
   return (
     <div className="mx-auto max-w-md px-4 py-12 sm:px-6 lg:py-20">
-      <h1 className="font-cartel text-6xl leading-[0.9] font-black uppercase">Elige una contraseña nueva</h1>
+      <h1 className="font-bungee text-4xl leading-[1.05] uppercase">Elige una contraseña nueva</h1>
       <form className="mt-8 space-y-4" onSubmit={enviar}>
         <Campo etiqueta="Contraseña nueva" ayuda="Mínimo 8 caracteres." error={error}>
           <Input type="password" autoComplete="new-password" value={contrasena} onChange={(e) => setContrasena(e.target.value)} required />

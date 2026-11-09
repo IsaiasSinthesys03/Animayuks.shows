@@ -48,7 +48,7 @@ function Boleto({ datos, show, paquete, extrasSel, total, anticipoPct }) {
     <div className="rounded-3xl bg-butaca [--boleto-fondo:white]">
       <div className="p-5">
         <p className="text-sm font-semibold text-tinta-soft">Tu reservación</p>
-        <p className="mt-1 font-cartel text-3xl leading-none font-black uppercase">{show ? show.nombre : 'Elige un show'}</p>
+        <p className="mt-1 font-bungee text-2xl leading-[1.05] uppercase">{show ? show.nombre : 'Elige un show'}</p>
         {paquete && <p className="mt-1 text-sm text-tinta-soft">Paquete {paquete.nombre.toLowerCase()}</p>}
         <dl className="mt-4 space-y-2 text-[15px]">
           <div className="flex justify-between gap-3">
@@ -89,7 +89,7 @@ function Confirmacion({ reservacion, show, cfg }) {
         <span className="mx-auto inline-flex size-14 items-center justify-center rounded-full bg-ok text-white">
           <Check className="size-7" strokeWidth={3} />
         </span>
-        <h1 className="mt-5 font-cartel text-5xl leading-none font-black uppercase sm:text-6xl">Apartamos tu fecha</h1>
+        <h1 className="mt-5 font-bungee text-4xl leading-[1.05] uppercase sm:text-4xl">Apartamos tu fecha</h1>
         <p className="mx-auto mt-3 max-w-[46ch] text-tinta-soft">
           Te enviamos los detalles por correo. Para confirmarla, paga el anticipo antes del {fechaLarga(reservacion.expira_en)} a las {hora(reservacion.expira_en)}.
         </p>
@@ -98,8 +98,8 @@ function Confirmacion({ reservacion, show, cfg }) {
       <div className="mt-8 rounded-3xl bg-selva-700 text-white [--boleto-fondo:white]">
         <div className="p-6">
           <p className="text-sm text-white/85">Folio</p>
-          <p className="num font-cartel text-4xl font-extrabold tracking-wide text-maiz">{reservacion.folio}</p>
-          <p className="mt-4 font-cartel text-3xl leading-none font-black uppercase">{show.nombre}</p>
+          <p className="num font-bungee text-3xl tracking-wide text-maiz">{reservacion.folio}</p>
+          <p className="mt-4 font-bungee text-2xl leading-[1.05] uppercase">{show.nombre}</p>
           <p className="mt-2 text-white first-letter:uppercase">{fechaLarga(reservacion.inicio)}, {hora(reservacion.inicio)}</p>
           <p className="mt-1 text-white">{reservacion.calle}, {reservacion.colonia}, {reservacion.codigo_postal}</p>
         </div>
@@ -312,7 +312,7 @@ export default function Reservar() {
   if (activos.length === 0) {
     return (
       <div className="mx-auto max-w-xl px-4 py-24 text-center">
-        <h1 className="font-cartel text-5xl leading-none font-black uppercase">Pronto podrás reservar</h1>
+        <h1 className="font-bungee text-4xl leading-[1.05] uppercase">Pronto podrás reservar</h1>
         <p className="mt-3 text-tinta-soft">Todavía no hay shows disponibles.</p>
       </div>
     )
@@ -323,7 +323,7 @@ export default function Reservar() {
   return (
     <div className="mx-auto max-w-6xl px-4 pt-6 pb-32 sm:px-6 lg:pt-10 lg:pb-16">
       <div className="flex items-center justify-between gap-4">
-        <h1 className="font-cartel text-4xl leading-none font-black uppercase sm:text-5xl">Reservar un show</h1>
+        <h1 className="font-bungee text-3xl leading-[1.05] uppercase sm:text-4xl">Reservar un show</h1>
         {mm && (
           <p className={`num inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold ${restante < 120 ? 'bg-error-soft text-error' : 'bg-maiz-soft text-tinta'}`}>
             <Timer className="size-4" /> Apartado {mm}

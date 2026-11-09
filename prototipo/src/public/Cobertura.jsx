@@ -9,7 +9,7 @@ export default function Cobertura() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:py-14">
-      <h1 className="font-cartel text-6xl leading-[0.9] font-black uppercase sm:text-7xl">¿Llegamos a tu zona?</h1>
+      <h1 className="font-bungee text-4xl leading-[1.05] uppercase sm:text-5xl">¿Llegamos a tu zona?</h1>
       <p className="mt-4 max-w-[52ch] text-lg text-tinta-soft">
         Solo aceptamos reservaciones dentro de nuestras zonas de cobertura. Escribe el código postal donde será tu evento.
       </p>

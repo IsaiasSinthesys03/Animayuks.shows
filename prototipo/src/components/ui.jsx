@@ -145,7 +145,7 @@ export function Cartel({ show, tam = 'md', className = '' }) {
   const [fallo, setFallo] = useState(false)
   const imagen = fallo ? null : urlImagen(show.imagen_principal)
   const { fondo, texto, acento } = colorDeShow(show)
-  const tamTitulo = { sm: 'text-2xl', md: 'text-[2.2rem] sm:text-[2.6rem]', lg: 'text-6xl sm:text-7xl' }[tam]
+  const tamTitulo = { sm: 'text-xl', md: 'text-[1.6rem] sm:text-[1.9rem]', lg: 'text-4xl sm:text-5xl' }[tam]
   return (
     <div className={`relative flex flex-col justify-between overflow-hidden ${imagen ? 'bg-tinta text-white' : `${fondo} ${texto}`} ${className}`}>
       {imagen && (
@@ -159,7 +159,7 @@ export function Cartel({ show, tam = 'md', className = '' }) {
         <span className="num shrink-0">{show.duracion_min} min</span>
       </div>
       {/* Con foto el título ya viene en la imagen */}
-      {!imagen && <p className={`relative font-cartel ${tamTitulo} px-4 pb-4 leading-[0.88] font-black tracking-[-0.01em] text-balance uppercase`}>{show.nombre}</p>}
+      {!imagen && <p className={`relative font-bungee ${tamTitulo} px-4 pb-4 leading-[1.05] text-balance uppercase`}>{show.nombre}</p>}
     </div>
   )
 }

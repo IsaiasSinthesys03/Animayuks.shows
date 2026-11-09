@@ -165,7 +165,7 @@ export default function MisReservaciones() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           {cliente?.nombre && <p className="text-tinta-soft">Hola, {cliente.nombre.split(' ')[0]}</p>}
-          <h1 className="font-cartel text-5xl leading-none font-black uppercase sm:text-6xl">Mis reservaciones</h1>
+          <h1 className="font-bungee text-4xl leading-[1.05] uppercase sm:text-4xl">Mis reservaciones</h1>
         </div>
         <button onClick={async () => { await salir(); navigate('/') }} className="text-sm font-semibold text-tinta-soft underline">
           Cerrar sesión
