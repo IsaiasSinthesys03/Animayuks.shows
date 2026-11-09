@@ -19,7 +19,9 @@ with tablas as (
                        -- migración 9
                        'plantillas_correo', 'notificaciones',
                        -- migración 15
-                       'landing_contenido', 'landing_banners', 'landing_videos')
+                       'landing_contenido', 'landing_banners', 'landing_videos',
+                       -- migración 17
+                       'cp_contornos')
 ),
 funciones as (
   select p.proname
@@ -46,8 +48,8 @@ funciones as (
 ),
 chequeos (orden, chequeo, esperado, obtenido) as (
   values
-    (1,  'Tablas creadas',                        '25', (select count(*) from tablas)::text),
-    (2,  'Tablas con RLS activo',                 '25', (select count(*) from tablas where relrowsecurity)::text),
+    (1,  'Tablas creadas',                        '26', (select count(*) from tablas)::text),
+    (2,  'Tablas con RLS activo',                 '26', (select count(*) from tablas where relrowsecurity)::text),
     (3,  'Políticas de seguridad en tablas',      '51', (select count(*) from pg_policies where schemaname = 'public')::text),
     (4,  'Funciones de negocio',                  '42', (select count(*) from funciones)::text),
     (5,  'Trigger de nuevos usuarios',            '1',  (select count(*) from pg_trigger where tgname = 'al_crear_usuario')::text),
@@ -85,7 +87,10 @@ chequeos (orden, chequeo, esperado, obtenido) as (
                                                            or has_function_privilege('anon', 'public.encolar_correo(text,uuid,uuid,jsonb,text)', 'execute'))::text),
     -- migración 13
     (31, 'Catálogo de códigos postales cargado',  'true', ((select count(*) from public.catalogo_cp) > 30000)::text),
-    (32, 'Horario de zona es interno',            'false', (has_function_privilege('anon', 'public.horario_de_zona(uuid,int)', 'execute'))::text)
+    (32, 'Horario de zona es interno',            'false', (has_function_privilege('anon', 'public.horario_de_zona(uuid,int)', 'execute'))::text),
+    -- migración 17
+    (33, 'Contornos de Yucatán cargados',         '468', (select count(*) from public.cp_contornos)::text),
+    (34, 'Mapa del panel cerrado al público',     'false', (has_function_privilege('anon', 'public.mapa_zonas_admin()', 'execute'))::text)
 )
 select orden, chequeo, esperado, obtenido, esperado = obtenido as ok
   from chequeos

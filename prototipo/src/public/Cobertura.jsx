@@ -1,11 +1,11 @@
-import { useZonas } from '../lib/consultas'
-import { resumenCobertura, resumenHorario } from '../lib/format'
+import { useQuery } from '@tanstack/react-query'
+import { obtenerMapaCobertura } from '../lib/api'
+import MapaCobertura from '../components/MapaCobertura'
 import { Cargando, ErrorCarga } from '../components/ui'
 import VerificadorCP from '../components/VerificadorCP'
 
 export default function Cobertura() {
-  const zonas = useZonas()
-  const activas = (zonas.data ?? []).filter((z) => z.activa)
+  const mapa = useQuery({ queryKey: ['mapa-cobertura'], queryFn: obtenerMapaCobertura, staleTime: 5 * 60 * 1000 })
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:py-14">
@@ -17,32 +17,15 @@ export default function Cobertura() {
         <VerificadorCP ocultarCosto />
       </div>
 
-      {zonas.isLoading && <Cargando />}
-      {zonas.isError && <ErrorCarga onReintentar={zonas.refetch} />}
-      {activas.length > 0 && (
-        <table className="mt-10 w-full text-left text-[15px]">
-          <caption className="sr-only">Zonas de servicio</caption>
-          <thead>
-            <tr className="border-b border-linea text-sm text-tinta-soft">
-              <th className="py-2 font-medium">Zona</th>
-            </tr>
-          </thead>
-          <tbody>
-            {activas.map((z) => (
-              <tr key={z.id} className="border-b border-linea">
-                <td className="py-3 font-medium">
-                  <span className="mr-2.5 inline-block size-2.5 rounded-full" style={{ background: z.color }} aria-hidden />
-                  {z.nombre}
-                  <span className="mt-0.5 block text-sm font-normal text-tinta-soft">{resumenCobertura(z)}</span>
-                  {z.horario && <span className="num mt-0.5 block text-sm font-normal text-tinta-soft">{resumenHorario(z.horario)}</span>}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+      <section className="mt-10" aria-label="Mapa de cobertura">
+        <h2 className="mb-3 text-xl font-bold">Dónde damos servicio</h2>
+        {mapa.isLoading && <Cargando />}
+        {mapa.isError && <ErrorCarga onReintentar={mapa.refetch} />}
+        {mapa.data?.features.length === 0 && <p className="rounded-2xl bg-butaca p-6 font-medium">Pronto publicaremos nuestras áreas de servicio.</p>}
+        {mapa.data?.features.length > 0 && <MapaCobertura datos={mapa.data} />}
+      </section>
       <p className="mt-8 text-xs text-tinta-soft">
-        Catálogo de códigos postales: <a href="https://www.geonames.org" target="_blank" rel="noreferrer" className="underline">GeoNames</a>, licencia <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer" className="underline">CC BY 4.0</a>.
+        Códigos postales: Correos de México, <a href="https://www.datos.gob.mx/dataset/codigos_postales_entidad_federativa" target="_blank" rel="noreferrer" className="underline">SEPOMEX</a> y <a href="https://www.geonames.org" target="_blank" rel="noreferrer" className="underline">GeoNames</a>, licencia CC BY 4.0.
       </p>
     </div>
   )

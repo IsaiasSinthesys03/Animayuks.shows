@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Check, Clock, MapPin, Plus, Trash2, Wallet } from 'lucide-react'
+import { Check, Clock, Map as IconoMapa, MapPin, Plus, Trash2, Wallet } from 'lucide-react'
 import { catalogoCpsPorCodigo, mensajeError, zonaPorCP } from '../lib/api'
 import { borrarZona, guardarZona, obtenerHorario } from '../lib/apiAdmin'
 import { useZonas } from '../lib/consultas'
@@ -11,6 +11,7 @@ import { Boton, Campo, Cargando, ErrorCarga, Input, Panel } from '../components/
 import { Encabezado, Interruptor } from './AdminLayout'
 import FilaHorario from './FilaHorario'
 import SelectorCobertura from './SelectorCobertura'
+import MapaZonas from './MapaZonas'
 
 const COLORES = [
   '#287a45', '#e9b83f', '#75b9a0', '#dc2626', '#ea580c', '#a3122a',
@@ -235,6 +236,7 @@ export default function Zonas() {
   const [editando, setEditando] = useState(undefined) // undefined: cerrado, null: nueva, id: editar
   const actual = editando ? zonas.data?.find((z) => z.id === editando) : null
   const [errorBorrar, setErrorBorrar] = useState('')
+  const [verMapa, setVerMapa] = useState(false)
   const generalApagado = horario.data && !horario.data.some((d) => d.activo)
 
   const eliminar = async (z) => {
@@ -254,6 +256,7 @@ export default function Zonas() {
   return (
     <>
       <Encabezado titulo="Zonas de cobertura" descripcion="Dónde das servicio, cuánto cuesta llegar y a qué horas">
+        <Boton tam="sm" variante="secundario" onClick={() => setVerMapa(true)}><IconoMapa className="size-4" /> Ver mapa</Boton>
         <Boton tam="sm" onClick={() => setEditando(null)} disabled={!zonas.data || !horario.data}><Plus className="size-4" /> Agregar zona</Boton>
       </Encabezado>
 
@@ -301,6 +304,8 @@ export default function Zonas() {
           ))}
         </ul>
       )}
+
+      {verMapa && <MapaZonas onCerrar={() => setVerMapa(false)} />}
 
       {editando !== undefined && <Editor key={editando ?? 'nueva'} zona={actual} otras={(zonas.data ?? []).filter((z) => z.id !== editando)} general={horario.data} onCerrar={() => setEditando(undefined)} />}
     </>

@@ -72,6 +72,8 @@ export const obtenerBannersLanding = async () => {
 }
 export const obtenerVideosLanding = () => datos(supabase.from('landing_videos').select('*').eq('activo', true).order('orden'))
 
+export const obtenerMapaCobertura = () => datos(supabase.rpc('mapa_cobertura'))
+
 export const anotarInteres = (codigo_postal, contacto) =>
   datos(supabase.from('lista_interes').insert({ codigo_postal, contacto: contacto || null }))
 

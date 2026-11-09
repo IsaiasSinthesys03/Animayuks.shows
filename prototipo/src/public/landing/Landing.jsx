@@ -42,7 +42,7 @@ function Letrero({ contenido }) {
           <p className="font-bungee text-2xl leading-tight text-maiz sm:text-3xl">{contenido.cobertura_titulo}</p>
           {contenido.cobertura_descripcion && <p className="mt-2 font-semibold text-[#f6e7cb]">{contenido.cobertura_descripcion}</p>}
         </div>
-        <div className="relative mt-5 md:mt-0"><VerificadorCP oscuro /></div>
+        <div className="relative mt-5 md:mt-0"><VerificadorCP oscuro ocultarCosto /></div>
       </div>
     </div>
   )
