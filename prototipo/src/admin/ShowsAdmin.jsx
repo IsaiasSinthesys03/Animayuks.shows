@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { ImagePlus, Plus, Trash2 } from 'lucide-react'
+import { Check, ImagePlus, Pencil, Plus, Trash2, X } from 'lucide-react'
 import { mensajeError, urlImagen } from '../lib/api'
-import { borrarPaquete, guardarCategoria, guardarExtra, guardarPaquete, guardarShow, subirImagen } from '../lib/apiAdmin'
+import { borrarCategoria, borrarPaquete, guardarCategoria, renombrarCategoria, guardarExtra, guardarPaquete, guardarShow, subirImagen } from '../lib/apiAdmin'
 import { useCategorias, useExtras, useShows } from '../lib/consultas'
 import { pesos } from '../lib/format'
 import { useStore } from '../store'
@@ -336,16 +336,64 @@ function SeccionExtras() {
   )
 }
 
+function ChipCategoria({ categoria, usos, onCambio, onError }) {
+  const [editando, setEditando] = useState(false)
+  const [texto, setTexto] = useState(categoria.nombre)
+  const [ocupado, setOcupado] = useState(false)
+  const accion = async (fn) => {
+    onError('')
+    setOcupado(true)
+    try {
+      await fn()
+      await onCambio()
+      setEditando(false)
+    } catch (err) {
+      onError(err.code === '23505' ? 'Esa categoría ya existe.' : mensajeError(err))
+    } finally {
+      setOcupado(false)
+    }
+  }
+  const borrar = () => {
+    const aviso = usos
+      ? `"${categoria.nombre}" la usan ${usos} ${usos === 1 ? 'show' : 'shows'}. Se quedarán sin categoría. ¿Eliminarla?`
+      : `¿Eliminar la categoría "${categoria.nombre}"?`
+    if (window.confirm(aviso)) accion(() => borrarCategoria(categoria.id))
+  }
+  const boton = 'inline-flex size-7 items-center justify-center rounded-full text-tinta-soft hover:bg-white hover:text-tinta disabled:opacity-50'
+  if (editando) {
+    return (
+      <form className="inline-flex items-center gap-1 rounded-full bg-butaca py-0.5 pr-1 pl-2" onSubmit={(e) => {
+        e.preventDefault()
+        const limpio = texto.trim()
+        if (!limpio || limpio === categoria.nombre) return setEditando(false)
+        accion(() => renombrarCategoria(categoria.id, limpio))
+      }}>
+        <input autoFocus value={texto} onChange={(e) => setTexto(e.target.value)} aria-label="Nombre de la categoría" className="w-36 rounded-full bg-white px-2 py-1 text-sm focus:outline-none" />
+        <button type="submit" disabled={ocupado} className={boton} aria-label="Guardar nombre"><Check className="size-4" /></button>
+        <button type="button" onClick={() => { setTexto(categoria.nombre); setEditando(false) }} className={boton} aria-label="Cancelar"><X className="size-4" /></button>
+      </form>
+    )
+  }
+  return (
+    <span className="inline-flex items-center gap-0.5 rounded-full bg-butaca py-0.5 pr-1 pl-3 text-sm font-medium">
+      {categoria.nombre}
+      <button type="button" onClick={() => setEditando(true)} className={boton} aria-label={`Renombrar ${categoria.nombre}`}><Pencil className="size-3.5" /></button>
+      <button type="button" onClick={borrar} disabled={ocupado} className={boton} aria-label={`Eliminar ${categoria.nombre}`}><Trash2 className="size-3.5" /></button>
+    </span>
+  )
+}
+
 function SeccionCategorias() {
   const invalidar = usarInvalidar()
   const { data: categorias } = useCategorias()
+  const { data: shows } = useShows()
   const [nombre, setNombre] = useState('')
   const [error, setError] = useState('')
   return (
     <section className="rounded-2xl bg-white p-5 ring-1 ring-linea">
       <h2 className="font-bold">Categorías</h2>
       <div className="mt-3 flex flex-wrap gap-2">
-        {(categorias ?? []).map((c) => <span key={c.id} className="rounded-full bg-butaca px-3 py-1 text-sm font-medium">{c.nombre}</span>)}
+        {(categorias ?? []).map((c) => <ChipCategoria key={c.id} categoria={c} usos={(shows ?? []).filter((s) => s.categoria_id === c.id).length} onCambio={invalidar} onError={setError} />)}
       </div>
       <form className="mt-3 flex gap-2" onSubmit={async (e) => {
         e.preventDefault()
