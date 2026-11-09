@@ -62,17 +62,19 @@ export default function VerificadorCP({ oscuro = false, onResultado, inicial = '
             setEstado(null)
           }}
           aria-invalid={estado === 'invalido'}
-          className={`num h-12 min-w-0 flex-1 rounded-full border px-5 text-base focus:outline-none ${
+          className={`num h-12 min-w-0 flex-1 border px-5 text-base focus:outline-none ${
             oscuro
-              ? 'border-white/20 bg-white text-tinta placeholder:text-tinta-soft focus:ring-3 focus:ring-maiz'
-              : 'border-linea bg-white placeholder:text-tinta-soft/70 focus:border-selva-500 focus:ring-3 focus:ring-selva-100'
+              ? 'rounded-xl border-[2.5px] border-[#251206] bg-[#f6e7cb] font-semibold text-[#251206] placeholder:text-[#6b4a2b] focus:ring-3 focus:ring-maiz'
+              : 'rounded-full border-linea bg-white placeholder:text-tinta-soft/70 focus:border-selva-500 focus:ring-3 focus:ring-selva-100'
           }`}
         />
         <button
           type="submit"
           disabled={estado === 'cargando'}
-          className={`h-12 shrink-0 rounded-full px-5 font-semibold transition-colors disabled:opacity-60 ${
-            oscuro ? 'bg-maiz text-tinta hover:bg-[#f0c453]' : 'bg-selva-600 text-white hover:bg-selva-700'
+          className={`h-12 shrink-0 px-5 transition-colors disabled:opacity-60 ${
+            oscuro
+              ? 'rounded-xl border-[2.5px] border-[#251206] bg-maiz font-bold text-[#251206] shadow-[0_3px_0_#251206] hover:bg-[#f0c453] active:translate-y-[2px] active:shadow-[0_1px_0_#251206]'
+              : 'rounded-full bg-selva-600 font-semibold text-white hover:bg-selva-700'
           }`}
         >
           Verificar

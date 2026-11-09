@@ -18,22 +18,59 @@ const PERSONAJES = [
   { clave: 'mila', nombre: 'Mila', detalle: 'Mila, jaguar de 13 años. Elemento aire, habilidad velocidad extrema. Cachorra mayor de una familia de felinos; siempre busca ser la mejor.' },
 ]
 
-function Foco({ retraso }) {
-  return <span className="foco size-2 rounded-full bg-maiz shadow-[0_0_10px_2px_rgba(233,184,63,0.55)]" style={{ animationDelay: `${retraso}s` }} />
-}
+const Cuerda = ({ lado }) => (
+  <span aria-hidden className={`absolute -top-14 ${lado} z-0 h-[4.5rem] w-2 rounded-full border border-[#251206] bg-[repeating-linear-gradient(-35deg,#d4ad82_0_4px,#8c6239_4px_8px)]`} />
+)
 
-function Marquesina({ children }) {
-  const fila = (pos) => (
-    <div className={`absolute inset-x-5 ${pos} flex justify-between`} aria-hidden>
-      {Array.from({ length: 14 }, (_, i) => <Foco key={i} retraso={(i % 4) * 0.3} />)}
+const Clavo = ({ pos }) => (
+  <span aria-hidden className={`absolute ${pos} size-3.5 rounded-full border border-[#150800] bg-gradient-to-tr from-[#7a4a00] via-maiz to-[#fff4cc]`} />
+)
+
+/** El verificador es un letrero de madera que cuelga del carrusel */
+function Letrero({ contenido }) {
+  return (
+    <div className="relative mx-auto mt-14 max-w-4xl px-4 sm:px-6">
+      <Cuerda lado="left-[18%]" />
+      <Cuerda lado="right-[18%]" />
+      <div className="relative z-10 rounded-[22px_30px_24px_28px] border-4 border-[#251206] bg-[#3a2212] px-6 py-8 shadow-[0_7px_0_#251206,0_18px_30px_rgba(0,0,0,0.5)] sm:px-10 md:grid md:grid-cols-[1fr_1.15fr] md:items-center md:gap-8" style={{ backgroundImage: FONDO_MADERA }}>
+        <span aria-hidden className="pointer-events-none absolute inset-2 rounded-[16px_24px_18px_22px] border border-[#d4ad82]/35" />
+        <Clavo pos="top-3.5 left-3.5" />
+        <Clavo pos="top-3.5 right-3.5" />
+        <Clavo pos="bottom-3.5 left-3.5" />
+        <Clavo pos="right-3.5 bottom-3.5" />
+        <div className="relative">
+          <p className="font-bungee text-2xl leading-tight text-maiz sm:text-3xl">{contenido.cobertura_titulo}</p>
+          {contenido.cobertura_descripcion && <p className="mt-2 font-semibold text-[#f6e7cb]">{contenido.cobertura_descripcion}</p>}
+        </div>
+        <div className="relative mt-5 md:mt-0"><VerificadorCP oscuro /></div>
+      </div>
     </div>
   )
+}
+
+const FORMAS_PIEDRA = ['rounded-[34px_22px_38px_20px]', 'rounded-[22px_38px_20px_34px]', 'rounded-[38px_20px_30px_26px]', 'rounded-[20px_32px_24px_40px]']
+
+/** Los pasos son piedras sobre un sendero que atraviesa la selva */
+function Sendero({ contenido, anticipo }) {
   return (
-    <div className="relative rounded-[28px] border-2 border-maiz/70 bg-selva-700 px-6 pt-11 pb-10 sm:px-9">
-      {fila('top-4')}
-      {fila('bottom-4')}
-      {children}
-    </div>
+    <section className="relative z-10 mx-auto max-w-6xl px-4 pt-16 pb-10 sm:px-6 lg:pt-20">
+      <h2 className="font-bungee text-3xl leading-tight text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] md:text-4xl">{contenido.pasos_titulo}</h2>
+      <div className="relative mt-14">
+        <svg aria-hidden viewBox="0 0 1000 120" preserveAspectRatio="none" fill="none" className="pointer-events-none absolute inset-x-0 -top-3 hidden h-28 w-full lg:block">
+          <path d="M70 10 C 190 10 210 100 365 100 S 520 10 640 10 S 800 100 910 100" stroke="#e9b83f" strokeWidth="4" strokeLinecap="round" strokeDasharray="2 14" vectorEffect="non-scaling-stroke" />
+        </svg>
+        <span aria-hidden className="absolute top-4 bottom-10 left-[1.65rem] border-l-4 border-dotted border-maiz sm:hidden" />
+        <ol className="relative grid gap-y-12 sm:grid-cols-2 sm:gap-x-6 lg:grid-cols-4">
+          {contenido.pasos.map((p, i) => (
+            <li key={i} className={`relative border-[3px] border-[#3a2212] bg-gradient-to-b from-[#ecd3ae] to-[#d4ad82] px-5 pt-10 pb-6 shadow-[0_5px_0_#3a2212,0_12px_22px_rgba(0,0,0,0.4)] ${FORMAS_PIEDRA[i % 4]} ${i % 2 ? 'lg:mt-20' : ''}`}>
+              <span className="absolute -top-7 left-1 flex size-14 items-center justify-center rounded-full border-[3px] border-[#3a2212] bg-maiz font-bungee text-2xl text-[#3a2212] shadow-[0_3px_0_#3a2212] sm:left-4">{i + 1}</span>
+              <h3 className="text-lg leading-snug font-bold text-[#251206]">{p.titulo.replaceAll('{anticipo}', anticipo)}</h3>
+              <p className="mt-1.5 leading-relaxed font-semibold text-[#3a2212]">{p.texto.replaceAll('{anticipo}', anticipo)}</p>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
   )
 }
 
@@ -209,44 +246,17 @@ export default function Landing() {
   if (contenido.isError) return <ErrorCarga onReintentar={contenido.refetch} />
   const c = contenido.data
 
-  const fondoSelva = { backgroundImage: "url('/landing/fondo.webp')" }
-  const velo = <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#0a2e0d]/50 via-[#3a2212]/30 to-[#3a2212]/80" />
-
   return (
     <div className="font-quicksand">
       <h1 className="sr-only">Animayuks, shows en vivo para tu fiesta</h1>
-      <div className="relative w-full bg-[#2b5a2e] bg-cover bg-top bg-no-repeat" style={fondoSelva}>
-        {velo}
-        <div className="relative z-10 pt-6 pb-10 sm:pt-10">
-          {banners.length > 0 ? <CarruselBanners banners={banners} /> : <Portada contenido={c} />}
-          <div className="mx-auto mt-8 max-w-3xl px-4 sm:px-6">
-            <Marquesina>
-              <p className="font-bungee text-2xl leading-tight text-white sm:text-3xl">{c.cobertura_titulo}</p>
-              {c.cobertura_descripcion && <p className="mt-2 mb-5 text-white">{c.cobertura_descripcion}</p>}
-              <VerificadorCP oscuro />
-            </Marquesina>
-          </div>
+      <div className="relative w-full bg-[#2b5a2e] bg-cover bg-top" style={{ backgroundImage: "url('/landing/fondo.webp')" }}>
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#0a2e0d]/50 via-[#0a2e0d]/45 to-[#3a2212]/85" />
+        <div className="relative z-10 pt-6 sm:pt-10">
+          <div className="relative z-20">{banners.length > 0 ? <CarruselBanners banners={banners} /> : <Portada contenido={c} />}</div>
+          <Letrero contenido={c} />
+          <Sendero contenido={c} anticipo={anticipo} />
+          <ShowsDestacados contenido={c} />
         </div>
-      </div>
-
-      <section className="bg-maiz">
-        <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 lg:py-20">
-          <h2 className="font-bungee text-3xl leading-tight text-tinta sm:text-4xl">{c.pasos_titulo}</h2>
-          <ol className="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {c.pasos.map((p, i) => (
-              <li key={i}>
-                <span className="num font-bungee text-5xl leading-none text-selva-900">{i + 1}</span>
-                <h3 className="mt-3 text-lg font-bold text-tinta">{p.titulo.replaceAll('{anticipo}', anticipo)}</h3>
-                <p className="mt-1.5 leading-relaxed font-medium text-tinta">{p.texto.replaceAll('{anticipo}', anticipo)}</p>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      <div className="relative w-full bg-[#2b5a2e] bg-cover bg-top bg-no-repeat" style={fondoSelva}>
-        {velo}
-        <div className="relative z-10"><ShowsDestacados contenido={c} /></div>
       </div>
 
       <Personajes contenido={c} videos={videos} />
