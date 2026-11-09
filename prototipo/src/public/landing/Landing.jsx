@@ -177,36 +177,49 @@ function TarjetaVideo({ video, oculta }) {
       tabIndex={oculta ? -1 : 0}
       aria-hidden={oculta || undefined}
       aria-label={`Ver en YouTube: ${video.titulo}`}
-      className="group relative flex aspect-[16/10] w-36 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-maiz/40 bg-slate-900 shadow-xl sm:w-52 xl:w-80 xl:rounded-[2rem]"
+      className="group relative flex aspect-video w-48 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#150800] sm:w-60 xl:w-72"
     >
-      <img src={`https://img.youtube.com/vi/${video.youtube_id}/hqdefault.jpg`} alt="" loading="lazy" className="absolute inset-0 size-full object-cover opacity-70 transition-all duration-500 group-hover:scale-105 group-hover:opacity-50" />
-      <span className="relative z-10 flex size-9 items-center justify-center rounded-full bg-maiz transition-transform group-hover:scale-110 xl:size-16"><Play className="ml-0.5 size-3.5 text-tinta xl:size-6" aria-hidden /></span>
-      <span className="absolute inset-x-2 bottom-2 truncate xl:inset-x-4 xl:bottom-4">
-        <span className="rounded-md bg-slate-900/90 px-2 py-0.5 text-[10px] font-black tracking-wider text-maiz uppercase xl:px-3 xl:py-1.5 xl:text-sm">{video.titulo}</span>
-      </span>
+      <img src={`https://img.youtube.com/vi/${video.youtube_id}/hqdefault.jpg`} alt="" loading="lazy" className="absolute inset-0 size-full object-cover opacity-80 transition-all duration-500 group-hover:scale-105 group-hover:opacity-55" />
+      <span className="relative z-10 flex size-11 items-center justify-center rounded-full border-2 border-[#251206] bg-maiz transition-transform group-hover:scale-110 xl:size-12"><Play className="ml-0.5 size-5 text-[#251206]" aria-hidden /></span>
+      <span className="absolute inset-x-0 bottom-0 truncate bg-gradient-to-t from-black/85 to-transparent px-3 pt-6 pb-2 text-left text-sm font-bold text-white">{video.titulo}</span>
     </a>
+  )
+}
+
+const Perforaciones = () => (
+  <div aria-hidden className="h-3.5 rounded-sm bg-[repeating-linear-gradient(90deg,#251206_0_16px,transparent_16px_34px)]" />
+)
+
+/** Tira de película tallada en madera. La lista se repite hasta llenar el marco y que el giro no deje huecos. */
+function CintaVideos({ videos }) {
+  const tanda = []
+  while (tanda.length < 6) tanda.push(...videos)
+  return (
+    <div className="relative rounded-[20px_26px_18px_24px] border-4 border-[#251206] bg-gradient-to-b from-[#c69a6b] to-[#a87a4d] px-4 py-3 shadow-[0_7px_0_#251206,0_18px_30px_rgba(0,0,0,0.5)] sm:px-6">
+      <Perforaciones />
+      <div className="cinta-marco my-2.5 overflow-hidden rounded-md border-[3px] border-[#251206] bg-[#150800] p-2 sm:p-2.5">
+        <div className="cinta-mov flex gap-2 sm:gap-2.5" style={{ animationDuration: `${tanda.length * 7}s` }}>
+          {tanda.map((v, i) => <TarjetaVideo key={`a-${i}`} video={v} oculta={i >= videos.length} />)}
+          {tanda.map((v, i) => <TarjetaVideo key={`b-${i}`} video={v} oculta />)}
+        </div>
+      </div>
+      <Perforaciones />
+    </div>
   )
 }
 
 function Experiencia({ contenido, videos }) {
   return (
-    <div className="relative z-30 mx-auto mt-6 mb-8 w-full max-w-[1400px] px-4 sm:mt-10 md:px-12">
-      <div className="relative flex w-full flex-col items-center gap-6 px-0 py-6 xl:flex-row xl:gap-12 xl:px-24 xl:py-28 xl:[background-image:url('/landing/cinta.webp')] xl:[background-size:100%_100%]">
-        <div className="relative z-20 w-full space-y-4 text-center xl:w-5/12 xl:rounded-2xl xl:bg-[#251206]/70 xl:p-6 xl:text-left">
-          <h2 className="font-bungee text-2xl leading-[1.2] tracking-tight text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)] sm:text-3xl xl:text-4xl">
+    <div className="relative z-30 mx-auto mt-8 w-full max-w-6xl px-4 pb-14 sm:px-6 lg:pb-20">
+      <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-10">
+        <div className="space-y-4 text-center lg:text-left">
+          <h2 className="font-bungee text-2xl leading-[1.2] tracking-tight text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)] sm:text-3xl">
             {contenido.videos_titulo} <span className="block text-maiz">{contenido.videos_resaltado}</span>
           </h2>
-          {contenido.videos_descripcion && <p className="mx-auto max-w-xl text-sm leading-relaxed font-semibold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] sm:text-base xl:mx-0">{contenido.videos_descripcion}</p>}
+          {contenido.videos_descripcion && <p className="mx-auto max-w-xl text-sm leading-relaxed font-semibold text-white sm:text-base lg:mx-0">{contenido.videos_descripcion}</p>}
           {contenido.videos_boton && <Link to="/reservar" className={claseBoton3D}>{contenido.videos_boton} <Play className="size-4" aria-hidden /></Link>}
         </div>
-        {videos.length > 0 && (
-          <div className="cinta-marco relative z-20 w-full overflow-hidden xl:w-7/12" style={{ maskImage: 'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)' }}>
-            <div className="cinta-mov flex gap-3 py-2 sm:gap-6 xl:py-4">
-              {videos.map((v) => <TarjetaVideo key={v.id} video={v} />)}
-              {videos.map((v) => <TarjetaVideo key={`copia-${v.id}`} video={v} oculta />)}
-            </div>
-          </div>
-        )}
+        {videos.length > 0 && <CintaVideos videos={videos} />}
       </div>
     </div>
   )
