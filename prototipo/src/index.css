@@ -32,10 +32,24 @@
   --color-error: #b42318;
   --color-error-soft: #fef1ef;
 
+  --font-bungee: "Bungee", "Big Shoulders Display", sans-serif;
+  --font-quicksand: "Quicksand", "Figtree", sans-serif;
   --font-cartel: "Big Shoulders Display", "Figtree", sans-serif;
   --font-sans: "Figtree", ui-sans-serif, system-ui, sans-serif;
 
   --ease-salida: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@font-face {
+  font-family: "Bungee";
+  src: url("/fonts/Bungee-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Quicksand";
+  src: url("/fonts/Quicksand-Variable.ttf") format("truetype");
+  font-weight: 300 700;
+  font-display: swap;
 }
 
 @layer base {
@@ -127,5 +141,37 @@
   .foco,
   .entra {
     animation: none;
+  }
+}
+
+/* Cintas que se mueven solas en la página de inicio: la lista va duplicada */
+@keyframes cinta {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.cinta-mov {
+  width: max-content;
+  animation: cinta 40s linear infinite;
+}
+.cinta-mov:hover,
+.cinta-mov:focus-within {
+  animation-play-state: paused;
+}
+@media (max-width: 767px) {
+  .personajes-mov {
+    animation: cinta 18s linear infinite;
+  }
+  .personajes-mov:active {
+    animation-play-state: paused;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cinta-mov,
+  .personajes-mov {
+    animation: none;
+  }
+  .cinta-marco {
+    overflow-x: auto;
   }
 }

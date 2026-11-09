@@ -11,6 +11,9 @@ export const useShow = (slug) =>
 export const useCategorias = () => useQuery({ queryKey: ['categorias'], queryFn: api.obtenerCategorias, ...CATALOGO })
 export const useExtras = () => useQuery({ queryKey: ['extras'], queryFn: api.obtenerExtras, ...CATALOGO })
 export const useZonas = () => useQuery({ queryKey: ['zonas'], queryFn: api.obtenerZonas, ...CATALOGO })
+export const useContenidoLanding = () => useQuery({ queryKey: ['landing-contenido'], queryFn: api.obtenerContenidoLanding, ...CATALOGO })
+export const useBannersLanding = () => useQuery({ queryKey: ['landing-banners'], queryFn: api.obtenerBannersLanding, ...CATALOGO })
+export const useVideosLanding = () => useQuery({ queryKey: ['landing-videos'], queryFn: api.obtenerVideosLanding, ...CATALOGO })
 export const usePagina = (slug) => useQuery({ queryKey: ['pagina', slug], queryFn: () => api.obtenerPagina(slug), ...CATALOGO })
 export const usePreguntas = () => useQuery({ queryKey: ['preguntas'], queryFn: api.obtenerPreguntas, ...CATALOGO })
 

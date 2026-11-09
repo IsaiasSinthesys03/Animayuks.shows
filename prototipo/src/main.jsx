@@ -7,7 +7,7 @@ import { StoreProvider } from './store'
 import { AuthProvider } from './auth'
 import { Aviso, Cargando } from './components/ui'
 import PublicLayout from './public/PublicLayout'
-import Inicio from './public/Inicio'
+import Landing from './public/landing/Landing'
 import Catalogo from './public/Catalogo'
 import ShowDetalle from './public/ShowDetalle'
 import Cobertura from './public/Cobertura'
@@ -28,6 +28,7 @@ const NuevaReservacion = lazy(() => import('./admin/NuevaReservacion'))
 const Clientes = lazy(() => import('./admin/Clientes'))
 const ShowsAdmin = lazy(() => import('./admin/ShowsAdmin'))
 const Zonas = lazy(() => import('./admin/Zonas'))
+const PaginaInicio = lazy(() => import('./admin/PaginaInicio'))
 const Disponibilidad = lazy(() => import('./admin/Disponibilidad'))
 const Configuracion = lazy(() => import('./admin/Configuracion'))
 
@@ -44,7 +45,7 @@ createRoot(document.getElementById('root')).render(
             <Suspense fallback={<Cargando />}>
               <Routes>
                 <Route element={<PublicLayout />}>
-                  <Route index element={<Inicio />} />
+                  <Route index element={<Landing />} />
                   <Route path="shows" element={<Catalogo />} />
                   <Route path="shows/:slug" element={<ShowDetalle />} />
                   <Route path="cobertura" element={<Cobertura />} />
@@ -64,6 +65,7 @@ createRoot(document.getElementById('root')).render(
                   <Route path="clientes" element={<Clientes />} />
                   <Route path="shows" element={<ShowsAdmin />} />
                   <Route path="zonas" element={<Zonas />} />
+                  <Route path="inicio" element={<PaginaInicio />} />
                   <Route path="disponibilidad" element={<Disponibilidad />} />
                   <Route path="configuracion" element={<Configuracion />} />
                 </Route>

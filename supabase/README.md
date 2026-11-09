@@ -33,6 +33,8 @@ Reglas:
 | 12 | [`20261105000012_proteger_zonas.sql`](migrations/20261105000012_proteger_zonas.sql) | Una zona con reservaciones no se puede borrar |
 | 13 | [`20261105000013_zonas_regiones.sql`](migrations/20261105000013_zonas_regiones.sql) | Catálogo de CP; zonas por estado, municipio o CP (gana lo más específico); horario propio por zona |
 | 14 | [`20261105000014_colores_correos.sql`](migrations/20261105000014_colores_correos.sql) | Paleta verde en los correos de reservación |
+| 15 | [`20261109000015_landing.sql`](migrations/20261109000015_landing.sql) | Página de inicio: textos, banners, videos de YouTube y bucket `landing` |
+| 16 | [`20261109000016_landing_permisos.sql`](migrations/20261109000016_landing_permisos.sql) | Permisos mínimos en las tablas de la página de inicio |
 
 **Si algo quedó mal** con las migraciones 1–3 y todavía no hay datos reales, [`deshacer_migraciones.sql`](deshacer_migraciones.sql) las revierte. **Borra datos: no usarlo en producción.**
 
@@ -151,3 +153,7 @@ Datos que el frontend lee directo de las tablas (RLS decide qué ve cada quien):
 
 - Cupones de descuento (RF-PRO).
 - Pagos en línea con Mercado Pago (fase 2).
+
+## Videos de banners (Cloudflare R2)
+
+Los videos de la página de inicio se suben desde el panel a R2 en `landing/banners/`, dentro de `animayuks-assets`, y se publican por `media.animayuks.com`. La Edge Function [`firmar-subida`](functions/firmar-subida/index.ts) comprueba que quien llama sea administrador y entrega un permiso de 10 minutos para un solo archivo. Requiere los secretos `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` y `R2_PUBLIC_URL` en Supabase.

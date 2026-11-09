@@ -61,6 +61,17 @@ export const catalogoCps = (estado, municipio) =>
 export const catalogoCpsPorCodigo = (codigos) =>
   datos(supabase.from('catalogo_cp').select('codigo_postal, estado, municipio, colonias').in('codigo_postal', codigos))
 
+// ── Página de inicio ────────────────────────────────────────────────────────
+export const urlLanding = (ruta) => (ruta ? supabase.storage.from('landing').getPublicUrl(ruta).data.publicUrl : null)
+export const obtenerContenidoLanding = () => datos(supabase.from('landing_contenido').select('*').single())
+// Un admin con sesión puede leer todo: el filtro asegura que la portada sea igual para todos
+export const obtenerBannersLanding = async () => {
+  const ahora = Date.now()
+  const filas = await datos(supabase.from('landing_banners').select('*').eq('activo', true).order('orden'))
+  return filas.filter((b) => (!b.inicia_en || Date.parse(b.inicia_en) <= ahora) && (!b.termina_en || Date.parse(b.termina_en) > ahora))
+}
+export const obtenerVideosLanding = () => datos(supabase.from('landing_videos').select('*').eq('activo', true).order('orden'))
+
 export const anotarInteres = (codigo_postal, contacto) =>
   datos(supabase.from('lista_interes').insert({ codigo_postal, contacto: contacto || null }))
 

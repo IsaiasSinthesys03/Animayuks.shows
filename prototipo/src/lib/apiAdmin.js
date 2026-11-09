@@ -91,3 +91,71 @@ export function descargarCSV(nombre, encabezados, filas) {
   a.click()
   URL.revokeObjectURL(url)
 }
+
+// ── Página de inicio ────────────────────────────────────────────────────────
+export const guardarContenidoLanding = ({ id: _id, actualizado_en: _a, ...campos }) => datos(supabase.from('landing_contenido').update(campos).eq('id', 1))
+export const obtenerBannersAdmin = () => datos(supabase.from('landing_banners').select('*').order('orden'))
+export const guardarBanner = (id, b) => (id ? datos(supabase.from('landing_banners').update(b).eq('id', id)) : datos(supabase.from('landing_banners').insert(b)))
+export const borrarBanner = (id) => datos(supabase.from('landing_banners').delete().eq('id', id))
+export const reordenarBanners = (ids) => datos(supabase.rpc('reordenar_banners', { p_ids: ids }))
+export const obtenerVideosAdmin = () => datos(supabase.from('landing_videos').select('*').order('orden'))
+export const guardarVideoLanding = (id, v) => (id ? datos(supabase.from('landing_videos').update(v).eq('id', id)) : datos(supabase.from('landing_videos').insert(v)))
+export const borrarVideoLanding = (id) => datos(supabase.from('landing_videos').delete().eq('id', id))
+export const reordenarVideos = (ids) => datos(supabase.rpc('reordenar_videos', { p_ids: ids }))
+
+/** Reduce la imagen en el navegador y la convierte a WebP, conservando la transparencia */
+async function optimizarImagen(archivo) {
+  try {
+    const bitmap = await createImageBitmap(archivo)
+    const escala = Math.min(1, 1400 / Math.max(bitmap.width, bitmap.height))
+    const lienzo = document.createElement('canvas')
+    lienzo.width = Math.round(bitmap.width * escala)
+    lienzo.height = Math.round(bitmap.height * escala)
+    lienzo.getContext('2d').drawImage(bitmap, 0, 0, lienzo.width, lienzo.height)
+    bitmap.close()
+    const blob = await new Promise((listo) => lienzo.toBlob(listo, 'image/webp', 0.85))
+    return blob?.type === 'image/webp' ? blob : archivo
+  } catch {
+    return archivo
+  }
+}
+
+export async function subirImagenBanner(archivo) {
+  const final = await optimizarImagen(archivo)
+  const extension = { 'image/webp': 'webp', 'image/png': 'png', 'image/jpeg': 'jpg' }[final.type] ?? 'webp'
+  const ruta = `banners/${crypto.randomUUID()}.${extension}`
+  const { error } = await supabase.storage.from('landing').upload(ruta, final, { cacheControl: '31536000', contentType: final.type })
+  if (error) throw error
+  return ruta
+}
+
+export async function borrarArchivoLanding(ruta) {
+  const { error } = await supabase.storage.from('landing').remove([ruta])
+  if (error) throw error
+}
+
+async function llamarFirma(cuerpo) {
+  const { data, error } = await supabase.functions.invoke('firmar-subida', { body: cuerpo })
+  if (error) {
+    const detalle = await error.context?.json?.().catch(() => null)
+    throw new Error(`ALMACENAMIENTO: ${detalle?.error ?? 'No se pudo conectar con el almacenamiento de videos.'}`)
+  }
+  return data
+}
+
+/** Pide permiso a la función y sube el video directo a Cloudflare R2, informando el avance */
+export async function subirVideoBanner(archivo, onProgreso) {
+  const { url_subida: url, url_publica: publica } = await llamarFirma({ accion: 'subir', tipo: archivo.type, tamano: archivo.size })
+  await new Promise((listo, fallo) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open('PUT', url)
+    xhr.setRequestHeader('Content-Type', archivo.type)
+    xhr.upload.onprogress = (e) => e.lengthComputable && onProgreso?.(Math.round((e.loaded / e.total) * 100))
+    xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? listo() : fallo(new Error('ALMACENAMIENTO: Cloudflare rechazó el video.')))
+    xhr.onerror = () => fallo(new Error('ALMACENAMIENTO: Se interrumpió la subida. Revisa tu internet e intenta de nuevo.'))
+    xhr.send(archivo)
+  })
+  return publica
+}
+
+export const borrarVideoBanner = (url) => llamarFirma({ accion: 'borrar', url })

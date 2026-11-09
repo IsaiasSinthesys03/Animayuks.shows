@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { CalendarDays, CalendarOff, ClipboardList, Ellipsis, ExternalLink, LayoutDashboard, LogOut, MapPinned, Plus, Settings, Theater, Users, X } from 'lucide-react'
+import { CalendarDays, CalendarOff, ClipboardList, Ellipsis, ExternalLink, LayoutDashboard, LogOut, MapPinned, Sparkles, Plus, Settings, Theater, Users, X } from 'lucide-react'
 import { salir, useAuth } from '../auth'
 import { fechaLarga } from '../lib/format'
 import { useConfiguracion } from '../lib/consultas'
@@ -14,6 +14,7 @@ const NAV = [
   { to: '/admin/shows', texto: 'Shows', icono: Theater },
   { to: '/admin/zonas', texto: 'Zonas de cobertura', icono: MapPinned },
   { to: '/admin/disponibilidad', texto: 'Horarios y bloqueos', icono: CalendarOff },
+  { to: '/admin/inicio', texto: 'Página de inicio', icono: Sparkles },
   { to: '/admin/configuracion', texto: 'Configuración', icono: Settings },
 ]
 

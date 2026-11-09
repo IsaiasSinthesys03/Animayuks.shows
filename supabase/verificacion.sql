@@ -17,7 +17,9 @@ with tablas as (
                        -- migración 6
                        'retenciones',
                        -- migración 9
-                       'plantillas_correo', 'notificaciones')
+                       'plantillas_correo', 'notificaciones',
+                       -- migración 15
+                       'landing_contenido', 'landing_banners', 'landing_videos')
 ),
 funciones as (
   select p.proname
@@ -44,13 +46,13 @@ funciones as (
 ),
 chequeos (orden, chequeo, esperado, obtenido) as (
   values
-    (1,  'Tablas creadas',                        '22', (select count(*) from tablas)::text),
-    (2,  'Tablas con RLS activo',                 '22', (select count(*) from tablas where relrowsecurity)::text),
-    (3,  'Políticas de seguridad en tablas',      '45', (select count(*) from pg_policies where schemaname = 'public')::text),
+    (1,  'Tablas creadas',                        '25', (select count(*) from tablas)::text),
+    (2,  'Tablas con RLS activo',                 '25', (select count(*) from tablas where relrowsecurity)::text),
+    (3,  'Políticas de seguridad en tablas',      '51', (select count(*) from pg_policies where schemaname = 'public')::text),
     (4,  'Funciones de negocio',                  '42', (select count(*) from funciones)::text),
     (5,  'Trigger de nuevos usuarios',            '1',  (select count(*) from pg_trigger where tgname = 'al_crear_usuario')::text),
     (6,  'Regla anti-traslapes de reservaciones', '1',  (select count(*) from pg_constraint where conname = 'reservaciones_sin_traslape')::text),
-    (7,  'Buckets de Storage',                    '2',  (select count(*) from storage.buckets where id in ('shows', 'comprobantes'))::text),
+    (7,  'Buckets de Storage',                    '3',  (select count(*) from storage.buckets where id in ('shows', 'comprobantes', 'landing'))::text),
     (8,  'Políticas de Storage',                  '6',  (select count(*) from pg_policies where schemaname = 'storage' and tablename = 'objects'
                                                            and policyname like any (array['shows:%', 'comprobantes:%']))::text),
     (9,  'Administrador con rol admin',           '1',  (select count(*) from public.perfiles p join auth.users u on u.id = p.id
