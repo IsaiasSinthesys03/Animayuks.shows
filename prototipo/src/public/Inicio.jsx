@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useConfiguracion, useShows, useZonas } from '../lib/consultas'
+import { useConfiguracion, useShows } from '../lib/consultas'
 import { pesos } from '../lib/format'
 import { Cargando, Cartel, ErrorCarga } from '../components/ui'
 import VerificadorCP from '../components/VerificadorCP'
@@ -25,9 +25,7 @@ function Marquesina({ children }) {
 
 export default function Inicio() {
   const shows = useShows()
-  const { data: zonas } = useZonas()
   const { data: cfg } = useConfiguracion()
-  const activas = (zonas ?? []).filter((z) => z.activa)
   const cartelera = [...(shows.data ?? [])].sort((a, b) => Number(b.destacado) - Number(a.destacado) || a.orden - b.orden).slice(0, 6)
   const anticipo = cfg ? Number(cfg.anticipo_porcentaje) : 30
 
@@ -106,25 +104,6 @@ export default function Inicio() {
           </ol>
         </div>
       </section>
-
-      {activas.length > 0 && (
-        <section className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:py-20">
-          <h2 className="text-2xl font-bold">Dónde damos servicio</h2>
-          <ul className="mt-4 divide-y divide-linea">
-            {activas.map((z) => (
-              <li key={z.id} className="flex items-center justify-between py-3">
-                <span className="flex items-center gap-3 font-medium">
-                  <span className="size-3 rounded-full" style={{ background: z.color }} aria-hidden /> {z.nombre}
-                </span>
-                <span className="num text-sm text-tinta-soft">{Number(z.cargo_traslado) ? `Traslado ${pesos(z.cargo_traslado)}` : 'Sin cargo'}</span>
-              </li>
-            ))}
-          </ul>
-          <Link to="/cobertura" className="mt-4 inline-block font-semibold text-selva-700 underline">
-            Revisar mi código postal
-          </Link>
-        </section>
-      )}
     </>
   )
 }
