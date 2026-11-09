@@ -90,7 +90,8 @@ export default function Catalogo() {
                 <p className="inline-flex items-center gap-1 text-sm text-tinta-soft">
                   <Users className="size-4" aria-hidden /> {s.artistas} {s.artistas === 1 ? 'artista' : 'artistas'}
                 </p>
-                <p className="mt-1.5 flex-1 leading-snug">{s.resumen}</p>
+                <h2 className="mt-1.5 text-lg leading-snug font-bold">{s.nombre}</h2>
+                <p className="mt-1 flex-1 leading-snug">{s.resumen}</p>
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                   <p className="text-sm text-tinta-soft">
                     Desde <span className="num text-base font-bold text-tinta">{pesos(s.precio_base)}</span>
