@@ -8,7 +8,7 @@ import { pesos, resumenHorario } from '../lib/format'
  * Verificador de cobertura por código postal, contra la base de datos.
  * `oscuro` lo adapta a fondos tinta; `onResultado` permite a un formulario reaccionar.
  */
-export default function VerificadorCP({ oscuro = false, onResultado, inicial = '' }) {
+export default function VerificadorCP({ oscuro = false, ocultarCosto = false, onResultado, inicial = '' }) {
   const [cp, setCp] = useState(inicial)
   const [estado, setEstado] = useState(null) // null | 'cargando' | 'invalido' | 'fuera' | { zona } | { error }
   const [contacto, setContacto] = useState('')
@@ -103,7 +103,7 @@ export default function VerificadorCP({ oscuro = false, onResultado, inicial = '
               <CircleCheck className="size-5" /> Sí llegamos a {estado.zona.nombre}
             </p>
             <p className={`mt-1 text-sm ${textoSuave}`}>
-              {Number(estado.zona.cargo_traslado) ? `Cargo por traslado: ${pesos(estado.zona.cargo_traslado)}.` : 'Sin cargo por traslado.'}
+              {!ocultarCosto && (Number(estado.zona.cargo_traslado) ? `Cargo por traslado: ${pesos(estado.zona.cargo_traslado)}.` : 'Sin cargo por traslado.')}
               {estado.zona.horario && ` En tu zona: ${resumenHorario(estado.zona.horario)}.`}
             </p>
             {!onResultado && (

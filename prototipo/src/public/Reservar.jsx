@@ -187,7 +187,7 @@ export default function Reservar() {
   const extrasSel = extrasActivos.filter((e) => d.extras.includes(e.id))
   const lugarCP = useQuery({ queryKey: ['catalogo-codigos', [d.cp]], queryFn: () => catalogoCpsPorCodigo([d.cp]), enabled: !!d.zona && d.cp.length === 5, staleTime: 60 * 60 * 1000 })
   const total = Number(paquete?.precio ?? show?.precio_base ?? 0) + extrasSel.reduce((a, e) => a + Number(e.precio), 0) + Number(d.zona?.cargo_traslado ?? 0)
-  const anticipoPct = Number(cfg?.anticipo_porcentaje ?? 30)
+  const anticipoPct = Number(cfg?.anticipo_porcentaje ?? 50)
 
   const horarios = useQuery({
     queryKey: ['horarios', d.showId, d.paqueteId || null, d.extras, d.cp, d.fecha],

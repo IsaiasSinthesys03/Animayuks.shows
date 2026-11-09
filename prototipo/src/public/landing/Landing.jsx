@@ -261,7 +261,7 @@ export default function Landing() {
   const { data: banners = [] } = useBannersLanding()
   const { data: videos = [] } = useVideosLanding()
   const { data: cfg } = useConfiguracion()
-  const anticipo = cfg ? Number(cfg.anticipo_porcentaje) : 30
+  const anticipo = cfg ? Number(cfg.anticipo_porcentaje) : 50
 
   if (contenido.isLoading) return <Cargando className="min-h-[60vh]" />
   if (contenido.isError) return <ErrorCarga onReintentar={contenido.refetch} />

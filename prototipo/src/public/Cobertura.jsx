@@ -1,5 +1,5 @@
 import { useZonas } from '../lib/consultas'
-import { pesos, resumenCobertura, resumenHorario } from '../lib/format'
+import { resumenCobertura, resumenHorario } from '../lib/format'
 import { Cargando, ErrorCarga } from '../components/ui'
 import VerificadorCP from '../components/VerificadorCP'
 
@@ -14,18 +14,17 @@ export default function Cobertura() {
         Solo aceptamos reservaciones dentro de nuestras zonas de cobertura. Escribe el código postal donde será tu evento.
       </p>
       <div className="mt-6">
-        <VerificadorCP />
+        <VerificadorCP ocultarCosto />
       </div>
 
       {zonas.isLoading && <Cargando />}
       {zonas.isError && <ErrorCarga onReintentar={zonas.refetch} />}
       {activas.length > 0 && (
         <table className="mt-10 w-full text-left text-[15px]">
-          <caption className="sr-only">Zonas y cargos de traslado</caption>
+          <caption className="sr-only">Zonas de servicio</caption>
           <thead>
             <tr className="border-b border-linea text-sm text-tinta-soft">
               <th className="py-2 font-medium">Zona</th>
-              <th className="py-2 text-right font-medium">Traslado</th>
             </tr>
           </thead>
           <tbody>
@@ -37,7 +36,6 @@ export default function Cobertura() {
                   <span className="mt-0.5 block text-sm font-normal text-tinta-soft">{resumenCobertura(z)}</span>
                   {z.horario && <span className="num mt-0.5 block text-sm font-normal text-tinta-soft">{resumenHorario(z.horario)}</span>}
                 </td>
-                <td className="num py-3 text-right">{Number(z.cargo_traslado) ? pesos(z.cargo_traslado) : 'Sin cargo'}</td>
               </tr>
             ))}
           </tbody>
