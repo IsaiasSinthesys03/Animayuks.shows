@@ -6,8 +6,6 @@ Plataforma web para reservar shows a domicilio. Tiene dos partes: un sitio públ
 
 | Ruta | Qué es |
 |---|---|
-| [`MD/Requerimientos_de_Software.md`](MD/Requerimientos_de_Software.md) | Especificación de requerimientos funcionales y no funcionales (ISO/IEC/IEEE 29148) |
-| [`MD/Skills_UI_UX.md`](MD/Skills_UI_UX.md) | Investigación de skills de UI/UX para Claude Code con React + Tailwind |
 | [`prototipo/`](prototipo/) | Prototipo navegable en React + Vite + Tailwind CSS v4, con datos simulados |
 | `.claude/skills/` | Skills de diseño instaladas para el proyecto (versiones en `skills-lock.json`) |
 

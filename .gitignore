@@ -6,3 +6,8 @@ dist/
 supabase/functions/.env
 .claude/settings.local.json
 respaldos/
+
+# Material de referencia local: no pertenece a este repositorio
+MD/
+API_Backend/
+Plantilla_Prototipos_UI_UX/
