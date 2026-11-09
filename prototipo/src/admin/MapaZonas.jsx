@@ -1,10 +1,54 @@
 import { useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { obtenerCuadriculaCP, obtenerMapaZonas } from '../lib/apiAdmin'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { mensajeError } from '../lib/api'
+import { agregarCpAZona, obtenerCuadriculaCP, obtenerMapaZonas } from '../lib/apiAdmin'
+import { useZonas } from '../lib/consultas'
 import { pesos, resumenHorario } from '../lib/format'
-import { Cargando, ErrorCarga, Panel } from '../components/ui'
+import { useStore } from '../store'
+import { Boton, Cargando, ErrorCarga, Panel } from '../components/ui'
 import { Interruptor } from './AdminLayout'
 import MapaCobertura from '../components/MapaCobertura'
+
+/** Agrega el código a una zona sin salir del mapa */
+function AgregarAZona({ cp, alAgregar }) {
+  const queryClient = useQueryClient()
+  const { avisar } = useStore()
+  const zonas = useZonas()
+  const [zonaId, setZonaId] = useState('')
+  const [error, setError] = useState('')
+  const [guardando, setGuardando] = useState(false)
+  const lista = [...(zonas.data ?? [])].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
+
+  const agregar = async () => {
+    setError('')
+    if (!zonaId) return setError('Elige una zona.')
+    setGuardando(true)
+    try {
+      const zona = await agregarCpAZona(zonaId, cp)
+      await Promise.all(['admin-mapa-zonas', 'admin-cuadricula-cp', 'zonas', 'mapa-cobertura'].map((k) => queryClient.invalidateQueries({ queryKey: [k] })))
+      avisar(`${cp} agregado a ${zona.nombre}`)
+      alAgregar(zona.nombre)
+    } catch (err) {
+      setError(mensajeError(err))
+    } finally {
+      setGuardando(false)
+    }
+  }
+
+  return (
+    <div className="mt-3 space-y-2 rounded-xl bg-butaca p-3">
+      <label className="block text-sm font-semibold" htmlFor="agregar-zona">Agregar a una zona</label>
+      <div className="flex gap-2">
+        <select id="agregar-zona" value={zonaId} onChange={(e) => setZonaId(e.target.value)} className="h-9 min-w-0 flex-1 rounded-lg border border-linea bg-white px-2 text-sm">
+          <option value="">{zonas.isLoading ? 'Cargando…' : 'Elige una zona'}</option>
+          {lista.map((z) => <option key={z.id} value={z.id}>{z.nombre}{z.activa ? '' : ' (pausada)'}</option>)}
+        </select>
+        <Boton type="button" tam="sm" onClick={agregar} disabled={guardando}>{guardando ? 'Agregando…' : 'Agregar'}</Boton>
+      </div>
+      {error && <p role="alert" className="text-sm font-medium text-error">{error}</p>}
+    </div>
+  )
+}
 
 export default function MapaZonas({ onCerrar }) {
   const consulta = useQuery({ queryKey: ['admin-mapa-zonas'], queryFn: obtenerMapaZonas, staleTime: 0, refetchOnMount: 'always' })
@@ -77,10 +121,11 @@ export default function MapaZonas({ onCerrar }) {
             {area?.sinZona && (
               <dl className="mt-1 space-y-1 text-sm">
                 <div><dt className="inline font-semibold">CP: </dt><dd className="num inline">{area.cp}{area.municipio ? ` · ${area.municipio}` : ''}</dd></div>
-                <div><dd className="font-semibold text-alerta">Sin zona</dd></div>
+                <div><dd className={`font-semibold ${area.agregadoA ? 'text-ok' : 'text-alerta'}`}>{area.agregadoA ? `Agregado a ${area.agregadoA}` : 'Sin zona'}</dd></div>
                 <div><dt className="font-semibold">Colonias</dt><dd>{area.colonias || 'Sin datos'}</dd></div>
               </dl>
             )}
+            {area?.sinZona && !area.agregadoA && <AgregarAZona cp={area.cp} alAgregar={(nombre) => setArea({ ...area, agregadoA: nombre })} />}
             {area && !area.sinZona && area.zona && (
               <dl className="mt-1 space-y-1 text-sm">
                 <div><dt className="inline font-semibold">CP: </dt><dd className="num inline">{area.cp}</dd></div>

@@ -162,3 +162,4 @@ export const borrarVideoBanner = (url) => llamarFirma({ accion: 'borrar', url })
 
 export const obtenerMapaZonas = () => datos(supabase.rpc('mapa_zonas_admin'))
 export const obtenerCuadriculaCP = () => datos(supabase.rpc('cuadricula_cp_admin'))
+export const agregarCpAZona = (zonaId, cp) => datos(supabase.rpc('agregar_cp_a_zona', { p_zona_id: zonaId, p_cp: cp }))

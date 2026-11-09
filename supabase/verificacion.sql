@@ -92,7 +92,9 @@ chequeos (orden, chequeo, esperado, obtenido) as (
     (33, 'Contornos de Yucatán cargados',         '468', (select count(*) from public.cp_contornos)::text),
     (34, 'Mapa del panel cerrado al público',     'false', (has_function_privilege('anon', 'public.mapa_zonas_admin()', 'execute'))::text),
     -- migración 19
-    (35, 'Cuadrícula cerrada al público',         'false', (has_function_privilege('anon', 'public.cuadricula_cp_admin()', 'execute'))::text)
+    (35, 'Cuadrícula cerrada al público',         'false', (has_function_privilege('anon', 'public.cuadricula_cp_admin()', 'execute'))::text),
+    -- migración 20
+    (36, 'Agregar CP cerrado al público',         'false', (has_function_privilege('anon', 'public.agregar_cp_a_zona(uuid,text)', 'execute'))::text)
 )
 select orden, chequeo, esperado, obtenido, esperado = obtenido as ok
   from chequeos
