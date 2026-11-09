@@ -179,7 +179,7 @@ function TarjetaVideo({ video, oculta }) {
       aria-label={`Ver en YouTube: ${video.titulo}`}
       className="group relative flex aspect-video w-48 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#150800] sm:w-60 xl:w-72"
     >
-      <img src={`https://img.youtube.com/vi/${video.youtube_id}/hqdefault.jpg`} alt="" loading="lazy" className="absolute inset-0 size-full object-cover opacity-80 transition-all duration-500 group-hover:scale-105 group-hover:opacity-55" />
+      <img src={`https://img.youtube.com/vi/${video.youtube_id}/hqdefault.jpg`} alt="" className="absolute inset-0 size-full object-cover opacity-80 transition-all duration-500 group-hover:scale-105 group-hover:opacity-55" />
       <span className="relative z-10 flex size-11 items-center justify-center rounded-full border-2 border-[#251206] bg-maiz transition-transform group-hover:scale-110 xl:size-12"><Play className="ml-0.5 size-5 text-[#251206]" aria-hidden /></span>
       <span className="absolute inset-x-0 bottom-0 truncate bg-gradient-to-t from-black/85 to-transparent px-3 pt-6 pb-2 text-left text-sm font-bold text-white">{video.titulo}</span>
     </a>
