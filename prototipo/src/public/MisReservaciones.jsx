@@ -5,7 +5,7 @@ import { CalendarClock, Hourglass, Loader2, MapPin } from 'lucide-react'
 import { salir, useAuth } from '../auth'
 import { cancelarReservacion, horariosDisponibles, mensajeError, misReservaciones, reprogramarReservacion } from '../lib/api'
 import { useConfiguracion } from '../lib/consultas'
-import { fechaLarga, hora, pesos, saldoDe } from '../lib/format'
+import { fechaLarga, hora, pesos, saldoDe, textoMinutos } from '../lib/format'
 import { useStore } from '../store'
 import { Boton, Cargando, ErrorCarga, Estado, Miniatura, Panel } from '../components/ui'
 import Calendario from '../components/Calendario'
@@ -84,7 +84,7 @@ function PanelCambiarFecha({ r, onCerrar }) {
 
   const horarios = useQuery({
     queryKey: ['horarios', r.show_id, r.paquete_id, extras, r.codigo_postal, fecha],
-    queryFn: () => horariosDisponibles({ showId: r.show_id, paqueteId: r.paquete_id, extras, cp: r.codigo_postal, fecha }),
+    queryFn: () => horariosDisponibles({ showId: r.show_id, paqueteId: r.paquete_id, extras, cp: r.codigo_postal, fecha, minutosExtra: r.minutos_extra }),
     enabled: !!fecha,
   })
 
@@ -108,7 +108,7 @@ function PanelCambiarFecha({ r, onCerrar }) {
   return (
     <div className="space-y-5 p-5">
       <p className="text-[15px] text-tinta-soft">Actualmente: {fechaLarga(r.inicio)}, {hora(r.inicio)}. El precio no cambia. Solo puedes cambiar la fecha una vez.</p>
-      <Calendario showId={r.show_id} paqueteId={r.paquete_id} extras={extras} cp={r.codigo_postal} valor={fecha} onCambio={setFecha} />
+      <Calendario showId={r.show_id} paqueteId={r.paquete_id} extras={extras} minutosExtra={r.minutos_extra} cp={r.codigo_postal} valor={fecha} onCambio={setFecha} />
       {error && <p role="alert" className="rounded-xl bg-error-soft px-3 py-2 text-sm font-medium text-error">{error}</p>}
       {fecha && (
         <div>
@@ -206,6 +206,7 @@ export default function MisReservaciones() {
                   </div>
                   <p className="mt-1.5 text-lg font-bold">{r.shows?.nombre}{r.paquetes?.nombre ? `, ${r.paquetes.nombre.toLowerCase()}` : ''}</p>
                   {r.modalidad_nombre && <p className="text-[15px] text-tinta-soft">Evento {r.modalidad_nombre.toLowerCase()}</p>}
+                  {r.minutos_extra > 0 && <p className="text-[15px] text-tinta-soft">Incluye {textoMinutos(r.minutos_extra)} de tiempo extra · ¿Necesitas más tiempo? Escríbenos por WhatsApp</p>}
                   <p className="mt-1 flex items-center gap-1.5 text-[15px] text-tinta-soft">
                     <CalendarClock className="size-4 shrink-0" /> <span className="first-letter:uppercase">{fechaLarga(r.inicio)}, {hora(r.inicio)}</span>
                   </p>

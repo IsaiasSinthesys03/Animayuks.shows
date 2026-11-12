@@ -5,7 +5,7 @@ import { Check, ChevronLeft, Loader2, Timer } from 'lucide-react'
 import { useAuth } from '../auth'
 import { aceptarPaginas, apartarHorario, catalogoCpsPorCodigo, crearReservacion, horariosDisponibles, mensajeError } from '../lib/api'
 import { useConfiguracion, useModalidades, useShows } from '../lib/consultas'
-import { fechaDeDia, fechaLarga, hora, pesos } from '../lib/format'
+import { fechaDeDia, fechaLarga, hora, opcionesExtra, pesos, textoMinutos } from '../lib/format'
 import { Boton, Campo, Cargando, ErrorCarga, Input, Miniatura, Select, claseInput } from '../components/ui'
 import Calendario from '../components/Calendario'
 import VerificadorCP from '../components/VerificadorCP'
@@ -18,7 +18,7 @@ const SIN_EXTRAS = [] // los extras se reemplazaron por tipos de evento
 const NINGUNA = 'ninguna'
 
 const VACIO = {
-  paso: 0, showId: '', paqueteId: '', modalidad: '',
+  paso: 0, showId: '', paqueteId: '', modalidad: '', minutosExtra: 0,
   cp: '', zona: null, calle: '', colonia: '', referencias: '',
   fecha: '', inicio: '', expiraEn: '',
   tipoEvento: 'Cumpleaños', festejado: '', asistentes: '', espacio: 'Jardín', comentarios: '',
@@ -45,7 +45,7 @@ function borrarBorrador() {
   } catch { /* nada que borrar */ }
 }
 
-function Boleto({ datos, show, paquete, modalidad, total, anticipoPct }) {
+function Boleto({ datos, show, paquete, modalidad, cargoExtra, total, anticipoPct }) {
   return (
     <div className="rounded-3xl bg-butaca [--boleto-fondo:white]">
       <div className="p-5">
@@ -70,6 +70,9 @@ function Boleto({ datos, show, paquete, modalidad, total, anticipoPct }) {
       <div className="boleto-corte p-5">
         <dl className="num space-y-1.5 text-[15px]">
           <div className="flex justify-between"><dt className="text-tinta-soft">Show</dt><dd>{pesos(paquete?.precio ?? show?.precio_base ?? 0)}</dd></div>
+          {cargoExtra > 0 && (
+            <div className="flex justify-between gap-3"><dt className="text-tinta-soft">Tiempo extra ({textoMinutos(datos.minutosExtra)})</dt><dd>{pesos(cargoExtra)}</dd></div>
+          )}
           {modalidad && (
             <div className="flex justify-between gap-3"><dt className="text-tinta-soft">Evento {modalidad.nombre.toLowerCase()}</dt><dd>{pesos(modalidad.cargo)}</dd></div>
           )}
@@ -189,12 +192,16 @@ export default function Reservar() {
   const pideModalidad = !!show?.pide_modalidad && modalidadesActivas.length > 0
   const modalidad = pideModalidad ? modalidadesActivas.find((m) => m.id === d.modalidad) ?? null : null
   const lugarCP = useQuery({ queryKey: ['catalogo-codigos', [d.cp]], queryFn: () => catalogoCpsPorCodigo([d.cp]), enabled: !!d.zona && d.cp.length === 5, staleTime: 60 * 60 * 1000 })
-  const total = Number(paquete?.precio ?? show?.precio_base ?? 0) + Number(modalidad?.cargo ?? 0) + Number(d.zona?.cargo_traslado ?? 0)
+  const permiteExtra = !!show?.permite_horas_extra && Number(show?.precio_hora_extra) >= 0
+  const minutosExtra = permiteExtra ? Number(d.minutosExtra) || 0 : 0
+  const cargoExtra = Math.round(Number(show?.precio_hora_extra ?? 0) * minutosExtra / 60 * 100) / 100
+  const duracionBase = paquete?.duracion_min ?? show?.duracion_min ?? 0
+  const total = Number(paquete?.precio ?? show?.precio_base ?? 0) + cargoExtra + Number(modalidad?.cargo ?? 0) + Number(d.zona?.cargo_traslado ?? 0)
   const anticipoPct = Number(cfg?.anticipo_porcentaje ?? 50)
 
   const horarios = useQuery({
     queryKey: ['horarios', d.showId, d.paqueteId || null, SIN_EXTRAS, d.cp, d.fecha],
-    queryFn: () => horariosDisponibles({ showId: d.showId, paqueteId: d.paqueteId || null, extras: SIN_EXTRAS, cp: d.cp, fecha: d.fecha }),
+    queryFn: () => horariosDisponibles({ showId: d.showId, paqueteId: d.paqueteId || null, extras: SIN_EXTRAS, cp: d.cp, fecha: d.fecha, minutosExtra }),
     enabled: d.paso === 2 && !!d.fecha && !!d.zona,
     staleTime: 15 * 1000,
   })
@@ -260,7 +267,7 @@ export default function Reservar() {
     setErrores({})
     setApartando(h.inicio)
     try {
-      const r = await apartarHorario({ showId: d.showId, paqueteId: d.paqueteId || null, extras: SIN_EXTRAS, cp: d.cp, inicio: h.inicio })
+      const r = await apartarHorario({ showId: d.showId, paqueteId: d.paqueteId || null, extras: SIN_EXTRAS, cp: d.cp, inicio: h.inicio, minutosExtra })
       setD((x) => ({ ...x, inicio: r.inicio, expiraEn: r.expira_en }))
     } catch (err) {
       setErrorGeneral(mensajeError(err))
@@ -286,7 +293,7 @@ export default function Reservar() {
         p_referencias: d.referencias || null,
         p_extras: SIN_EXTRAS,
         p_evento: {
-          modalidad_id: modalidad?.id ?? null, tipo_evento: d.tipoEvento, festejado: d.festejado, asistentes: d.asistentes,
+          modalidad_id: modalidad?.id ?? null, minutos_extra: minutosExtra, tipo_evento: d.tipoEvento, festejado: d.festejado, asistentes: d.asistentes,
           espacio: d.espacio, comentarios: d.comentarios, contacto_dia: d.contactoDia,
         },
         p_cliente: { nombre: d.nombre.trim(), telefono: d.telefono.trim() },
@@ -360,7 +367,7 @@ export default function Reservar() {
                   <button
                     key={s.id}
                     type="button"
-                    onClick={() => setD((x) => ({ ...x, ...reiniciarHorario, showId: s.id, modalidad: x.showId === s.id ? x.modalidad : '', paqueteId: s.paquetes.find((p) => p.activo)?.id ?? '' }))}
+                    onClick={() => setD((x) => ({ ...x, ...reiniciarHorario, showId: s.id, modalidad: x.showId === s.id ? x.modalidad : '', minutosExtra: x.showId === s.id ? x.minutosExtra : 0, paqueteId: s.paquetes.find((p) => p.activo)?.id ?? '' }))}
                     className={`flex items-center gap-4 rounded-2xl border-2 p-3 text-left transition-colors ${d.showId === s.id ? 'border-selva-600 bg-selva-50/50' : 'border-linea hover:border-tinta-soft/40'}`}
                   >
                     <Miniatura show={s} />
@@ -384,6 +391,29 @@ export default function Reservar() {
                           {p.incluye.length > 0 && <span className="block text-sm text-tinta-soft">{p.incluye.join(', ')}</span>}
                         </span>
                       </label>
+                    ))}
+                  </div>
+                </fieldset>
+              )}
+              {permiteExtra && cfg?.max_minutos_extra > 0 && (
+                <fieldset className="mt-8">
+                  <legend className="text-lg font-bold">¿Quieres más tiempo de show?</legend>
+                  <p className="mt-1 text-sm text-tinta-soft">
+                    {pesos(show.precio_hora_extra)} por hora extra. Duración del show: <span className="font-semibold text-tinta">{textoMinutos(duracionBase + minutosExtra)}</span>.
+                    {minutosExtra > 0 && ' Con más tiempo hay menos horarios disponibles.'}
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {[0, ...opcionesExtra(cfg.max_minutos_extra)].map((m) => (
+                      <button
+                        key={m}
+                        type="button"
+                        aria-pressed={minutosExtra === m}
+                        onClick={() => setD((x) => ({ ...x, ...reiniciarHorario, minutosExtra: m }))}
+                        className={`rounded-2xl border-2 px-3.5 py-2 text-left text-sm ${minutosExtra === m ? 'border-selva-600 bg-selva-50/50' : 'border-linea hover:border-tinta-soft/40'}`}
+                      >
+                        <span className="block font-semibold">{m ? `+${textoMinutos(m)}` : 'Sin tiempo extra'}</span>
+                        <span className="num block text-tinta-soft">{m ? `+${pesos(Number(show.precio_hora_extra) * m / 60)}` : 'Incluido'}</span>
+                      </button>
                     ))}
                   </div>
                 </fieldset>
@@ -448,7 +478,7 @@ export default function Reservar() {
               <p className="mt-1 text-tinta-soft">Solo ves horarios libres. Todas las horas son de Guadalajara.</p>
               <div className="mt-5 grid gap-8 md:grid-cols-[1fr_220px]">
                 <div className="max-w-md">
-                  <Calendario showId={d.showId} paqueteId={d.paqueteId || null} extras={SIN_EXTRAS} cp={d.cp} valor={d.fecha}
+                  <Calendario showId={d.showId} paqueteId={d.paqueteId || null} extras={SIN_EXTRAS} minutosExtra={minutosExtra} cp={d.cp} valor={d.fecha}
                     onCambio={(f) => setD((x) => ({ ...x, fecha: f, inicio: '', expiraEn: '' }))} />
                 </div>
                 <div>
@@ -560,7 +590,7 @@ export default function Reservar() {
 
         <aside className="hidden lg:block">
           <div className="sticky top-24">
-            <Boleto datos={d} show={show} paquete={paquete} modalidad={modalidad} total={total} anticipoPct={anticipoPct} />
+            <Boleto datos={d} show={show} paquete={paquete} modalidad={modalidad} cargoExtra={cargoExtra} total={total} anticipoPct={anticipoPct} />
           </div>
         </aside>
       </div>

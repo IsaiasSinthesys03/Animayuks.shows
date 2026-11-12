@@ -133,6 +133,9 @@ export default function ShowDetalle() {
             </fieldset>
           )}
 
+          {show.permite_horas_extra && Number(show.precio_hora_extra) > 0 && (
+            <p className="mt-5 text-[15px]"><span className="font-semibold">¿Quieres más tiempo?</span> Puedes agregar tiempo extra al reservar: {pesos(show.precio_hora_extra)} por hora.</p>
+          )}
           {show.horario_propio && horario.data?.length > 0 && (
             <p className="mt-5 flex gap-2 text-[15px]">
               <CalendarDays className="mt-0.5 size-4 shrink-0 text-selva-700" aria-hidden />

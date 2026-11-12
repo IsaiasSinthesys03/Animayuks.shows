@@ -5,6 +5,7 @@ import { mensajeError } from '../lib/api'
 import { borrarPregunta, guardarConfiguracion, guardarPregunta, obtenerPaginas } from '../lib/apiAdmin'
 import { useConfiguracion, usePreguntas } from '../lib/consultas'
 import { useStore } from '../store'
+import { textoMinutos } from '../lib/format'
 import { Boton, Campo, Cargando, ErrorCarga, Input, claseInput } from '../components/ui'
 import { Encabezado, Interruptor } from './AdminLayout'
 import TarjetaDocumento from './legales/TarjetaDocumento'
@@ -82,6 +83,7 @@ function Parametros() {
         anticipacion_min_horas: Number(f.anticipacion_min_horas) || 0,
         anticipacion_max_dias: Number(f.anticipacion_max_dias) || 365,
         retencion_minutos: Number(f.retencion_minutos) || 10,
+        max_minutos_extra: Number(f.max_minutos_extra) || 180,
         cancelacion_dias_reembolso: Number(f.cancelacion_dias_reembolso) || 0,
         cancelacion_comision_pct: Number(f.cancelacion_comision_pct) || 0,
         reprogramacion_min_horas: Number(f.reprogramacion_min_horas) || 0,
@@ -142,6 +144,11 @@ function Parametros() {
           <Campo etiqueta="Anticipación mínima (horas)"><Input {...num('anticipacion_min_horas')} /></Campo>
           <Campo etiqueta="Anticipación máxima (días)"><Input {...num('anticipacion_max_dias')} /></Campo>
           <Campo etiqueta="Minutos que se aparta un horario" ayuda="Entre 1 y 60."><Input {...num('retencion_minutos')} /></Campo>
+          <Campo etiqueta="Tiempo extra máximo por reservación" ayuda="Solo en los shows que permiten tiempo extra.">
+            <select value={f.max_minutos_extra ?? 180} onChange={(e) => set('max_minutos_extra', e.target.value)} className={claseInput}>
+              {Array.from({ length: 20 }, (_, i) => (i + 1) * 30).map((m) => <option key={m} value={m}>{textoMinutos(m)}</option>)}
+            </select>
+          </Campo>
           <Campo etiqueta="Días para cancelar con reembolso"><Input {...num('cancelacion_dias_reembolso')} /></Campo>
           <Campo etiqueta="Comisión al reembolsar (%)"><Input {...num('cancelacion_comision_pct')} /></Campo>
           <Campo etiqueta="Horas mínimas para cambiar de fecha"><Input {...num('reprogramacion_min_horas')} /></Campo>

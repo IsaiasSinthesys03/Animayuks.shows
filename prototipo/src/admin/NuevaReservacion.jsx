@@ -5,8 +5,8 @@ import { AlertTriangle, CircleCheck, UserPlus, X } from 'lucide-react'
 import { useAuth } from '../auth'
 import { crearReservacion, horariosDisponibles, mensajeError, zonaPorCP } from '../lib/api'
 import { obtenerClientes, registrarPago } from '../lib/apiAdmin'
-import { useModalidades, useShows } from '../lib/consultas'
-import { hora, hoy, instanteLocal, pesos } from '../lib/format'
+import { useConfiguracion, useModalidades, useShows } from '../lib/consultas'
+import { hora, hoy, instanteLocal, opcionesExtra, pesos, textoMinutos } from '../lib/format'
 import { useStore } from '../store'
 import { Boton, Campo, Cargando, Input, Select } from '../components/ui'
 import { Encabezado } from './AdminLayout'
@@ -30,13 +30,14 @@ export default function NuevaReservacion() {
   const queryClient = useQueryClient()
   const shows = useShows()
   const { data: modalidades } = useModalidades()
+  const { data: cfg } = useConfiguracion()
   const clientes = useQuery({ queryKey: ['admin-clientes'], queryFn: obtenerClientes })
 
   const [busqueda, setBusqueda] = useState('')
   const [cliente, setCliente] = useState(null)
   const [nuevo, setNuevo] = useState(false)
   const [nc, setNc] = useState({ nombre: '', telefono: '', correo: '' })
-  const [f, setF] = useState({ showId: '', paqueteId: '', modalidad: '', cp: '', calle: '', colonia: '', referencias: '', fecha: '', hora: '', canal: 'Presencial', pago: '', metodo: 'Efectivo', descuento: '' })
+  const [f, setF] = useState({ showId: '', paqueteId: '', modalidad: '', minutosExtra: 0, cp: '', calle: '', colonia: '', referencias: '', fecha: '', hora: '', canal: 'Presencial', pago: '', metodo: 'Efectivo', descuento: '' })
   const [zona, setZona] = useState(undefined) // undefined: sin revisar, null: sin cobertura
   const [excepcion, setExcepcion] = useState(null) // mensaje de la regla que se está saltando
   const [motivo, setMotivo] = useState('')
@@ -49,6 +50,8 @@ export default function NuevaReservacion() {
   const paquetes = show?.paquetes.filter((p) => p.activo) ?? []
   const paquete = paquetes.find((p) => p.id === f.paqueteId) ?? null
   const pideModalidad = !!show?.pide_modalidad
+  const minutosExtra = show?.permite_horas_extra ? Number(f.minutosExtra) || 0 : 0
+  const cargoExtra = Math.round(Number(show?.precio_hora_extra ?? 0) * minutosExtra / 60 * 100) / 100
   const modalidad = pideModalidad ? (modalidades ?? []).find((m) => m.id === f.modalidad) ?? null : null
 
   useEffect(() => {
@@ -69,7 +72,7 @@ export default function NuevaReservacion() {
 
   const libres = useQuery({
     queryKey: ['horarios', f.showId, f.paqueteId || null, [], f.cp, f.fecha],
-    queryFn: () => horariosDisponibles({ showId: f.showId, paqueteId: f.paqueteId || null, extras: [], cp: f.cp, fecha: f.fecha }),
+    queryFn: () => horariosDisponibles({ showId: f.showId, paqueteId: f.paqueteId || null, extras: [], cp: f.cp, fecha: f.fecha, minutosExtra }),
     enabled: !!f.showId && !!f.fecha && !!zona,
   })
 
@@ -77,7 +80,7 @@ export default function NuevaReservacion() {
     ? (clientes.data ?? []).filter((c) => `${c.nombre} ${c.telefono} ${c.correo}`.toLowerCase().includes(busqueda.trim().toLowerCase())).slice(0, 6)
     : []
 
-  const subtotal = Number(paquete?.precio ?? show?.precio_base ?? 0) + Number(modalidad?.cargo ?? 0)
+  const subtotal = Number(paquete?.precio ?? show?.precio_base ?? 0) + cargoExtra + Number(modalidad?.cargo ?? 0)
   const total = Math.max(0, subtotal + Number(zona?.cargo_traslado ?? 0) - (Number(f.descuento) || 0))
 
   const guardar = async (e) => {
@@ -100,7 +103,7 @@ export default function NuevaReservacion() {
         p_colonia: f.colonia,
         p_referencias: f.referencias || null,
         p_extras: [],
-        p_evento: { modalidad_id: modalidad?.id ?? null },
+        p_evento: { modalidad_id: modalidad?.id ?? null, minutos_extra: minutosExtra },
         ...(cliente
           ? { p_cliente_id: cliente.id }
           : { p_cliente: { nombre: nc.nombre.trim(), telefono: nc.telefono.trim(), correo: nc.correo.trim() } }),
@@ -200,6 +203,14 @@ export default function NuevaReservacion() {
                 </Campo>
               )}
             </div>
+            {show?.permite_horas_extra && (
+              <Campo etiqueta={`Tiempo extra (${pesos(show.precio_hora_extra)}/h)`} className="mt-4">
+                <Select value={f.minutosExtra} onChange={(e) => set('minutosExtra', Number(e.target.value))}>
+                  <option value={0}>Sin tiempo extra</option>
+                  {opcionesExtra(cfg?.max_minutos_extra ?? 180).map((m) => <option key={m} value={m}>+{textoMinutos(m)}, +{pesos(Number(show.precio_hora_extra) * m / 60)}</option>)}
+                </Select>
+              </Campo>
+            )}
             {pideModalidad && (
               <Campo etiqueta="Tipo de evento" className="mt-4">
                 <Select value={f.modalidad} onChange={(e) => set('modalidad', e.target.value)}>

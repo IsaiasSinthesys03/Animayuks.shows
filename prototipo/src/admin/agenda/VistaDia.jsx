@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { ChevronLeft, ChevronRight, ClipboardCopy } from 'lucide-react'
 import { franjasDeFecha } from '../../lib/apiAdmin'
-import { diaDe, fechaDeDia, hora, hoy, instanteLocal } from '../../lib/format'
+import { diaDe, fechaDeDia, hora, hoy, instanteLocal, textoMinutos } from '../../lib/format'
 import { useStore } from '../../store'
 import { Boton } from '../../components/ui'
 import { VIVAS, copiar, desglose, duracion, resumenDia, textoItinerario } from './util'
@@ -42,7 +42,7 @@ function Tarjeta({ r, top, alto, onAbrir }) {
             {t.tipo === 'show' ? (
               h >= 30 ? (
                 <span className="min-w-0 leading-tight">
-                  <span className="block truncate text-sm">{hora(t.desde)}–{hora(t.hasta)} · {r.shows?.nombre}</span>
+                  <span className="block truncate text-sm">{hora(t.desde)}–{hora(t.hasta)} · {r.shows?.nombre}{r.minutos_extra > 0 ? ` · +${textoMinutos(r.minutos_extra)} extra` : ''}</span>
                   {h >= 50 && <span className="block truncate font-normal opacity-90">{r.folio} · {r.clientes?.nombre} · {r.colonia}{pendiente ? ' · sin anticipo' : ''}</span>}
                 </span>
               ) : (

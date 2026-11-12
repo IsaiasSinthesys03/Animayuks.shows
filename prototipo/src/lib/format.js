@@ -32,6 +32,16 @@ export const fechaDeDia = (dia) => fLarga.format(new Date(`${dia}T18:00:00Z`))
 /** Convierte día y hora de Guadalajara ("2026-11-14", "16:00") a instante. México usa UTC−6 todo el año. */
 export const instanteLocal = (dia, horaTexto) => new Date(`${dia}T${horaTexto}:00-06:00`).toISOString()
 
+/** 90 → "1 h 30 min", 60 → "1 h", 30 → "30 min" */
+export const textoMinutos = (m) => {
+  const h = Math.floor(m / 60)
+  const r = m % 60
+  return [h ? `${h} h` : '', r ? `${r} min` : ''].filter(Boolean).join(' ') || '0 min'
+}
+
+/** Opciones de tiempo extra: 30, 60, … hasta el máximo */
+export const opcionesExtra = (max) => Array.from({ length: Math.floor((Number(max) || 0) / 30) }, (_, i) => (i + 1) * 30)
+
 export const saldoDe = (r) => Math.max(Number(r.total) - Number(r.total_pagado), 0)
 
 const DIAS_CORTOS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']

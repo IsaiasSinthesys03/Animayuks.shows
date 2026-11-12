@@ -82,19 +82,19 @@ export const anotarInteres = (codigo_postal, contacto) =>
   datos(supabase.from('lista_interes').insert({ codigo_postal, contacto: contacto || null }))
 
 // ── Disponibilidad y reservación ────────────────────────────────────────────
-export const disponibilidadMes = ({ showId, paqueteId, extras, cp, anio, mes }) =>
+export const disponibilidadMes = ({ showId, paqueteId, extras, cp, anio, mes, minutosExtra }) =>
   datos(supabase.rpc('disponibilidad_mes', {
-    p_show_id: showId, p_paquete_id: paqueteId ?? null, p_extras: extras ?? [], p_codigo_postal: cp, p_anio: anio, p_mes: mes,
+    p_show_id: showId, p_paquete_id: paqueteId ?? null, p_extras: extras ?? [], p_codigo_postal: cp, p_anio: anio, p_mes: mes, p_minutos_extra: minutosExtra ?? 0,
   }))
 
-export const horariosDisponibles = ({ showId, paqueteId, extras, cp, fecha }) =>
+export const horariosDisponibles = ({ showId, paqueteId, extras, cp, fecha, minutosExtra }) =>
   datos(supabase.rpc('horarios_disponibles', {
-    p_show_id: showId, p_paquete_id: paqueteId ?? null, p_extras: extras ?? [], p_codigo_postal: cp, p_fecha: fecha,
+    p_show_id: showId, p_paquete_id: paqueteId ?? null, p_extras: extras ?? [], p_codigo_postal: cp, p_fecha: fecha, p_minutos_extra: minutosExtra ?? 0,
   }))
 
-export const apartarHorario = ({ showId, paqueteId, extras, cp, inicio }) =>
+export const apartarHorario = ({ showId, paqueteId, extras, cp, inicio, minutosExtra }) =>
   datos(supabase.rpc('apartar_horario', {
-    p_show_id: showId, p_paquete_id: paqueteId ?? null, p_extras: extras ?? [], p_codigo_postal: cp, p_inicio: inicio,
+    p_show_id: showId, p_paquete_id: paqueteId ?? null, p_extras: extras ?? [], p_codigo_postal: cp, p_inicio: inicio, p_minutos_extra: minutosExtra ?? 0,
   }))
 
 export const liberarHorario = () => datos(supabase.rpc('liberar_horario'))

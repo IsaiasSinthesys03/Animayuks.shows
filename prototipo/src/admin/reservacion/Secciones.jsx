@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { ChevronDown } from 'lucide-react'
 import { aceptacionesDe, historialReservacion, obtenerPaginas } from '../../lib/apiAdmin'
-import { fechaLarga, hora, pesos } from '../../lib/format'
+import { fechaLarga, hora, pesos, textoMinutos } from '../../lib/format'
 import { ESTADOS } from '../../components/ui'
 import { lineaDesglose } from '../agenda/util'
 
@@ -49,7 +49,7 @@ export function SeccionEvento({ r }) {
         <Fila etiqueta="Tipo de evento">{tipo}</Fila>
         <Fila etiqueta="Invitados aprox.">{r.asistentes}</Fila>
         <Fila etiqueta="Espacio">{r.espacio}</Fila>
-        <Fila etiqueta="Show">{`${hora(r.inicio)} a ${hora(r.fin)} (${duracion} min)`}</Fila>
+        <Fila etiqueta="Show">{`${hora(r.inicio)} a ${hora(r.fin)} (${r.minutos_extra > 0 ? `${textoMinutos(duracion - r.minutos_extra)} + ${textoMinutos(r.minutos_extra)} extra` : `${duracion} min`})`}</Fila>
         <Fila etiqueta="Equipo">{<span className="num text-sm">{lineaDesglose(r)}</span>}</Fila>
         <Fila etiqueta="Recibe">{r.contacto_dia}</Fila>
         <Fila etiqueta="Referencias">{r.referencias}</Fila>
@@ -67,6 +67,7 @@ export function SeccionCobro({ r, anticipoPct }) {
     <Plegable titulo="Cobro" resumen={`Total ${pesos(r.total)}`} abierta>
       <dl className="num">
         <Fila etiqueta={r.paquetes?.nombre ? `Show, paquete ${r.paquetes.nombre.toLowerCase()}` : 'Show'}>{pesos(r.precio_show)}</Fila>
+        {Number(r.minutos_extra) > 0 && <Fila etiqueta={`Tiempo extra (${textoMinutos(r.minutos_extra)} × ${pesos(r.precio_hora_extra)}/h)`}>{pesos(r.cargo_horas_extra)}</Fila>}
         {Number(r.precio_extras) > 0 && <Fila etiqueta={`Extras${extras.length ? ` (${extras.join(', ')})` : ''}`}>{pesos(r.precio_extras)}</Fila>}
         {r.modalidad_nombre && <Fila etiqueta={`Tipo de evento: ${r.modalidad_nombre}`}>{pesos(r.cargo_modalidad)}</Fila>}
         <Fila etiqueta={`Traslado${r.zonas?.nombre ? ` (${r.zonas.nombre})` : ''}`}>{Number(r.cargo_traslado) ? pesos(r.cargo_traslado) : 'Sin costo'}</Fila>

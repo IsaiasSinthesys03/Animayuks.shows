@@ -10,7 +10,7 @@ const DIAS_LARGOS = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sáb
 const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
 
 /** Calendario mensual con la disponibilidad real del show en la zona elegida. */
-export default function Calendario({ showId, paqueteId, extras, cp, valor, onCambio }) {
+export default function Calendario({ showId, paqueteId, extras, cp, valor, onCambio, minutosExtra = 0 }) {
   const [anioHoy, mesHoy] = hoy().split('-').map(Number)
   const [{ anio, mes }, setMes] = useState(() => {
     if (valor) {
@@ -21,8 +21,8 @@ export default function Calendario({ showId, paqueteId, extras, cp, valor, onCam
   })
 
   const consulta = useQuery({
-    queryKey: ['disponibilidad', showId, paqueteId ?? null, extras ?? [], cp, anio, mes],
-    queryFn: () => disponibilidadMes({ showId, paqueteId, extras, cp, anio, mes }),
+    queryKey: ['disponibilidad', showId, paqueteId ?? null, extras ?? [], cp, anio, mes, minutosExtra],
+    queryFn: () => disponibilidadMes({ showId, paqueteId, extras, cp, anio, mes, minutosExtra }),
     enabled: !!showId && !!cp,
     staleTime: 30 * 1000,
   })

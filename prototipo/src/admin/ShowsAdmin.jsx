@@ -118,7 +118,8 @@ function EditorShow({ show, onCerrar }) {
     nombre: show?.nombre ?? '', categoria_id: show?.categoria_id ?? '', resumen: show?.resumen ?? '', descripcion: show?.descripcion ?? '',
     duracion_min: show?.duracion_min ?? 60, montaje_min: show?.montaje_min ?? 30, desmontaje_min: show?.desmontaje_min ?? 20, artistas: show?.artistas ?? 1,
     precio_base: show?.precio_base ?? '', requisitos: (show?.requisitos ?? []).join('\n'), video_url: show?.video_url ?? '',
-    destacado: show?.destacado ?? false, pide_modalidad: show?.pide_modalidad ?? false, orden: show?.orden ?? 0,
+    destacado: show?.destacado ?? false, pide_modalidad: show?.pide_modalidad ?? false,
+    permite_horas_extra: show?.permite_horas_extra ?? false, precio_hora_extra: show?.precio_hora_extra ?? '', orden: show?.orden ?? 0,
   })
   const [imagen, setImagen] = useState(show?.imagen_principal ?? null)
   const [galeria, setGaleria] = useState(show?.galeria ?? [])
@@ -153,6 +154,7 @@ function EditorShow({ show, onCerrar }) {
     if (!f.nombre.trim()) return setError('Escribe el nombre del show.')
     if (f.precio_base === '' || !(Number(f.precio_base) >= 0)) return setError('Escribe el precio base.')
     if (!(Number(f.duracion_min) > 0)) return setError('La duración debe ser mayor a 0.')
+    if (f.permite_horas_extra && !(Number(f.precio_hora_extra) > 0)) return setError('Escribe el precio por hora extra.')
     setGuardando(true)
     try {
       const datos = {
@@ -160,7 +162,8 @@ function EditorShow({ show, onCerrar }) {
         duracion_min: Number(f.duracion_min), montaje_min: Number(f.montaje_min) || 0, desmontaje_min: Number(f.desmontaje_min) || 0,
         artistas: Number(f.artistas) || 1, precio_base: Number(f.precio_base),
         requisitos: f.requisitos.split('\n').map((x) => x.trim()).filter(Boolean),
-        video_url: f.video_url.trim() || null, destacado: f.destacado, pide_modalidad: f.pide_modalidad, orden: Number(f.orden) || 0,
+        video_url: f.video_url.trim() || null, destacado: f.destacado, pide_modalidad: f.pide_modalidad,
+        permite_horas_extra: f.permite_horas_extra, precio_hora_extra: Number(f.precio_hora_extra) || 0, orden: Number(f.orden) || 0,
         imagen_principal: imagen, galeria,
       }
       if (!actual) datos.slug = aSlug(f.nombre)
@@ -247,6 +250,17 @@ function EditorShow({ show, onCerrar }) {
           <input type="checkbox" checked={f.pide_modalidad} onChange={(e) => set('pide_modalidad', e.target.checked)} className="mt-0.5 size-4 accent-selva-600" />
           <span>Preguntar tipo de evento al reservar<span className="block font-normal text-tinta-soft">El cliente elige un tipo de evento (Escolar, Privado, Municipal…) con su costo extra, o ninguno. Apágalo si este show no encaja con esos eventos.</span></span>
         </label>
+        <div className="rounded-xl ring-1 ring-linea p-3">
+          <label className="flex items-start gap-2 text-sm font-medium">
+            <input type="checkbox" checked={f.permite_horas_extra} onChange={(e) => set('permite_horas_extra', e.target.checked)} className="mt-0.5 size-4 accent-selva-600" />
+            <span>Permitir tiempo extra<span className="block font-normal text-tinta-soft">El cliente puede agregar tiempo al show en bloques de 30 minutos, hasta el máximo de Configuración y siempre que termine dentro del horario.</span></span>
+          </label>
+          {f.permite_horas_extra && (
+            <Campo etiqueta="Precio por hora extra" ayuda={Number(f.precio_hora_extra) > 0 ? `La media hora cuesta ${pesos(Number(f.precio_hora_extra) / 2)}.` : undefined} className="mt-3 max-w-56">
+              <Input inputMode="decimal" value={f.precio_hora_extra} onChange={(e) => set('precio_hora_extra', e.target.value.replace(/[^\d.]/g, ''))} placeholder="800" />
+            </Campo>
+          )}
+        </div>
 
         {error && <p role="alert" className="rounded-xl bg-error-soft px-3 py-2 text-sm font-medium text-error">{error}</p>}
         <div className="flex gap-2">
@@ -518,6 +532,7 @@ export default function ShowsAdmin() {
                 </div>
                 <p className="text-sm text-tinta-soft">{s.categorias?.nombre ?? 'Sin categoría'}, {s.duracion_min} min, {s.paquetes.length} {s.paquetes.length === 1 ? 'paquete' : 'paquetes'}</p>
                 {s.horario_propio && <span className="mt-1 inline-block rounded-full bg-agua-soft px-2 py-0.5 text-xs font-semibold text-selva-900">Horario propio</span>}
+                {s.permite_horas_extra && <span className="mt-1 ml-1 inline-block rounded-full bg-maiz-soft px-2 py-0.5 text-xs font-semibold">Tiempo extra {pesos(s.precio_hora_extra)}/h</span>}
                 <p className="num mt-1 text-sm">Desde <span className="font-semibold">{pesos(s.precio_base)}</span></p>
                 <button onClick={() => setEditando(s.id)} className="mt-2 text-sm font-semibold text-selva-700 underline">Editar</button>
               </div>

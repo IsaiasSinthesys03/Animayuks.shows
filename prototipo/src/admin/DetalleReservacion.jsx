@@ -7,6 +7,7 @@ import { agregarNota, cambiarEstadoReservacion, registrarPago, resolverPago, url
 import { fechaLarga, hora, instanteLocal, pesos, saldoDe } from '../lib/format'
 import { useStore } from '../store'
 import { useConfiguracion } from '../lib/consultas'
+import TiempoExtra from './reservacion/TiempoExtra'
 import { DetallePago, SeccionCobro, SeccionEvento, SeccionHistorial, SeccionPolitica } from './reservacion/Secciones'
 import { Boton, Campo, Estado, Input, Panel, Select } from '../components/ui'
 
@@ -33,12 +34,13 @@ export default function DetalleReservacion({ r, onCerrar }) {
   const [horaNueva, setHoraNueva] = useState('')
   const [motivo, setMotivo] = useState('')
   const [cancelando, setCancelando] = useState(false)
+  const [extraAbierto, setExtraAbierto] = useState(false)
   const [motivoCancelar, setMotivoCancelar] = useState('')
 
   const extrasIds = (r?.reservacion_extras ?? []).map((e) => e.extra_id)
   const libres = useQuery({
     queryKey: ['horarios', r?.show_id, r?.paquete_id, extrasIds, r?.codigo_postal, fecha],
-    queryFn: () => horariosDisponibles({ showId: r.show_id, paqueteId: r.paquete_id, extras: extrasIds, cp: r.codigo_postal, fecha }),
+    queryFn: () => horariosDisponibles({ showId: r.show_id, paqueteId: r.paquete_id, extras: extrasIds, cp: r.codigo_postal, fecha, minutosExtra: r.minutos_extra }),
     enabled: !!r && fechaAbierta && !!fecha,
   })
 
@@ -233,6 +235,8 @@ export default function DetalleReservacion({ r, onCerrar }) {
           </section>
         )}
 
+        {activa && extraAbierto && <TiempoExtra r={r} onCerrar={() => setExtraAbierto(false)} />}
+
         {cancelando && (
           <section className="rounded-2xl border border-error/30 p-4">
             <h3 className="font-semibold">Cancelar reservación</h3>
@@ -253,6 +257,7 @@ export default function DetalleReservacion({ r, onCerrar }) {
             {r.estado === 'pendiente' && <Boton tam="sm" disabled={ocupado} onClick={() => ejecutar(() => cambiarEstadoReservacion(r.id, 'confirmada'), 'Reservación confirmada')}><CheckCheck className="size-4" /> Confirmar sin anticipo</Boton>}
             {r.estado === 'confirmada' && <Boton tam="sm" variante="oscuro" disabled={ocupado} onClick={() => ejecutar(() => cambiarEstadoReservacion(r.id, 'realizada'), 'Show marcado como realizado')}><CheckCheck className="size-4" /> Marcar como realizado</Boton>}
             {activa && !fechaAbierta && <Boton tam="sm" variante="secundario" onClick={() => setFechaAbierta(true)}>Cambiar fecha</Boton>}
+            {activa && !extraAbierto && (r.shows?.permite_horas_extra || r.minutos_extra > 0) && <Boton tam="sm" variante="secundario" onClick={() => setExtraAbierto(true)}>Cambiar tiempo extra</Boton>}
             {activa && !cancelando && <Boton tam="sm" variante="peligro" onClick={() => setCancelando(true)}><XCircle className="size-4" /> Cancelar</Boton>}
           </div>
         </section>

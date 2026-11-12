@@ -314,8 +314,8 @@ select set_config('request.jwt.claim.sub', 'a0000000-0000-4000-8000-0000000007ad
 do $$
 declare fallida bigint;
 begin
-  if (select count(*) from public.plantillas_correo) <> 13 then
-    raise exception 'PRUEBA FALLIDA N13: el admin no ve las 13 plantillas';
+  if (select count(*) from public.plantillas_correo) <> 14 then
+    raise exception 'PRUEBA FALLIDA N13: el admin no ve las 14 plantillas';
   end if;
   select id into fallida from public.notificaciones where estado = 'fallida' and destinatario is not null limit 1;
   if fallida is not null and not public.reintentar_correo(fallida) then

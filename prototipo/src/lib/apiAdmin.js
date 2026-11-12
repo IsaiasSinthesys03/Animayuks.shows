@@ -8,7 +8,7 @@ async function datos(consulta) {
 
 // ── Reservaciones ───────────────────────────────────────────────────────────
 const SELECT_RESERVACION =
-  '*, clientes(id, usuario_id, nombre, telefono, correo), shows(nombre, slug, imagen_principal, duracion_min, pide_modalidad), paquetes(nombre, duracion_min), zonas(nombre), pagos(*), notas_reservacion(*), reservacion_extras(extra_id, precio_unitario, extras(nombre))'
+  '*, clientes(id, usuario_id, nombre, telefono, correo), shows(nombre, slug, imagen_principal, duracion_min, pide_modalidad, permite_horas_extra, precio_hora_extra), paquetes(nombre, duracion_min), zonas(nombre), pagos(*), notas_reservacion(*), reservacion_extras(extra_id, precio_unitario, extras(nombre))'
 
 /** Comprobantes que esperan revisión, del más antiguo al más reciente */
 export const obtenerPagosPorRevisar = () =>
@@ -16,6 +16,8 @@ export const obtenerPagosPorRevisar = () =>
 /** Reservaciones hechas desde una fecha (para el aviso de "nuevas") */
 export const obtenerReservacionesDesde = (desde) =>
   datos(supabase.from('reservaciones').select('id, folio, inicio, creado_en, canal, estado, clientes(nombre), shows(nombre)').gt('creado_en', desde).order('creado_en', { ascending: false }).limit(20))
+export const cambiarHorasExtra = (id, minutos, forzar = false, motivo = null) =>
+  datos(supabase.rpc('cambiar_horas_extra', { p_reservacion_id: id, p_minutos: minutos, p_forzar: forzar, p_motivo: motivo }))
 export const historialReservacion = (id) => datos(supabase.rpc('historial_reservacion', { p_reservacion_id: id }))
 export const aceptacionesDe = (usuarioId) => datos(supabase.from('aceptaciones_legales').select('slug, version, aceptado_en').eq('usuario_id', usuarioId).order('aceptado_en', { ascending: false }))
 export const obtenerReservaciones = ({ desde, hasta } = {}) => {
