@@ -495,7 +495,7 @@ export default function Reservar() {
                 <Campo etiqueta="Invitados aproximados"><Input inputMode="numeric" value={d.asistentes} onChange={(e) => set('asistentes', e.target.value.replace(/\D/g, ''))} /></Campo>
                 <Campo etiqueta="Espacio">
                   <Select value={d.espacio} onChange={(e) => set('espacio', e.target.value)}>
-                    {['Jardín', 'Salón de eventos', 'Casa (interior)', 'Escuela', 'Oficina'].map((t) => <option key={t}>{t}</option>)}
+                    {['Jardín', 'Salón de eventos', 'Casa (interior)', 'Oficina'].map((t) => <option key={t}>{t}</option>)}
                   </Select>
                 </Campo>
               </div>
