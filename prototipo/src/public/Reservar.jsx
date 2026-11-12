@@ -400,7 +400,7 @@ export default function Reservar() {
                   <legend className="text-lg font-bold">¿Quieres más tiempo de show?</legend>
                   <p className="mt-1 text-sm text-tinta-soft">
                     {pesos(show.precio_hora_extra)} por hora extra. Duración del show: <span className="font-semibold text-tinta">{textoMinutos(duracionBase + minutosExtra)}</span>.
-                    {minutosExtra > 0 && ' Con más tiempo hay menos horarios disponibles.'}
+                    {minutosExtra > 0 && ' Con más tiempo puede haber menos horarios disponibles.'}
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {[0, ...opcionesExtra(cfg.max_minutos_extra)].map((m) => (

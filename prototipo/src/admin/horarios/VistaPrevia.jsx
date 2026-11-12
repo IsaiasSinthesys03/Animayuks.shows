@@ -60,7 +60,7 @@ export default function VistaPrevia({ dias, titulo = 'Así lo verá el cliente',
         <select value={opcion?.clave ?? ''} onChange={(e) => setElegido(e.target.value)} className="h-10 w-full cursor-pointer rounded-lg border border-linea bg-white px-2 text-sm focus:border-selva-500 focus:outline-none">
           {opciones.map((o) => <option key={o.clave} value={o.clave}>{o.texto}</option>)}
         </select>
-        <span className="mt-1 block text-xs text-tinta-soft">La duración cambia qué horas caben antes del cierre de cada franja.</span>
+        <span className="mt-1 block text-xs text-tinta-soft">Las horas de inicio no dependen de la duración: el show puede terminar después del cierre de la franja.</span>
       </label>
       {error && <p role="alert" className="mt-3 text-sm text-error">{error}</p>}
       {opciones.length === 0 && <p className="mt-3 text-sm text-tinta-soft">Todos los shows activos usan su propio horario.</p>}
@@ -76,7 +76,7 @@ export default function VistaPrevia({ dias, titulo = 'Así lo verá el cliente',
               <div className="mt-1 flex flex-wrap gap-1">
                 {problema && <span className="text-error">{problema.replace(`${d.etiqueta}: `, '')}</span>}
                 {!problema && horas?.length === 0 && (
-                  <span className="text-alerta">Ninguna hora: un show de {duracion} min no cabe en estas franjas.</span>
+                  <span className="text-alerta">Ninguna hora de inicio en estas franjas.</span>
                 )}
                 {!problema && horas?.map((h) => <span key={h} className="num rounded-full bg-selva-50 px-2 py-0.5 font-semibold text-selva-900">{textoHoraCorta(h)}</span>)}
               </div>

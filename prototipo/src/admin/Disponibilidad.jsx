@@ -78,7 +78,7 @@ export default function Disponibilidad() {
           <h2 className="font-bold">Semana normal</h2>
           <p className="mt-1 text-sm text-tinta-soft">
             Cada día puede tener varias franjas. En cada franja eliges si las horas se ofrecen cada cierto tiempo o solo a horas exactas.
-            El show debe terminar antes del cierre de su franja. Las reservaciones existentes no cambian.
+            Cada franja marca las horas en que puede <strong>empezar</strong> un show: desde la apertura y antes del cierre. El show puede terminar después, incluso pasada la medianoche. Las reservaciones existentes no cambian.
           </p>
           {propios.length > 0 && (
             <p className="mt-2 rounded-xl bg-agua-soft px-3 py-2 text-sm">

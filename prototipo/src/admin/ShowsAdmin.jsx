@@ -253,7 +253,7 @@ function EditorShow({ show, onCerrar }) {
         <div className="rounded-xl ring-1 ring-linea p-3">
           <label className="flex items-start gap-2 text-sm font-medium">
             <input type="checkbox" checked={f.permite_horas_extra} onChange={(e) => set('permite_horas_extra', e.target.checked)} className="mt-0.5 size-4 accent-selva-600" />
-            <span>Permitir tiempo extra<span className="block font-normal text-tinta-soft">El cliente puede agregar tiempo al show en bloques de 30 minutos, hasta el máximo de Configuración y siempre que termine dentro del horario.</span></span>
+            <span>Permitir tiempo extra<span className="block font-normal text-tinta-soft">El cliente puede agregar tiempo al show en bloques de 30 minutos, hasta el máximo de Configuración y siempre que no choque con otra reservación.</span></span>
           </label>
           {f.permite_horas_extra && (
             <Campo etiqueta="Precio por hora extra" ayuda={Number(f.precio_hora_extra) > 0 ? `La media hora cuesta ${pesos(Number(f.precio_hora_extra) / 2)}.` : undefined} className="mt-3 max-w-56">

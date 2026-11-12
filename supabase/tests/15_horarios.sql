@@ -78,12 +78,12 @@ do $$ begin
 end $$;
 
 do $$ begin
-  if pg_temp.horas(0) <> '09:00 11:00 16:00 18:00' then
+  if pg_temp.horas(0) <> '09:00 11:00 16:00 18:00 20:30' then
     raise exception 'PRUEBA FALLIDA H02-H04: el sábado ofrece %', pg_temp.horas(0);
   end if;
   raise notice 'H02 ok: entre dos franjas (13:00 a 16:00) no se ofrecen horas';
-  raise notice 'H03 ok: cada 2 horas ofrece 9:00 y 11:00, y no 13:00 porque el show no terminaría a tiempo';
-  raise notice 'H04 ok: horas exactas ofrece solo las de la lista y descarta 20:30, que no cabe';
+  raise notice 'H03 ok: cada 2 horas ofrece 9:00 y 11:00, y no 13:00 porque es la hora de cierre';
+  raise notice 'H04 ok: horas exactas ofrece solo las de la lista, aunque el show termine después del cierre (20:30)';
 end $$;
 
 do $$ begin
@@ -218,7 +218,7 @@ reset role;
 -- ── Bloqueo de unas horas ───────────────────────────────────────────────────
 do $$ begin
   insert into public.bloqueos (inicio, fin, motivo) values (pg_temp.h(21, '15:00'), pg_temp.h(21, '19:00'), 'Prueba parcial');
-  if pg_temp.horas(21) <> '09:00 11:00' then
+  if pg_temp.horas(21) <> '09:00 11:00 20:30' then
     raise exception 'PRUEBA FALLIDA H10: con bloqueo de 15:00 a 19:00 ofrece %', pg_temp.horas(21);
   end if;
   raise notice 'H10 ok: un bloqueo de unas horas cierra solo esas horas';
@@ -233,7 +233,7 @@ begin
   select string_agg(to_char(inicio, 'HH24:MI'), ' ' order by inicio) into t
     from public.vista_previa_horario('[{"abre":"09:00","cierra":"13:00","modo":"intervalo","intervalo_min":120},
                                        {"abre":"16:00","cierra":"21:00","modo":"horas","horas":["16:00","18:00","20:30"]}]', 60);
-  if t <> '09:00 11:00 16:00 18:00' then
+  if t <> '09:00 11:00 16:00 18:00 20:30' then
     raise exception 'PRUEBA FALLIDA H11: la vista previa dio %', t;
   end if;
   if exists (select 1 from public.reservaciones_fuera_de_franjas(current_setting('prueba.sab')::date,
@@ -305,5 +305,31 @@ do $$ begin
 end $$;
 reset role;
 
-do $$ begin raise notice 'Batería 15 completa: 13 pruebas ok. Deshaciendo los datos de prueba...'; end $$;
+-- ── H14: la franja marca el inicio; el show puede terminar después de medianoche ─
+set local role authenticated;
+select set_config('request.jwt.claim.sub', 'a0000000-0000-4000-8000-0000000015ad', true);
+do $$ begin
+  perform public.guardar_dia_especial(current_setting('prueba.sab')::date + 35, null, 'Noche',
+    '[{"abre":"17:00","cierra":"23:59","modo":"intervalo","intervalo_min":30}]');
+end $$;
+reset role;
+do $$ begin
+  if pg_temp.horas(35) not like '17:00 17:30 %' or pg_temp.horas(35) not like '% 23:00 23:30' then
+    raise exception 'PRUEBA FALLIDA H14: la noche ofrece %', pg_temp.horas(35);
+  end if;
+end $$;
+set local role authenticated;
+select set_config('request.jwt.claim.sub', 'a0000000-0000-4000-8000-0000000015a1', true);
+do $$
+declare r public.reservaciones;
+begin
+  r := public.crear_reservacion('a0000000-0000-4000-8000-000000001510', null, pg_temp.h(35, '23:30'), '99989', 'Calle', 'Colonia');
+  if r.fin <> pg_temp.h(36, '00:30') then
+    raise exception 'PRUEBA FALLIDA H14: el show de las 23:30 termina %', r.fin;
+  end if;
+  raise notice 'H14 ok: franja de 17:00 a 23:59 cada 30 min ofrece hasta las 23:30, y ese show puede terminar a las 00:30';
+end $$;
+reset role;
+
+do $$ begin raise notice 'Batería 15 completa: 14 pruebas ok. Deshaciendo los datos de prueba...'; end $$;
 rollback;

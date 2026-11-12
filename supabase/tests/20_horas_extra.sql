@@ -75,13 +75,13 @@ end $$;
 
 do $$ begin
   if pg_temp.horas(7, 0) <> '09:00 10:00 11:00 12:00 13:00 14:00 15:00 16:00 17:00 18:00 19:00'
-     or pg_temp.horas(7, 120) <> '09:00 10:00 11:00 12:00 13:00 14:00 15:00 16:00 17:00' then
+     or pg_temp.horas(7, 120) <> '09:00 10:00 11:00 12:00 13:00 14:00 15:00 16:00 17:00 18:00 19:00' then
     raise exception 'PRUEBA FALLIDA X05: sin extra % / con 2 h %', pg_temp.horas(7, 0), pg_temp.horas(7, 120);
   end if;
-  raise notice 'X05 ok: con tiempo extra solo se ofrecen las horas en que el show termina antes del cierre';
+  raise notice 'X05 ok: con tiempo extra se ofrecen las mismas horas de inicio (el show puede terminar después del cierre)';
 end $$;
 
--- Día especial de 10:00 a 11:00: cabe el show base, no el alargado
+-- Día especial de 10:00 a 11:00: el show base y el alargado empiezan a las 10:00
 set local role authenticated;
 select set_config('request.jwt.claim.sub', 'a0000000-0000-4000-8000-0000000020ad', true);
 do $$ begin
@@ -96,10 +96,10 @@ begin
     extract(year from d)::int, extract(month from d)::int, 0) x where x.fecha = d;
   select estado into b from public.disponibilidad_mes('a0000000-0000-4000-8000-00000000200a', null, '{}', '99949',
     extract(year from d)::int, extract(month from d)::int, 60) x where x.fecha = d;
-  if a = 'no_disponible' or b <> 'no_disponible' then
+  if a = 'no_disponible' or b = 'no_disponible' then
     raise exception 'PRUEBA FALLIDA X06: sin extra %, con 1 h %', a, b;
   end if;
-  raise notice 'X06 ok: el calendario del mes refleja la duración con tiempo extra';
+  raise notice 'X06 ok: el calendario ofrece el día con o sin tiempo extra, porque la franja marca el inicio';
 end $$;
 
 -- ── Cliente ─────────────────────────────────────────────────────────────────
@@ -225,20 +225,21 @@ begin
   exception when others then if sqlerrm not like 'HORARIO_OCUPADO%' then raise; end if;
   end;
 
-  -- Fuera de la franja (cierra 20:00): solo con motivo
+  -- Alargar hasta encimarse con un bloqueo: solo con motivo
   r := public.crear_reservacion('a0000000-0000-4000-8000-00000000200a', null, pg_temp.h(28, '18:00'), '99949', 'Calle', 'Colonia',
     p_cliente_id => (select id from public.clientes where usuario_id = 'a0000000-0000-4000-8000-0000000020a2'), p_evento => '{"minutos_extra": 60}');
   perform set_config('prueba.r3', r.id::text, true);
+  insert into public.bloqueos (inicio, fin, motivo) values (pg_temp.h(28, '21:30'), pg_temp.h(28, '23:00'), 'Prueba tiempo extra');
   begin
     perform public.cambiar_horas_extra(r.id, 120);
-    raise exception 'PRUEBA FALLIDA X10: salió de la franja sin motivo';
-  exception when others then if sqlerrm not like 'MOTIVO_REQUERIDO%fuera de horario%' then raise; end if;
+    raise exception 'PRUEBA FALLIDA X10: alargó encima de un bloqueo sin motivo';
+  exception when others then if sqlerrm not like 'MOTIVO_REQUERIDO%fecha bloqueada%' then raise; end if;
   end;
   r := public.cambiar_horas_extra(r.id, 120, true, 'El cliente lo pidió');
   if r.fin <> pg_temp.h(28, '21:00') or r.motivo_excepcion not like '%tiempo extra%' then
     raise exception 'PRUEBA FALLIDA X10: con motivo fin %, excepción %', r.fin, r.motivo_excepcion;
   end if;
-  raise notice 'X10 ok: nunca se encima con otra reservación; fuera de la franja solo con motivo';
+  raise notice 'X10 ok: nunca se encima con otra reservación; sobre un bloqueo solo con motivo';
 
   r := public.cambiar_horas_extra(current_setting('prueba.r3')::uuid, 0);
   if r.minutos_extra <> 0 or r.cargo_horas_extra <> 0 or r.total <> 1000 or r.anticipo_requerido <> 500 or r.fin <> pg_temp.h(28, '19:00') then

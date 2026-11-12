@@ -11,12 +11,12 @@ update public.configuracion
    set anticipacion_min_horas = 48, anticipacion_max_dias = 365, anticipo_porcentaje = 30,
        reservaciones_en_linea = true, zona_horaria = 'America/Mexico_City'
  where id = 1;
--- Lunes sin servicio, viernes 10:00–11:30, domingo 10:00–11:00, resto 10:00–20:00
+-- Lunes sin servicio, viernes 10:00–11:00 (inicios 10:00 y 10:30), domingo 10:00–11:00, resto 10:00–20:00
 update public.horario_servicio set activo = (dia_semana <> 1), max_shows = null;
 delete from public.dias_especiales;
 delete from public.horario_franjas where dia_semana is not null;
 insert into public.horario_franjas (dia_semana, abre, cierra, modo, intervalo_min)
-select d, '10:00', case d when 5 then time '11:30' when 0 then time '11:00' else time '20:00' end, 'intervalo', 30 from generate_series(0, 6) d;
+select d, '10:00', case d when 5 then time '11:00' when 0 then time '11:00' else time '20:00' end, 'intervalo', 30 from generate_series(0, 6) d;
 
 insert into public.zonas (id, nombre, codigos_postales, cargo_traslado, traslado_min) values
   ('a0000000-0000-4000-8000-000000000301', 'Zona A prueba (sin traslado)', array['99997'], 0, 0),
@@ -57,17 +57,17 @@ begin
   select count(*), min((inicio at time zone 'America/Mexico_City')::time), max((inicio at time zone 'America/Mexico_City')::time)
     into n, primero, ultimo
     from public.horarios_disponibles('a0000000-0000-4000-8000-000000000310', null, '{}', '99997', sab);
-  if n <> 19 or primero <> '10:00' or ultimo <> '19:00' then
-    raise exception 'PRUEBA FALLIDA D01: % horarios de % a % (esperado 19, de 10:00 a 19:00)', n, primero, ultimo;
+  if n <> 20 or primero <> '10:00' or ultimo <> '19:30' then
+    raise exception 'PRUEBA FALLIDA D01: % horarios de % a % (esperado 20, de 10:00 a 19:30)', n, primero, ultimo;
   end if;
-  raise notice 'D01 ok: día libre ofrece 19 inicios, de 10:00 a 19:00 (show de 60 min, cierre 20:00)';
+  raise notice 'D01 ok: día libre ofrece 20 inicios, de 10:00 a 19:30 (la franja marca el inicio; cierre 20:00)';
 
   select count(*), max((inicio at time zone 'America/Mexico_City')::time) into n, ultimo
     from public.horarios_disponibles('a0000000-0000-4000-8000-000000000310', 'a0000000-0000-4000-8000-000000000320', '{}', '99997', sab);
-  if n <> 18 or ultimo <> '18:30' then
+  if n <> 20 or ultimo <> '19:30' then
     raise exception 'PRUEBA FALLIDA D02: paquete de 90 min da % horarios, último %', n, ultimo;
   end if;
-  raise notice 'D02 ok: con el paquete de 90 min el último inicio es 18:30 (terminaría al cierre)';
+  raise notice 'D02 ok: con el paquete de 90 min el último inicio sigue siendo 19:30 (puede terminar después del cierre)';
 end $$;
 
 -- ── Reservación existente: sábado 14:00 en la zona A ────────────────────────
@@ -87,7 +87,7 @@ begin
   select array_agg((inicio at time zone 'America/Mexico_City')::time order by inicio) into a
     from public.horarios_disponibles('a0000000-0000-4000-8000-000000000310', null, '{}', '99997', sab);
   -- Ocupado: bloque 13:30–15:20. En zona A cada candidato ocupa [t−30 min, t+80 min] → se pierden 12:30 a 15:30
-  if cardinality(a) <> 12 or not ('12:00' = any (a)) or '12:30' = any (a) or '15:30' = any (a) or not ('16:00' = any (a)) then
+  if cardinality(a) <> 13 or not ('12:00' = any (a)) or '12:30' = any (a) or '15:30' = any (a) or not ('16:00' = any (a)) then
     raise exception 'PRUEBA FALLIDA D03: zona A ofrece %', a;
   end if;
   raise notice 'D03 ok: la reservación de las 14:00 quita de 12:30 a 15:30 (montaje y desmontaje incluidos)';
@@ -95,7 +95,7 @@ begin
   select array_agg((inicio at time zone 'America/Mexico_City')::time order by inicio) into b
     from public.horarios_disponibles('a0000000-0000-4000-8000-000000000310', null, '{}', '99996', sab);
   -- En zona B (60 min de traslado) cada candidato ocupa [t−90 min, t+140 min] → se pierden 11:30 a 16:30
-  if b <> array['10:00','10:30','11:00','17:00','17:30','18:00','18:30','19:00']::time[] then
+  if b <> array['10:00','10:30','11:00','17:00','17:30','18:00','18:30','19:00','19:30']::time[] then
     raise exception 'PRUEBA FALLIDA D04: zona B ofrece %', b;
   end if;
   raise notice 'D04 ok: la zona lejana pierde más horarios por el traslado (12:00 libre en A, ocupado en B)';
@@ -147,7 +147,7 @@ declare
 begin
   for r in
     select x.dia, x.esperado, x.horarios_esperados
-      from (values (sab,     'libre',         12),
+      from (values (sab,     'libre',         13),
                    (sab - 1, 'pocos',         2),
                    (sab + 1, 'lleno',         0),
                    (sab + 2, 'no_disponible', 0),

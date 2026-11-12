@@ -84,8 +84,8 @@ export default function VistaDia({ dia, onCambiarDia, reservaciones, bloqueos, o
     return { ini: ah * 60 + am, fin: ch * 60 + cm, especial: f.especial, inicioMs: cero + (ah * 60 + am) * MIN, finMs: cero + (ch * 60 + cm) * MIN }
   })
   const bloqueosDia = (bloqueos ?? [])
-    .map((b) => ({ ...b, ini: Math.max(0, aMin(b.inicio)), fin: Math.min(24 * 60, aMin(b.fin)) }))
-    .filter((b) => b.fin > 0 && b.ini < 24 * 60 && b.fin > b.ini)
+    .map((b) => ({ ...b, ini: Math.max(0, aMin(b.inicio)), fin: Math.min(30 * 60, aMin(b.fin)) }))
+    .filter((b) => b.fin > 0 && b.ini < 30 * 60 && b.fin > b.ini)
 
   // Rango visible: desde lo más temprano hasta lo más tarde, con media hora de margen
   const ds = vivas.map((r) => ({ r, d: desglose(r) }))
@@ -95,7 +95,7 @@ export default function VistaDia({ dia, onCambiarDia, reservaciones, bloqueos, o
     ...otras.flatMap((r) => [aMin(r.inicio), aMin(r.fin)]),
   ]
   const desde = Math.max(0, Math.floor(((puntos.length ? Math.min(...puntos) : 8 * 60) - 30) / 60) * 60)
-  const hasta = Math.min(24 * 60, Math.ceil(((puntos.length ? Math.max(...puntos) : 21 * 60) + 30) / 60) * 60)
+  const hasta = Math.min(30 * 60, Math.ceil(((puntos.length ? Math.max(...puntos) : 21 * 60) + 30) / 60) * 60)
   const y = (min) => (min - desde) * PX_MIN
   const alto = (hasta - desde) * PX_MIN
 
@@ -151,7 +151,7 @@ export default function VistaDia({ dia, onCambiarDia, reservaciones, bloqueos, o
         {delDia.length === 0 && (
           <p className="mb-3 text-sm text-tinta-soft">No hay funciones este día.{listaFranjas.length ? ' En verde, el horario de servicio.' : ' Este día no hay horario de servicio.'}</p>
         )}
-        <div className="relative" style={{ height: alto }}>
+        <div className="relative overflow-hidden" style={{ height: alto }}>
           {/* Horas */}
           {Array.from({ length: (hasta - desde) / 60 + 1 }, (_, i) => desde + i * 60).map((m) => (
             <div key={m} className="absolute right-0 left-0 border-t border-linea/70" style={{ top: y(m) }}>
