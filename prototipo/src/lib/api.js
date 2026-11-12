@@ -64,6 +64,8 @@ export const catalogoCpsPorCodigo = (codigos) =>
   datos(supabase.from('catalogo_cp').select('codigo_postal, estado, municipio, colonias').in('codigo_postal', codigos))
 
 // ── Página de inicio ────────────────────────────────────────────────────────
+export const urlLegal = (ruta) => (ruta ? supabase.storage.from('legales').getPublicUrl(ruta).data.publicUrl : null)
+export const legalesPendientes = () => datos(supabase.rpc('legales_pendientes'))
 export const urlLanding = (ruta) => (ruta ? supabase.storage.from('landing').getPublicUrl(ruta).data.publicUrl : null)
 export const obtenerContenidoLanding = () => datos(supabase.from('landing_contenido').select('*').single())
 // Un admin con sesión puede leer todo: el filtro asegura que la portada sea igual para todos

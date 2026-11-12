@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Trash2 } from 'lucide-react'
 import { mensajeError } from '../lib/api'
-import { borrarPregunta, guardarConfiguracion, guardarPagina, guardarPregunta, obtenerPaginas } from '../lib/apiAdmin'
+import { borrarPregunta, guardarConfiguracion, guardarPregunta, obtenerPaginas } from '../lib/apiAdmin'
 import { useConfiguracion, usePreguntas } from '../lib/consultas'
 import { useStore } from '../store'
 import { Boton, Campo, Cargando, ErrorCarga, Input, claseInput } from '../components/ui'
 import { Encabezado, Interruptor } from './AdminLayout'
+import TarjetaDocumento from './legales/TarjetaDocumento'
 
 /** "33 1234 5678" → "523312345678"; lo guardado (con lada) se muestra igual */
 const normalizarWhatsapp = (t) => {
@@ -164,48 +165,12 @@ function Parametros() {
 }
 
 function TextosLegales() {
-  const queryClient = useQueryClient()
-  const { avisar } = useStore()
   const paginas = useQuery({ queryKey: ['admin-paginas'], queryFn: obtenerPaginas })
-  const [abierta, setAbierta] = useState(null)
-  const [texto, setTexto] = useState('')
-  const [error, setError] = useState('')
-
   return (
-    <Seccion titulo="Textos legales" descripcion="Se publican tal cual en el sitio. Cada cambio crea una versión nueva, y queda registrado cuál aceptó cada cliente.">
+    <Seccion titulo="Documentos legales" descripcion="Sube el PDF oficial de cada documento. Cada PDF nuevo es una versión nueva: queda registrado cuál aceptó cada cliente y las anteriores se conservan.">
       {paginas.isError && <ErrorCarga onReintentar={paginas.refetch} />}
-      <ul className="space-y-2">
-        {(paginas.data ?? []).map((p) => (
-          <li key={p.slug} className="rounded-xl ring-1 ring-linea">
-            <div className="flex items-center justify-between gap-3 px-4 py-3">
-              <span>
-                <span className="block font-medium">{p.titulo}</span>
-                <span className="num block text-sm text-tinta-soft">Versión {p.version}{p.contenido.includes('BORRADOR') ? ', borrador sin revisar' : ''}</span>
-              </span>
-              <button className="text-sm font-semibold text-selva-700 underline" onClick={() => { setAbierta(abierta === p.slug ? null : p.slug); setTexto(p.contenido); setError('') }}>
-                {abierta === p.slug ? 'Cerrar' : 'Editar'}
-              </button>
-            </div>
-            {abierta === p.slug && (
-              <div className="border-t border-linea p-4">
-                <textarea rows={10} value={texto} onChange={(e) => setTexto(e.target.value)} aria-label={`Contenido de ${p.titulo}`} className={`${claseInput} h-auto py-3 font-mono text-sm`} />
-                <p className="mt-1 text-xs text-tinta-soft">Usa ## para títulos, ** para negritas y guiones para listas.</p>
-                {error && <p role="alert" className="mt-2 text-sm text-error">{error}</p>}
-                <Boton tam="sm" className="mt-2" onClick={async () => {
-                  try {
-                    await guardarPagina(p.slug, { contenido: texto })
-                    await queryClient.invalidateQueries({ queryKey: ['admin-paginas'] })
-                    queryClient.invalidateQueries({ queryKey: ['pagina', p.slug] })
-                    avisar(`${p.titulo} actualizado`)
-                    setAbierta(null)
-                  } catch (err) {
-                    setError(mensajeError(err))
-                  }
-                }}>Guardar</Boton>
-              </div>
-            )}
-          </li>
-        ))}
+      <ul className="space-y-3">
+        {(paginas.data ?? []).map((p) => <TarjetaDocumento key={`${p.slug}-${p.version}-${p.contenido.length}`} pagina={p} />)}
       </ul>
     </Seccion>
   )

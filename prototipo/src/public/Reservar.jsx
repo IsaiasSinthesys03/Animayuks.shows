@@ -292,7 +292,7 @@ export default function Reservar() {
         p_cliente: { nombre: d.nombre.trim(), telefono: d.telefono.trim() },
       })
       // Registro de qué versión de los textos legales aceptó (RNF-LEG-03); no detiene la reservación
-      aceptarPaginas(['aviso-de-privacidad', 'terminos', 'politica-de-cancelacion']).catch(() => {})
+      aceptarPaginas(['aviso-de-privacidad', 'terminos', 'politica-de-cancelacion']).then(() => queryClient.invalidateQueries({ queryKey: ['legales-pendientes'] })).catch(() => {})
       borrarBorrador()
       queryClient.invalidateQueries({ queryKey: ['mis-reservaciones'] })
       setConfirmada(r)

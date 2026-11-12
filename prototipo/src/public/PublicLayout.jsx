@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-do
 import { LayoutDashboard, Menu, MessageCircle, UserRound, X } from 'lucide-react'
 import { useAuth } from '../auth'
 import { enlaceWhatsapp, useConfiguracion } from '../lib/consultas'
+import AvisoLegales from './AvisoLegales'
 
 const enlaces = [
   { to: '/shows', texto: 'Shows' },
@@ -125,6 +126,8 @@ export default function PublicLayout() {
           </div>
         </div>
       </footer>
+
+      <AvisoLegales />
 
       {whatsapp && (
         <a

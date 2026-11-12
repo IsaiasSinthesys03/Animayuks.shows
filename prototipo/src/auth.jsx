@@ -30,6 +30,15 @@ export function AuthProvider({ children }) {
 
   const usuarioId = sesion?.user?.id ?? null
 
+  // La casilla "Acepto el aviso de privacidad y los términos" del registro se guarda
+  // aquí: al registrarse aún no hay sesión (falta confirmar el correo).
+  const aceptoAlRegistrarse = sesion?.user?.user_metadata?.acepto_legales === true
+  useEffect(() => {
+    if (!usuarioId || !aceptoAlRegistrarse) return
+    supabase.rpc('aceptar_paginas', { p_slugs: ['aviso-de-privacidad', 'terminos'] })
+      .then(({ error }) => { if (!error) supabase.auth.updateUser({ data: { acepto_legales: null } }) })
+  }, [usuarioId, aceptoAlRegistrarse])
+
   const perfil = useQuery({
     queryKey: ['perfil', usuarioId],
     enabled: !!usuarioId,
@@ -75,7 +84,7 @@ export const registrar = async ({ nombre, telefono, correo, contrasena, captchaT
   const { data, error } = await supabase.auth.signUp({
     email: correo,
     password: contrasena,
-    options: { captchaToken, emailRedirectTo: `${origen()}${siguiente ?? '/mi-cuenta'}`, data: { nombre, telefono } },
+    options: { captchaToken, emailRedirectTo: `${origen()}${siguiente ?? '/mi-cuenta'}`, data: { nombre, telefono, acepto_legales: true } },
   })
   if (error) throw error
   // Supabase no revela si el correo ya existe: devuelve un usuario sin identidades

@@ -81,6 +81,16 @@ export const borrarBloqueo = (id) => datos(supabase.from('bloqueos').delete().eq
 // ── Configuración y contenido ───────────────────────────────────────────────
 export const guardarConfiguracion = (c) => datos(supabase.from('configuracion').update(c).eq('id', 1))
 export const obtenerPaginas = () => datos(supabase.from('paginas').select('*').order('titulo'))
+export const obtenerVersionesPagina = (slug) => datos(supabase.from('paginas_versiones').select('*').eq('slug', slug).order('version', { ascending: false }))
+export const aceptacionesPorVersion = (slug) => datos(supabase.rpc('aceptaciones_por_version', { p_slug: slug }))
+/** Sube el PDF a legales/{slug}/… (nunca sobrescribe) y lo publica como versión nueva */
+export async function publicarPdfLegal(slug, archivo) {
+  const limpio = archivo.name.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\.pdf$/, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'documento'
+  const ruta = `${slug}/${Date.now()}-${limpio}.pdf`
+  const { error } = await supabase.storage.from('legales').upload(ruta, archivo, { cacheControl: '31536000', contentType: 'application/pdf', upsert: false })
+  if (error) throw error
+  return datos(supabase.rpc('publicar_pdf_legal', { p_slug: slug, p_ruta: ruta, p_nombre: archivo.name, p_bytes: archivo.size }))
+}
 export const guardarPagina = (slug, p) => datos(supabase.from('paginas').update(p).eq('slug', slug))
 export const guardarPregunta = (id, p) =>
   id ? datos(supabase.from('preguntas_frecuentes').update(p).eq('id', id)) : datos(supabase.from('preguntas_frecuentes').insert(p))
