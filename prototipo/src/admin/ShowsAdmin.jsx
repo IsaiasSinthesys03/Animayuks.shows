@@ -119,7 +119,7 @@ function EditorShow({ show, onCerrar }) {
     duracion_min: show?.duracion_min ?? 60, montaje_min: show?.montaje_min ?? 30, desmontaje_min: show?.desmontaje_min ?? 20, artistas: show?.artistas ?? 1,
     precio_base: show?.precio_base ?? '', requisitos: (show?.requisitos ?? []).join('\n'), video_url: show?.video_url ?? '',
     destacado: show?.destacado ?? false, pide_modalidad: show?.pide_modalidad ?? false,
-    permite_horas_extra: show?.permite_horas_extra ?? false, precio_hora_extra: show?.precio_hora_extra ?? '', orden: show?.orden ?? 0,
+    permite_horas_extra: show?.permite_horas_extra ?? false, precio_hora_extra: Number(show?.precio_hora_extra) > 0 ? show.precio_hora_extra : '', orden: show?.orden ?? 0,
   })
   const [imagen, setImagen] = useState(show?.imagen_principal ?? null)
   const [galeria, setGaleria] = useState(show?.galeria ?? [])
