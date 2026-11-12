@@ -32,8 +32,7 @@ do $$ begin
 end $$;
 
 do $$ begin
-  insert into public.horario_servicio (dia_semana, activo, abre, cierra) values (2, false, '11:00', '19:00')
-  on conflict (dia_semana) do update set activo = excluded.activo, abre = excluded.abre, cierra = excluded.cierra;
+  perform public.guardar_horario_semana('[{"dia_semana": 2, "activo": false, "franjas": [{"abre": "11:00", "cierra": "19:00", "modo": "intervalo", "intervalo_min": 60}]}]');
   if (select activo from public.horario_servicio where dia_semana = 2) then raise exception 'PRUEBA FALLIDA P02: no guardó el horario'; end if;
   insert into public.bloqueos (inicio, fin, motivo, creado_por)
   values (now() + interval '500 days', now() + interval '501 days', 'Prueba', auth.uid());
@@ -92,7 +91,11 @@ end $$;
 do $$
 declare r public.reservaciones; sab date := (now() at time zone 'America/Mexico_City')::date + 200;
 begin
-  update public.horario_servicio set activo = true, abre = '09:00', cierra = '22:00';
+  update public.horario_servicio set activo = true, max_shows = null;
+  delete from public.dias_especiales;
+  delete from public.horario_franjas where dia_semana is not null;
+  insert into public.horario_franjas (dia_semana, abre, cierra, modo, intervalo_min)
+  select d, '09:00', '22:00', 'intervalo', 30 from generate_series(0, 6) d;
   r := public.crear_reservacion('a0000000-0000-4000-8000-000000000810', 'a0000000-0000-4000-8000-000000000820',
         (sab + time '12:00') at time zone 'America/Mexico_City', '99991', 'Calle', 'Colonia',
         p_cliente_id => (select id from public.clientes where usuario_id = 'a0000000-0000-4000-8000-0000000008a1'),

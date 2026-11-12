@@ -81,7 +81,6 @@ function Parametros() {
         anticipacion_min_horas: Number(f.anticipacion_min_horas) || 0,
         anticipacion_max_dias: Number(f.anticipacion_max_dias) || 365,
         retencion_minutos: Number(f.retencion_minutos) || 10,
-        intervalo_horarios_min: Number(f.intervalo_horarios_min),
         cancelacion_dias_reembolso: Number(f.cancelacion_dias_reembolso) || 0,
         cancelacion_comision_pct: Number(f.cancelacion_comision_pct) || 0,
         reprogramacion_min_horas: Number(f.reprogramacion_min_horas) || 0,
@@ -142,11 +141,6 @@ function Parametros() {
           <Campo etiqueta="Anticipación mínima (horas)"><Input {...num('anticipacion_min_horas')} /></Campo>
           <Campo etiqueta="Anticipación máxima (días)"><Input {...num('anticipacion_max_dias')} /></Campo>
           <Campo etiqueta="Minutos que se aparta un horario" ayuda="Entre 1 y 60."><Input {...num('retencion_minutos')} /></Campo>
-          <Campo etiqueta="Ofrecer horarios cada">
-            <select value={f.intervalo_horarios_min} onChange={(e) => set('intervalo_horarios_min', e.target.value)} className={claseInput}>
-              <option value="15">15 minutos</option><option value="30">30 minutos</option><option value="60">1 hora</option>
-            </select>
-          </Campo>
           <Campo etiqueta="Días para cancelar con reembolso"><Input {...num('cancelacion_dias_reembolso')} /></Campo>
           <Campo etiqueta="Comisión al reembolsar (%)"><Input {...num('cancelacion_comision_pct')} /></Campo>
           <Campo etiqueta="Horas mínimas para cambiar de fecha"><Input {...num('reprogramacion_min_horas')} /></Campo>

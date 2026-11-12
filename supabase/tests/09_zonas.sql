@@ -1,6 +1,6 @@
 -- ═════════════════════════════════════════════════════════════════════════════
 -- Batería 09: zonas por región (migración 13)
--- Cobertura por estado, municipio y CP, costos y horarios por zona.
+-- Cobertura por estado, municipio y CP y costos por zona. Todas las zonas usan el horario general.
 -- Crea su propio catálogo con CP inexistentes. Se deshace al final con rollback.
 -- ═════════════════════════════════════════════════════════════════════════════
 
@@ -8,10 +8,14 @@ begin;
 
 update public.configuracion
    set anticipacion_min_horas = 48, anticipacion_max_dias = 365, anticipo_porcentaje = 30,
-       intervalo_horarios_min = 60, reservaciones_en_linea = true, zona_horaria = 'America/Mexico_City'
+       reservaciones_en_linea = true, zona_horaria = 'America/Mexico_City'
  where id = 1;
 -- El horario general: solo los sábados de 12:00 a 15:00
-update public.horario_servicio set activo = (dia_semana = 6), abre = '12:00', cierra = '15:00';
+update public.horario_servicio set activo = (dia_semana = 6), max_shows = null;
+delete from public.dias_especiales;
+delete from public.horario_franjas where dia_semana is not null;
+insert into public.horario_franjas (dia_semana, abre, cierra, modo, intervalo_min)
+select d, '12:00', '15:00', 'intervalo', 60 from generate_series(0, 6) d;
 
 insert into public.catalogo_cp (codigo_postal, estado, municipio, colonias, busqueda) values
   ('00901', 'Estado Prueba', 'Ciudad Norte', array['Lomas'],   public.normalizar_texto('00901 Ciudad Norte Estado Prueba Lomas')),
@@ -22,11 +26,9 @@ insert into public.catalogo_cp (codigo_postal, estado, municipio, colonias, busq
 
 insert into public.zonas (id, nombre, estados, municipios, codigos_postales, cargo_traslado, traslado_min, horario) values
   ('a0000000-0000-4000-8000-000000000901', 'Prueba estado', array['Estado Prueba'], '{}', '{}', 900, 0, null),
-  ('a0000000-0000-4000-8000-000000000902', 'Prueba norte', '{}', array['Estado Prueba|Ciudad Norte'], '{}', 100, 0,
-   '{"6": {"abre": "08:00", "cierra": "11:00"}}'),
+  ('a0000000-0000-4000-8000-000000000902', 'Prueba norte', '{}', array['Estado Prueba|Ciudad Norte'], '{}', 100, 0, null),
   ('a0000000-0000-4000-8000-000000000903', 'Prueba colonia', '{}', '{}', array['00902'], 200, 0, null),
-  ('a0000000-0000-4000-8000-000000000904', 'Prueba sur', '{}', array['Estado Prueba|Ciudad Sur'], '{}', 300, 0,
-   '{"6": {"abre": "19:00", "cierra": "22:00"}, "0": {"abre": "19:00", "cierra": "22:00"}}');
+  ('a0000000-0000-4000-8000-000000000904', 'Prueba sur', '{}', array['Estado Prueba|Ciudad Sur'], '{}', 300, 0, null);
 
 insert into public.shows (id, slug, nombre, duracion_min, montaje_min, desmontaje_min, precio_base, activo)
 values ('a0000000-0000-4000-8000-000000000910', 'prueba-zonas', 'Show zonas', 60, 0, 0, 1000, true);
@@ -116,32 +118,29 @@ begin
   raise notice 'Z05 ok: rechaza horarios de zona inválidos';
 end $$;
 
--- ── Horarios por zona ───────────────────────────────────────────────────────
+-- ── Horarios: todas las zonas usan el horario general ──────────────────────
 do $$ begin
-  if pg_temp.horas('00901', 0) <> '08:00 09:00 10:00' then
-    raise exception 'PRUEBA FALLIDA Z06: el norte ofrece: %', pg_temp.horas('00901', 0);
+  if pg_temp.horas('00901', 0) <> '12:00 13:00 14:00' or pg_temp.horas('00903', 0) <> '12:00 13:00 14:00' then
+    raise exception 'PRUEBA FALLIDA Z06: norte %, sur %', pg_temp.horas('00901', 0), pg_temp.horas('00903', 0);
   end if;
-  if pg_temp.horas('00903', 0) <> '19:00 20:00 21:00' then
-    raise exception 'PRUEBA FALLIDA Z06: el sur ofrece: %', pg_temp.horas('00903', 0);
-  end if;
-  raise notice 'Z06 ok: el mismo día, el norte se ofrece en la mañana y el sur en la noche';
+  raise notice 'Z06 ok: zonas distintas ofrecen las mismas horas (las del horario general)';
 
   if pg_temp.horas('00904', 0) <> '12:00 13:00 14:00' then
-    raise exception 'PRUEBA FALLIDA Z07: sin horario propio ofrece: %', pg_temp.horas('00904', 0);
+    raise exception 'PRUEBA FALLIDA Z07: la zona del estado ofrece: %', pg_temp.horas('00904', 0);
   end if;
-  raise notice 'Z07 ok: una zona sin horario propio usa el horario general';
+  raise notice 'Z07 ok: la zona del estado usa el horario general';
 
-  if pg_temp.horas('00903', 1) <> '19:00 20:00 21:00' or pg_temp.horas('00904', 1) <> '' or pg_temp.horas('00901', 1) <> '' then
+  if pg_temp.horas('00903', 1) <> '' or pg_temp.horas('00904', 1) <> '' or pg_temp.horas('00901', 1) <> '' then
     raise exception 'PRUEBA FALLIDA Z08: el domingo: sur %, estado %, norte %', pg_temp.horas('00903', 1), pg_temp.horas('00904', 1), pg_temp.horas('00901', 1);
   end if;
-  raise notice 'Z08 ok: el horario propio reemplaza al general, y un día sin horario no tiene servicio';
+  raise notice 'Z08 ok: un día sin servicio no ofrece horas en ninguna zona';
 
   if (select estado from public.disponibilidad_mes('a0000000-0000-4000-8000-000000000910', null, '{}', '00901',
         extract(year from current_setting('prueba.sab')::date)::int, extract(month from current_setting('prueba.sab')::date)::int) d
        where d.fecha = current_setting('prueba.sab')::date) <> 'libre' then
-    raise exception 'PRUEBA FALLIDA Z09: el calendario del mes no refleja el horario de la zona';
+    raise exception 'PRUEBA FALLIDA Z09: el calendario del mes no refleja el horario';
   end if;
-  raise notice 'Z09 ok: el calendario del mes usa el horario de la zona';
+  raise notice 'Z09 ok: el calendario del mes refleja el horario';
 end $$;
 
 -- ── Cliente ─────────────────────────────────────────────────────────────────
@@ -152,17 +151,17 @@ do $$
 declare r public.reservaciones;
 begin
   begin
-    perform public.crear_reservacion('a0000000-0000-4000-8000-000000000910', null, pg_temp.h(0, '12:00'), '00901', 'Calle', 'Lomas');
-    raise exception 'PRUEBA FALLIDA Z10: reservó en el norte fuera de su horario';
+    perform public.crear_reservacion('a0000000-0000-4000-8000-000000000910', null, pg_temp.h(0, '08:00'), '00901', 'Calle', 'Lomas');
+    raise exception 'PRUEBA FALLIDA Z10: reservó fuera de horario';
   exception when others then
     if sqlerrm not like 'FUERA_DE_HORARIO%' then raise; end if;
   end;
-  r := public.crear_reservacion('a0000000-0000-4000-8000-000000000910', null, pg_temp.h(0, '09:00'), '00901', 'Calle', 'Lomas');
+  r := public.crear_reservacion('a0000000-0000-4000-8000-000000000910', null, pg_temp.h(0, '12:00'), '00901', 'Calle', 'Lomas');
   if r.cargo_traslado <> 100 or r.total <> 1100 then
     raise exception 'PRUEBA FALLIDA Z10: cobró traslado %, total %', r.cargo_traslado, r.total;
   end if;
   perform set_config('prueba.r1', r.id::text, true);
-  r := public.crear_reservacion('a0000000-0000-4000-8000-000000000910', null, pg_temp.h(0, '20:00'), '00903', 'Calle', 'Jardín');
+  r := public.crear_reservacion('a0000000-0000-4000-8000-000000000910', null, pg_temp.h(0, '13:00'), '00903', 'Calle', 'Jardín');
   if r.cargo_traslado <> 300 then
     raise exception 'PRUEBA FALLIDA Z10: el sur cobró %', r.cargo_traslado;
   end if;
@@ -171,10 +170,10 @@ end $$;
 
 do $$ begin
   perform public.apartar_horario('a0000000-0000-4000-8000-000000000910', null, '{}', '00901', pg_temp.h(0, '20:00'));
-  raise exception 'PRUEBA FALLIDA Z11: apartó en el norte fuera de su horario';
+  raise exception 'PRUEBA FALLIDA Z11: apartó fuera de horario';
 exception when others then
   if sqlerrm not like 'FUERA_DE_HORARIO%' then raise; end if;
-  raise notice 'Z11 ok: apartar un horario también respeta el horario de la zona';
+  raise notice 'Z11 ok: apartar un horario también respeta el horario';
 end $$;
 
 do $$
@@ -199,13 +198,13 @@ select set_config('request.jwt.claim.sub', 'a0000000-0000-4000-8000-0000000009ad
 do $$ begin
   -- El admin puede salirse del horario, pero solo dejando el motivo
   begin
-    perform public.reprogramar_reservacion(current_setting('prueba.r1')::uuid, pg_temp.h(0, '12:00'), '');
+    perform public.reprogramar_reservacion(current_setting('prueba.r1')::uuid, pg_temp.h(0, '09:00'), '');
     raise exception 'PRUEBA FALLIDA Z13: el admin reprogramó fuera de horario sin motivo';
   exception when others then
     if sqlerrm not like 'MOTIVO_REQUERIDO%fuera de horario%' then raise; end if;
   end;
-  perform public.reprogramar_reservacion(current_setting('prueba.r1')::uuid, pg_temp.h(0, '10:00'), '');
-  raise notice 'Z13 ok: reprogramar usa el horario de la zona';
+  perform public.reprogramar_reservacion(current_setting('prueba.r1')::uuid, pg_temp.h(0, '14:00'), '');
+  raise notice 'Z13 ok: reprogramar respeta el horario; salirse exige motivo';
 end $$;
 reset role;
 
@@ -233,7 +232,7 @@ begin
 end $$;
 
 do $$ begin
-  perform public.horario_de_zona(null, 1);
+  perform public.franjas_del_dia(current_date);
   raise exception 'PRUEBA FALLIDA Z15: el visitante llamó una función interna';
 exception when insufficient_privilege then
   raise notice 'Z15 ok: el visitante no llama funciones internas';

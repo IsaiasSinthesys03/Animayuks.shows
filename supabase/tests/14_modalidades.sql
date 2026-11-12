@@ -10,7 +10,11 @@ update public.configuracion
        confirmacion_automatica = false, reservaciones_en_linea = true,
        zona_horaria = 'America/Mexico_City'
  where id = 1;
-update public.horario_servicio set activo = (dia_semana <> 1), abre = '09:00', cierra = '22:00';
+update public.horario_servicio set activo = (dia_semana <> 1), max_shows = null;
+delete from public.dias_especiales;
+delete from public.horario_franjas where dia_semana is not null;
+insert into public.horario_franjas (dia_semana, abre, cierra, modo, intervalo_min)
+select d, '09:00', '22:00', 'intervalo', 30 from generate_series(0, 6) d;
 
 insert into public.zonas (id, nombre, codigos_postales, cargo_traslado, traslado_min, activa)
 values ('a0000000-0000-4000-8000-000000000001', 'Zona de prueba', array['99999'], 300, 30, true);

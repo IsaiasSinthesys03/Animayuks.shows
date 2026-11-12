@@ -161,8 +161,8 @@ do $$ begin
   raise exception 'PRUEBA FALLIDA C09: aceptó una retención de 0 minutos';
 exception when check_violation then
   begin
-    update public.configuracion set intervalo_horarios_min = 20;
-    raise exception 'PRUEBA FALLIDA C09: aceptó un intervalo de 20 minutos';
+    insert into public.horario_franjas (dia_semana, abre, cierra, modo, intervalo_min) values (3, '08:00', '09:00', 'intervalo', 10);
+    raise exception 'PRUEBA FALLIDA C09: aceptó un intervalo de 10 minutos';
   exception when check_violation then
     raise notice 'C09 ok: valida retención e intervalo de horarios';
   end;

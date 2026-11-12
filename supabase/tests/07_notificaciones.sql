@@ -13,12 +13,16 @@ update public.notificaciones set proximo_intento = now() + interval '1 day' wher
 update public.configuracion
    set anticipacion_min_horas = 48, anticipacion_max_dias = 365, anticipo_porcentaje = 30,
        cancelacion_dias_reembolso = 7, cancelacion_comision_pct = 5, expiracion_pendiente_horas = 24,
-       reprogramacion_min_horas = 72, reprogramaciones_max = 1, intervalo_horarios_min = 30,
+       reprogramacion_min_horas = 72, reprogramaciones_max = 1,
        reservaciones_en_linea = true, confirmacion_automatica = false, zona_horaria = 'America/Mexico_City',
        banco = 'BBVA', titular_cuenta = 'Animayuks Prueba', clabe = '012180001234567891',
        correo_avisos = 'dueno@prueba.invalid', sitio_url = 'https://animayuks.com'
  where id = 1;
-update public.horario_servicio set activo = true, abre = '10:00', cierra = '20:00';
+update public.horario_servicio set activo = true, max_shows = null;
+delete from public.dias_especiales;
+delete from public.horario_franjas where dia_semana is not null;
+insert into public.horario_franjas (dia_semana, abre, cierra, modo, intervalo_min)
+select d, '10:00', '20:00', 'intervalo', 30 from generate_series(0, 6) d;
 
 -- Si no existe el secreto (base local), se crea uno falso solo para esta transacción
 do $$ begin

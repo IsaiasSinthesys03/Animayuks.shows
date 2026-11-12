@@ -69,7 +69,7 @@ export default function Calendario({ showId, paqueteId, extras, cp, valor, onCam
                 disabled={deshab}
                 onClick={() => onCambio(d.fecha)}
                 aria-pressed={sel}
-                aria-label={`${numero} de ${MESES[mes - 1]}${d.estado === 'lleno' ? ', sin horarios' : d.estado === 'pocos' ? ', pocos horarios' : d.estado === 'no_disponible' ? ', no disponible' : ''}`}
+                aria-label={`${numero} de ${MESES[mes - 1]}${d.estado === 'lleno' ? ', lleno' : d.estado === 'pocos' ? ', pocos horarios' : d.estado === 'no_disponible' ? ', no disponible' : ''}`}
                 className={`num relative flex aspect-square flex-col items-center justify-center rounded-xl text-[15px] font-semibold transition-colors ${
                   sel ? 'bg-selva-600 text-white'
                     : d.estado === 'no_disponible' ? 'text-tinta-soft/40'

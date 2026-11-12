@@ -9,13 +9,14 @@ begin;
 -- ── Reglas y datos de prueba ────────────────────────────────────────────────
 update public.configuracion
    set anticipacion_min_horas = 48, anticipacion_max_dias = 365, anticipo_porcentaje = 30,
-       intervalo_horarios_min = 30, reservaciones_en_linea = true, zona_horaria = 'America/Mexico_City'
+       reservaciones_en_linea = true, zona_horaria = 'America/Mexico_City'
  where id = 1;
 -- Lunes sin servicio, viernes 10:00–11:30, domingo 10:00–11:00, resto 10:00–20:00
-update public.horario_servicio
-   set activo = (dia_semana <> 1),
-       abre   = '10:00',
-       cierra = case dia_semana when 5 then time '11:30' when 0 then time '11:00' else time '20:00' end;
+update public.horario_servicio set activo = (dia_semana <> 1), max_shows = null;
+delete from public.dias_especiales;
+delete from public.horario_franjas where dia_semana is not null;
+insert into public.horario_franjas (dia_semana, abre, cierra, modo, intervalo_min)
+select d, '10:00', case d when 5 then time '11:30' when 0 then time '11:00' else time '20:00' end, 'intervalo', 30 from generate_series(0, 6) d;
 
 insert into public.zonas (id, nombre, codigos_postales, cargo_traslado, traslado_min) values
   ('a0000000-0000-4000-8000-000000000301', 'Zona A prueba (sin traslado)', array['99997'], 0, 0),

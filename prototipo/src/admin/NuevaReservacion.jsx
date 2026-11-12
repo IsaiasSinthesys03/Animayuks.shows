@@ -11,7 +11,7 @@ import { useStore } from '../store'
 import { Boton, Campo, Cargando, Input, Select } from '../components/ui'
 import { Encabezado } from './AdminLayout'
 
-const EXCEPCIONES = /^(FUERA_DE_COBERTURA|ANTICIPACION|FUERA_DE_HORARIO|FECHA_BLOQUEADA|MOTIVO_REQUERIDO|FECHA_PASADA)/
+const EXCEPCIONES = /^(FUERA_DE_COBERTURA|ANTICIPACION|FUERA_DE_HORARIO|FECHA_BLOQUEADA|DIA_LLENO|MOTIVO_REQUERIDO|FECHA_PASADA)/
 
 function Bloque({ titulo, children }) {
   return (

@@ -1,57 +1,64 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Trash2 } from 'lucide-react'
-import { useAuth } from '../auth'
 import { mensajeError } from '../lib/api'
-import { borrarBloqueo, crearBloqueo, guardarHorario, obtenerBloqueos, obtenerHorario } from '../lib/apiAdmin'
-import { fechaLarga, hoy, instanteLocal } from '../lib/format'
+import { guardarHorarioSemana, obtenerHorario } from '../lib/apiAdmin'
 import { useStore } from '../store'
-import { Boton, Campo, Cargando, ErrorCarga, Input } from '../components/ui'
+import { Boton, Cargando, ErrorCarga } from '../components/ui'
 import { Encabezado } from './AdminLayout'
-import FilaHorario from './FilaHorario'
+import SemanaNormal from './horarios/SemanaNormal'
+import VistaPrevia from './horarios/VistaPrevia'
+import DiasEspeciales from './horarios/DiasEspeciales'
+import Bloqueos from './horarios/Bloqueos'
+import { DIAS, ORDEN, aBase, desdeBase, problemaFranjas } from './horarios/util'
 
-const DIAS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
-const ORDEN = [1, 2, 3, 4, 5, 6, 0] // la semana empieza en lunes
-
-/** Un día después, para que el bloqueo cubra la fecha "hasta" completa */
-const diaSiguiente = (dia) => new Date(Date.parse(`${dia}T12:00:00Z`) + 86400000).toISOString().slice(0, 10)
+const aEditor = (filas) => filas.map((d) => ({ dia_semana: d.dia_semana, activo: d.activo, max_shows: d.max_shows, franjas: desdeBase(d.horario_franjas) }))
+const firmaSemana = (semana) => JSON.stringify((semana ?? []).map((d) => [d.dia_semana, d.activo, d.max_shows ?? null, aBase(d.franjas)]))
 
 export default function Disponibilidad() {
-  const { usuario } = useAuth()
   const { avisar } = useStore()
   const queryClient = useQueryClient()
   const horario = useQuery({ queryKey: ['admin-horario'], queryFn: obtenerHorario })
-  const bloqueos = useQuery({ queryKey: ['admin-bloqueos'], queryFn: obtenerBloqueos })
   const [semana, setSemana] = useState(null)
-  const [desde, setDesde] = useState('')
-  const [hasta, setHasta] = useState('')
-  const [motivo, setMotivo] = useState('')
   const [error, setError] = useState('')
-  const [errorBloqueo, setErrorBloqueo] = useState('')
   const [guardando, setGuardando] = useState(false)
 
   useEffect(() => {
-    if (horario.data && !semana) setSemana(horario.data)
+    if (horario.data && !semana) setSemana(aEditor(horario.data))
   }, [horario.data, semana])
 
-  const refrescar = () => {
+  const original = useMemo(() => (horario.data ? firmaSemana(aEditor(horario.data)) : null), [horario.data])
+  const sinGuardar = semana && original !== firmaSemana(semana)
+
+  // Avisa antes de salir con cambios sin guardar
+  useEffect(() => {
+    if (!sinGuardar) return undefined
+    const aviso = (e) => { e.preventDefault(); e.returnValue = '' }
+    window.addEventListener('beforeunload', aviso)
+    return () => window.removeEventListener('beforeunload', aviso)
+  }, [sinGuardar])
+
+  const refrescarSitio = () => {
     queryClient.invalidateQueries({ queryKey: ['disponibilidad'] })
     queryClient.invalidateQueries({ queryKey: ['horarios'] })
   }
 
-  if (horario.isLoading) return <Cargando />
+  if (horario.isLoading || (horario.data && !semana)) return <Cargando />
   if (horario.isError) return <ErrorCarga onReintentar={horario.refetch} />
 
-  const cambiar = (dia, cambios) => setSemana((s) => s.map((d) => (d.dia_semana === dia ? { ...d, ...cambios } : d)))
+  const activos = ORDEN.map((n) => semana.find((d) => d.dia_semana === n)).filter((d) => d?.activo)
 
   const guardar = async () => {
     setError('')
-    if ((semana ?? []).some((d) => d.activo && d.cierra.slice(0, 5) <= d.abre.slice(0, 5))) return setError('La hora de cierre debe ser después de la de apertura.')
+    for (const d of activos) {
+      const problema = problemaFranjas(d.franjas, DIAS[d.dia_semana])
+      if (problema) return setError(problema)
+    }
     setGuardando(true)
     try {
-      await guardarHorario(semana)
+      await guardarHorarioSemana(semana.map((d) => ({ dia_semana: d.dia_semana, activo: d.activo, max_shows: d.max_shows ?? null, franjas: aBase(d.franjas) })))
       await queryClient.invalidateQueries({ queryKey: ['admin-horario'] })
-      refrescar()
+      setSemana(null) // se vuelve a cargar tal como quedó guardado
+      refrescarSitio()
       avisar('Horario guardado')
     } catch (err) {
       setError(mensajeError(err))
@@ -60,97 +67,39 @@ export default function Disponibilidad() {
     }
   }
 
-  const bloquear = async (e) => {
-    e.preventDefault()
-    setErrorBloqueo('')
-    if (!desde) return setErrorBloqueo('Elige la fecha.')
-    const fin = hasta || desde
-    if (fin < desde) return setErrorBloqueo('La fecha final debe ser igual o posterior a la inicial.')
-    try {
-      await crearBloqueo({ inicio: instanteLocal(desde, '00:00'), fin: instanteLocal(diaSiguiente(fin), '00:00'), motivo: motivo.trim() || 'Bloqueado', creado_por: usuario.id })
-      await queryClient.invalidateQueries({ queryKey: ['admin-bloqueos'] })
-      refrescar()
-      avisar('Fechas bloqueadas')
-      setDesde('')
-      setHasta('')
-      setMotivo('')
-    } catch (err) {
-      setErrorBloqueo(mensajeError(err))
-    }
-  }
-
-  const futuros = (bloqueos.data ?? []).filter((b) => new Date(b.fin) > new Date())
-
   return (
     <>
-      <Encabezado titulo="Horarios y bloqueos" descripcion="Define cuándo se puede reservar en línea" />
-      <div className="grid gap-5 xl:grid-cols-2">
+      <Encabezado titulo="Horarios y bloqueos" descripcion="Cuándo y a qué horas se puede reservar en línea" />
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
         <section className="rounded-2xl bg-white p-5 ring-1 ring-linea">
-          <h2 className="font-bold">Horario de servicio</h2>
-          <p className="mt-1 text-sm text-tinta-soft">El show debe empezar y terminar dentro de este horario. Las reservaciones existentes no cambian.</p>
-          <ul className="mt-3 divide-y divide-linea">
-            {ORDEN.map((n) => {
-              const d = semana?.find((x) => x.dia_semana === n)
-              if (!d) return null
-              return (
-                <FilaHorario
-                  key={n}
-                  dia={DIAS[n]}
-                  activo={d.activo}
-                  abre={d.abre.slice(0, 5)}
-                  cierra={d.cierra.slice(0, 5)}
-                  onCambio={(cambios) => cambiar(n, cambios)}
-                  onCopiar={() => setSemana((s) => s.map((x) => (x.activo ? { ...x, abre: d.abre, cierra: d.cierra } : x)))}
-                />
-              )
-            })}
-          </ul>
+          <h2 className="font-bold">Semana normal</h2>
+          <p className="mt-1 text-sm text-tinta-soft">
+            Cada día puede tener varias franjas. En cada franja eliges si las horas se ofrecen cada cierto tiempo o solo a horas exactas.
+            El show debe terminar antes del cierre de su franja. Las reservaciones existentes no cambian.
+          </p>
+          <div className="mt-2">
+            <SemanaNormal semana={semana} onCambio={setSemana} />
+          </div>
           {error && <p role="alert" className="mt-2 rounded-xl bg-error-soft px-3 py-2 text-sm font-medium text-error">{error}</p>}
-          <Boton className="mt-4" onClick={guardar} disabled={guardando}>{guardando ? 'Guardando…' : 'Guardar horario'}</Boton>
+          <div className="sticky bottom-0 -mx-5 mt-3 flex flex-wrap items-center gap-3 rounded-b-2xl border-t border-linea bg-white/95 px-5 pt-3 pb-1 backdrop-blur">
+            <Boton onClick={guardar} disabled={guardando || !sinGuardar}>{guardando ? 'Guardando…' : 'Guardar horario'}</Boton>
+            {sinGuardar && (
+              <>
+                <span className="text-sm font-medium text-alerta">Cambios sin guardar</span>
+                <button type="button" onClick={() => { setError(''); setSemana(aEditor(horario.data)) }} className="text-sm font-semibold text-tinta-soft underline">Descartar</button>
+              </>
+            )}
+          </div>
         </section>
 
-        <section className="rounded-2xl bg-white p-5 ring-1 ring-linea">
-          <h2 className="font-bold">Fechas bloqueadas</h2>
-          <p className="mt-1 text-sm text-tinta-soft">Vacaciones, mantenimiento o compromisos personales. No se ofrecen en el calendario del sitio.</p>
-          <form className="mt-4 grid gap-3 sm:grid-cols-2" onSubmit={bloquear} noValidate>
-            <Campo etiqueta="Desde"><Input type="date" min={hoy()} value={desde} onChange={(e) => setDesde(e.target.value)} /></Campo>
-            <Campo etiqueta="Hasta (opcional)"><Input type="date" min={desde || hoy()} value={hasta} onChange={(e) => setHasta(e.target.value)} /></Campo>
-            <Campo etiqueta="Motivo" className="sm:col-span-2"><Input value={motivo} onChange={(e) => setMotivo(e.target.value)} placeholder="Vacaciones" /></Campo>
-            <div className="sm:col-span-2">
-              {errorBloqueo && <p role="alert" className="mb-2 rounded-xl bg-error-soft px-3 py-2 text-sm font-medium text-error">{errorBloqueo}</p>}
-              <Boton type="submit">Bloquear fechas</Boton>
-            </div>
-          </form>
-          {bloqueos.isError && <ErrorCarga onReintentar={bloqueos.refetch} />}
-          {bloqueos.data && futuros.length === 0 && <p className="mt-5 text-sm text-tinta-soft">No hay fechas bloqueadas.</p>}
-          <ul className="mt-5 divide-y divide-linea">
-            {futuros.map((b) => {
-              // El fin es la medianoche siguiente: se resta un instante para mostrar el último día
-              const ultimo = new Date(new Date(b.fin).getTime() - 1000)
-              const mismoDia = fechaLarga(b.inicio) === fechaLarga(ultimo)
-              return (
-                <li key={b.id} className="flex items-center justify-between gap-3 py-3">
-                  <span>
-                    <span className="block font-medium first-letter:uppercase">{fechaLarga(b.inicio)}{mismoDia ? '' : ` al ${fechaLarga(ultimo)}`}</span>
-                    <span className="block text-sm text-tinta-soft">{b.motivo}</span>
-                  </span>
-                  <button
-                    onClick={async () => {
-                      await borrarBloqueo(b.id)
-                      await queryClient.invalidateQueries({ queryKey: ['admin-bloqueos'] })
-                      refrescar()
-                      avisar('Bloqueo eliminado')
-                    }}
-                    className="rounded-full p-2 text-tinta-soft hover:bg-error-soft hover:text-error"
-                    aria-label={`Quitar bloqueo: ${b.motivo}`}
-                  >
-                    <Trash2 className="size-4" />
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
-        </section>
+        <div className="xl:sticky xl:top-4">
+          <VistaPrevia dias={activos.map((d) => ({ clave: String(d.dia_semana), etiqueta: DIAS[d.dia_semana], franjas: d.franjas, maxShows: d.max_shows }))} />
+        </div>
+      </div>
+
+      <div className="mt-5 grid items-start gap-5 xl:grid-cols-2">
+        <DiasEspeciales onCambio={refrescarSitio} />
+        <Bloqueos onCambio={refrescarSitio} />
       </div>
     </>
   )

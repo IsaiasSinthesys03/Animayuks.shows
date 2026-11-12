@@ -62,8 +62,14 @@ export const guardarZona = (id, z) => (id ? datos(supabase.from('zonas').update(
 export const borrarZona = (id) => datos(supabase.from('zonas').delete().eq('id', id))
 
 // ── Horarios y bloqueos ─────────────────────────────────────────────────────
-export const obtenerHorario = () => datos(supabase.from('horario_servicio').select('*').order('dia_semana'))
-export const guardarHorario = (filas) => datos(supabase.from('horario_servicio').upsert(filas))
+export const obtenerHorario = () => datos(supabase.from('horario_servicio').select('*, horario_franjas(*)').order('dia_semana'))
+export const guardarHorarioSemana = (dias) => datos(supabase.rpc('guardar_horario_semana', { p_dias: dias }))
+export const obtenerDiasEspeciales = (desde) => datos(supabase.from('dias_especiales').select('*, horario_franjas(*)').gte('fecha', desde).order('fecha'))
+export const guardarDiaEspecial = ({ fecha, maxShows, motivo, franjas, fechaAnterior }) =>
+  datos(supabase.rpc('guardar_dia_especial', { p_fecha: fecha, p_max_shows: maxShows, p_motivo: motivo, p_franjas: franjas, p_fecha_anterior: fechaAnterior ?? null }))
+export const borrarDiaEspecial = (fecha) => datos(supabase.from('dias_especiales').delete().eq('fecha', fecha))
+export const vistaPreviaHorario = (franjas, duracionMin) => datos(supabase.rpc('vista_previa_horario', { p_franjas: franjas, p_duracion_min: duracionMin }))
+export const reservacionesFueraDeFranjas = (fecha, franjas) => datos(supabase.rpc('reservaciones_fuera_de_franjas', { p_fecha: fecha, p_franjas: franjas }))
 export const obtenerBloqueos = () => datos(supabase.from('bloqueos').select('*').order('inicio'))
 export const crearBloqueo = (b) => datos(supabase.from('bloqueos').insert(b))
 export const borrarBloqueo = (id) => datos(supabase.from('bloqueos').delete().eq('id', id))

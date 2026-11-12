@@ -299,7 +299,7 @@ export default function Reservar() {
       window.scrollTo({ top: 0 })
     } catch (err) {
       setErrorGeneral(mensajeError(err))
-      if (/^(HORARIO_OCUPADO|FUERA_DE_HORARIO|FECHA_BLOQUEADA|ANTICIPACION)/.test(err.message ?? '')) {
+      if (/^(HORARIO_OCUPADO|FUERA_DE_HORARIO|FECHA_BLOQUEADA|ANTICIPACION|DIA_LLENO)/.test(err.message ?? '')) {
         // Otro tomó el horario o ya no se puede: regresa a elegir
         queryClient.invalidateQueries({ queryKey: ['horarios'] })
         queryClient.invalidateQueries({ queryKey: ['disponibilidad'] })
