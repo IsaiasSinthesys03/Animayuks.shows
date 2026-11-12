@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, Check, Pencil, Plus, Trash2, X } from 'lucide-react'
 import { mensajeError, urlLanding } from '../lib/api'
 import {
   borrarArchivoLanding, borrarBanner, borrarVideoBanner, borrarVideoLanding, guardarBanner, guardarContenidoLanding,
@@ -388,8 +388,18 @@ function Videos() {
   const [enlace, setEnlace] = useState('')
   const [titulo, setTitulo] = useState('')
   const [error, setError] = useState('')
+  const [editando, setEditando] = useState(null) // id del video cuyo título se edita
+  const [nuevoTitulo, setNuevoTitulo] = useState('')
   const lista = consulta.data ?? []
   const id = idDeYoutube(enlace)
+
+  const renombrar = async (e, v) => {
+    e.preventDefault()
+    const limpio = nuevoTitulo.trim()
+    if (!limpio) return setError('El título no puede quedar vacío.')
+    if (limpio === v.titulo) return setEditando(null)
+    if (await accion(() => guardarVideoLanding(v.id, { titulo: limpio }), 'Título actualizado')) setEditando(null)
+  }
 
   const accion = async (fn, mensaje) => {
     setError('')
@@ -432,7 +442,18 @@ function Videos() {
         {lista.map((v, i) => (
           <li key={v.id} className={`flex flex-wrap items-center gap-3 rounded-2xl bg-white p-3 ring-1 ring-linea ${v.activo ? '' : 'opacity-60'}`}>
             <img src={`https://img.youtube.com/vi/${v.youtube_id}/hqdefault.jpg`} alt="" className="h-14 w-24 rounded-lg object-cover" />
-            <p className="min-w-0 flex-1 basis-40 truncate font-semibold">{v.titulo}</p>
+            {editando === v.id ? (
+              <form onSubmit={(e) => renombrar(e, v)} className="flex min-w-0 flex-1 basis-56 items-center gap-1">
+                <Input autoFocus value={nuevoTitulo} onChange={(e) => setNuevoTitulo(e.target.value)} onKeyDown={(e) => e.key === 'Escape' && setEditando(null)} aria-label={`Nuevo título de ${v.titulo}`} />
+                <button type="submit" aria-label="Guardar título" className="rounded-full p-2 text-selva-700 hover:bg-selva-50"><Check className="size-4" /></button>
+                <button type="button" onClick={() => setEditando(null)} aria-label="Cancelar" className="rounded-full p-2 text-tinta-soft hover:bg-butaca"><X className="size-4" /></button>
+              </form>
+            ) : (
+              <p className="flex min-w-0 flex-1 basis-40 items-center gap-1">
+                <span className="truncate font-semibold">{v.titulo}</span>
+                <button type="button" onClick={() => { setError(''); setNuevoTitulo(v.titulo); setEditando(v.id) }} aria-label={`Editar el título de ${v.titulo}`} className="shrink-0 rounded-full p-1.5 text-tinta-soft hover:bg-butaca hover:text-tinta"><Pencil className="size-3.5" /></button>
+              </p>
+            )}
             <div className="flex items-center gap-2">
               <Mover indice={i} total={lista.length} nombre={v.titulo} onMover={(x, d) => accion(() => reordenarVideos(mover(lista, x, d)))} />
               <Interruptor activo={v.activo} etiqueta={`Mostrar ${v.titulo}`} onCambio={() => accion(() => guardarVideoLanding(v.id, { activo: !v.activo }))} />
