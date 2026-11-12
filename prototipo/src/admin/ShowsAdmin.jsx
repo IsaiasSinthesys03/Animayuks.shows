@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Check, ImagePlus, Pencil, Plus, Trash2, X } from 'lucide-react'
 import { mensajeError, urlImagen } from '../lib/api'
-import { borrarCategoria, borrarPaquete, guardarCategoria, renombrarCategoria, guardarExtra, guardarPaquete, guardarShow, subirImagen } from '../lib/apiAdmin'
-import { useCategorias, useExtras, useShows } from '../lib/consultas'
+import { borrarCategoria, borrarModalidad, borrarPaquete, guardarCategoria, guardarModalidad, renombrarCategoria, guardarPaquete, guardarShow, subirImagen } from '../lib/apiAdmin'
+import { useCategorias, useModalidades, useShows } from '../lib/consultas'
 import { pesos } from '../lib/format'
 import { useStore } from '../store'
 import { Boton, Campo, Cargando, ErrorCarga, Input, Miniatura, Panel, Select, claseInput } from '../components/ui'
@@ -15,7 +15,7 @@ const MAX_IMAGEN_MB = 10
 
 function usarInvalidar() {
   const queryClient = useQueryClient()
-  return () => Promise.all(['shows', 'show', 'extras', 'categorias'].map((k) => queryClient.invalidateQueries({ queryKey: [k] })))
+  return () => Promise.all(['shows', 'show', 'modalidades', 'categorias'].map((k) => queryClient.invalidateQueries({ queryKey: [k] })))
 }
 
 function EditorPaquete({ showId, paquete, onListo }) {
@@ -117,7 +117,7 @@ function EditorShow({ show, onCerrar }) {
     nombre: show?.nombre ?? '', categoria_id: show?.categoria_id ?? '', resumen: show?.resumen ?? '', descripcion: show?.descripcion ?? '',
     duracion_min: show?.duracion_min ?? 60, montaje_min: show?.montaje_min ?? 30, desmontaje_min: show?.desmontaje_min ?? 20, artistas: show?.artistas ?? 1,
     precio_base: show?.precio_base ?? '', requisitos: (show?.requisitos ?? []).join('\n'), video_url: show?.video_url ?? '',
-    destacado: show?.destacado ?? false, orden: show?.orden ?? 0,
+    destacado: show?.destacado ?? false, pide_modalidad: show?.pide_modalidad ?? false, orden: show?.orden ?? 0,
   })
   const [imagen, setImagen] = useState(show?.imagen_principal ?? null)
   const [galeria, setGaleria] = useState(show?.galeria ?? [])
@@ -159,7 +159,7 @@ function EditorShow({ show, onCerrar }) {
         duracion_min: Number(f.duracion_min), montaje_min: Number(f.montaje_min) || 0, desmontaje_min: Number(f.desmontaje_min) || 0,
         artistas: Number(f.artistas) || 1, precio_base: Number(f.precio_base),
         requisitos: f.requisitos.split('\n').map((x) => x.trim()).filter(Boolean),
-        video_url: f.video_url.trim() || null, destacado: f.destacado, orden: Number(f.orden) || 0,
+        video_url: f.video_url.trim() || null, destacado: f.destacado, pide_modalidad: f.pide_modalidad, orden: Number(f.orden) || 0,
         imagen_principal: imagen, galeria,
       }
       if (!actual) datos.slug = aSlug(f.nombre)
@@ -242,6 +242,10 @@ function EditorShow({ show, onCerrar }) {
         <label className="flex items-center gap-2 text-sm font-medium">
           <input type="checkbox" checked={f.destacado} onChange={(e) => set('destacado', e.target.checked)} className="size-4 accent-selva-600" /> Destacar en la página de inicio
         </label>
+        <label className="flex items-start gap-2 text-sm font-medium">
+          <input type="checkbox" checked={f.pide_modalidad} onChange={(e) => set('pide_modalidad', e.target.checked)} className="mt-0.5 size-4 accent-selva-600" />
+          <span>Preguntar tipo de evento al reservar<span className="block font-normal text-tinta-soft">El cliente elige un tipo de evento (Escolar, Privado, Municipal…) con su costo extra, o ninguno. Apágalo si este show no encaja con esos eventos.</span></span>
+        </label>
 
         {error && <p role="alert" className="rounded-xl bg-error-soft px-3 py-2 text-sm font-medium text-error">{error}</p>}
         <div className="flex gap-2">
@@ -293,42 +297,100 @@ function EditorShow({ show, onCerrar }) {
   )
 }
 
-function SeccionExtras() {
+function FilaModalidad({ m, onCambio }) {
+  const [editando, setEditando] = useState(false)
+  const inicial = { nombre: m.nombre, descripcion: m.descripcion, cargo: String(m.cargo) }
+  const [f, setF] = useState(inicial)
+  const [error, setError] = useState('')
+  const guardar = async (e) => {
+    e.preventDefault()
+    setError('')
+    if (!f.nombre.trim() || f.cargo === '') return setError('Escribe el nombre y el costo extra.')
+    try {
+      await guardarModalidad(m.id, { nombre: f.nombre.trim(), descripcion: f.descripcion.trim(), cargo: Number(f.cargo) })
+      await onCambio()
+      setEditando(false)
+    } catch (err) {
+      setError(err.code === '23505' ? 'Ya existe un tipo de evento con ese nombre.' : mensajeError(err))
+    }
+  }
+  const borrar = async () => {
+    if (!window.confirm(`¿Eliminar "${m.nombre}"? Las reservaciones que ya lo tienen lo conservan. Si solo quieres dejar de ofrecerlo, apágalo.`)) return
+    try {
+      await borrarModalidad(m.id)
+      await onCambio()
+    } catch (err) {
+      setError(mensajeError(err))
+    }
+  }
+  if (editando) {
+    return (
+      <li className="py-3">
+        <form onSubmit={guardar} className="space-y-2" noValidate>
+          <div className="grid grid-cols-[1fr_110px] gap-2">
+            <Campo etiqueta="Nombre"><Input value={f.nombre} onChange={(e) => setF({ ...f, nombre: e.target.value })} /></Campo>
+            <Campo etiqueta="Costo extra"><Input inputMode="decimal" value={f.cargo} onChange={(e) => setF({ ...f, cargo: e.target.value.replace(/[^\d.]/g, '') })} /></Campo>
+          </div>
+          <Campo etiqueta="Qué significa (lo ve el cliente)">
+            <textarea rows={2} value={f.descripcion} onChange={(e) => setF({ ...f, descripcion: e.target.value })} className={`${claseInput} h-auto py-2`} />
+          </Campo>
+          <div className="flex gap-2">
+            <Boton type="submit">Guardar</Boton>
+            <Boton type="button" variante="secundario" onClick={() => { setF(inicial); setEditando(false) }}>Cancelar</Boton>
+          </div>
+          {error && <p role="alert" className="text-sm text-error">{error}</p>}
+        </form>
+      </li>
+    )
+  }
+  return (
+    <li className={`py-3 ${m.activo ? '' : 'opacity-60'}`}>
+      <div className="flex items-start justify-between gap-3">
+        <span className="min-w-0">
+          <span className="block font-medium">{m.nombre} <span className="num font-semibold text-selva-700">+{pesos(m.cargo)}</span></span>
+          <span className="block text-sm text-tinta-soft">{m.descripcion || 'Sin explicación para el cliente.'}</span>
+        </span>
+        <span className="flex shrink-0 items-center gap-1">
+          <button type="button" onClick={() => setEditando(true)} className="inline-flex size-8 items-center justify-center rounded-full text-tinta-soft hover:bg-butaca hover:text-tinta" aria-label={`Editar ${m.nombre}`}><Pencil className="size-4" /></button>
+          <button type="button" onClick={borrar} className="inline-flex size-8 items-center justify-center rounded-full text-tinta-soft hover:bg-butaca hover:text-tinta" aria-label={`Eliminar ${m.nombre}`}><Trash2 className="size-4" /></button>
+          <Interruptor activo={m.activo} etiqueta={`Ofrecer ${m.nombre}`} onCambio={async () => { await guardarModalidad(m.id, { activo: !m.activo }); await onCambio() }} />
+        </span>
+      </div>
+      {error && <p role="alert" className="mt-1 text-sm text-error">{error}</p>}
+    </li>
+  )
+}
+
+function SeccionModalidades() {
   const invalidar = usarInvalidar()
-  const { data: extras } = useExtras()
-  const [f, setF] = useState({ nombre: '', precio: '', minutos: '' })
+  const { data: modalidades } = useModalidades()
+  const [f, setF] = useState({ nombre: '', cargo: '', descripcion: '' })
   const [error, setError] = useState('')
   const agregar = async (e) => {
     e.preventDefault()
     setError('')
-    if (!f.nombre.trim() || f.precio === '') return setError('Escribe el nombre y el precio.')
+    if (!f.nombre.trim() || f.cargo === '') return setError('Escribe el nombre y el costo extra.')
     try {
-      await guardarExtra(null, { nombre: f.nombre.trim(), precio: Number(f.precio), minutos: Number(f.minutos) || 0 })
-      setF({ nombre: '', precio: '', minutos: '' })
+      await guardarModalidad(null, { nombre: f.nombre.trim(), cargo: Number(f.cargo), descripcion: f.descripcion.trim(), orden: (modalidades?.length ?? 0) + 1 })
+      setF({ nombre: '', cargo: '', descripcion: '' })
       await invalidar()
     } catch (err) {
-      setError(err.code === '23505' ? 'Ya existe un extra con ese nombre.' : mensajeError(err))
+      setError(err.code === '23505' ? 'Ya existe un tipo de evento con ese nombre.' : mensajeError(err))
     }
   }
   return (
     <section className="rounded-2xl bg-white p-5 ring-1 ring-linea">
-      <h2 className="font-bold">Extras</h2>
-      <p className="mt-1 text-sm text-tinta-soft">Se ofrecen en todos los shows. Los minutos alargan el tiempo que ocupa la función en la agenda.</p>
-      <ul className="mt-3 divide-y divide-linea">
-        {(extras ?? []).map((e) => (
-          <li key={e.id} className={`flex items-center justify-between gap-3 py-2.5 ${e.activo ? '' : 'opacity-60'}`}>
-            <span>
-              <span className="block font-medium">{e.nombre}</span>
-              <span className="num block text-sm text-tinta-soft">{pesos(e.precio)}{e.minutos ? `, +${e.minutos} min` : ''}</span>
-            </span>
-            <Interruptor activo={e.activo} etiqueta={`Ofrecer ${e.nombre}`} onCambio={async () => { await guardarExtra(e.id, { activo: !e.activo }); await invalidar() }} />
-          </li>
-        ))}
+      <h2 className="font-bold">Tipos de evento</h2>
+      <p className="mt-1 text-sm text-tinta-soft">Costo extra fijo, igual en todos los shows. Solo se pregunta en los shows que tienen activado "Preguntar tipo de evento"; el cliente también puede elegir "ninguno de estos", sin costo.</p>
+      <ul className="mt-2 divide-y divide-linea">
+        {(modalidades ?? []).map((m) => <FilaModalidad key={m.id} m={m} onCambio={invalidar} />)}
       </ul>
-      <form onSubmit={agregar} className="mt-3 grid grid-cols-[1fr_90px_90px_auto] items-end gap-2" noValidate>
-        <Campo etiqueta="Nuevo extra"><Input value={f.nombre} onChange={(e) => setF({ ...f, nombre: e.target.value })} /></Campo>
-        <Campo etiqueta="Precio"><Input inputMode="decimal" value={f.precio} onChange={(e) => setF({ ...f, precio: e.target.value.replace(/[^\d.]/g, '') })} /></Campo>
-        <Campo etiqueta="Minutos"><Input inputMode="numeric" value={f.minutos} onChange={(e) => setF({ ...f, minutos: e.target.value.replace(/\D/g, '') })} /></Campo>
+      <form onSubmit={agregar} className="mt-3 space-y-2 border-t border-linea pt-3" noValidate>
+        <div className="grid grid-cols-[1fr_110px] gap-2">
+          <Campo etiqueta="Nuevo tipo de evento"><Input value={f.nombre} onChange={(e) => setF({ ...f, nombre: e.target.value })} /></Campo>
+          <Campo etiqueta="Costo extra"><Input inputMode="decimal" value={f.cargo} onChange={(e) => setF({ ...f, cargo: e.target.value.replace(/[^\d.]/g, '') })} /></Campo>
+        </div>
+        <Campo etiqueta="Qué significa (lo ve el cliente)"><Input value={f.descripcion} onChange={(e) => setF({ ...f, descripcion: e.target.value })} /></Campo>
         <Boton type="submit" variante="secundario">Agregar</Boton>
       </form>
       {error && <p role="alert" className="mt-2 text-sm text-error">{error}</p>}
@@ -455,7 +517,7 @@ export default function ShowsAdmin() {
       )}
 
       <div className="mt-6 grid gap-5 xl:grid-cols-2">
-        <SeccionExtras />
+        <SeccionModalidades />
         <SeccionCategorias />
       </div>
 

@@ -9,6 +9,7 @@ export const useShows = () => useQuery({ queryKey: ['shows'], queryFn: api.obten
 export const useShow = (slug) =>
   useQuery({ queryKey: ['show', slug], queryFn: () => api.obtenerShow(slug), enabled: !!slug, ...CATALOGO })
 export const useCategorias = () => useQuery({ queryKey: ['categorias'], queryFn: api.obtenerCategorias, ...CATALOGO })
+export const useModalidades = () => useQuery({ queryKey: ['modalidades'], queryFn: api.obtenerModalidades, ...CATALOGO })
 export const useExtras = () => useQuery({ queryKey: ['extras'], queryFn: api.obtenerExtras, ...CATALOGO })
 export const useZonas = () => useQuery({ queryKey: ['zonas'], queryFn: api.obtenerZonas, ...CATALOGO })
 export const useContenidoLanding = () => useQuery({ queryKey: ['landing-contenido'], queryFn: api.obtenerContenidoLanding, ...CATALOGO })

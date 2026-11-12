@@ -205,6 +205,7 @@ export default function MisReservaciones() {
                     <span className="num text-sm text-tinta-soft">{r.folio}</span>
                   </div>
                   <p className="mt-1.5 text-lg font-bold">{r.shows?.nombre}{r.paquetes?.nombre ? `, ${r.paquetes.nombre.toLowerCase()}` : ''}</p>
+                  {r.modalidad_nombre && <p className="text-[15px] text-tinta-soft">Evento {r.modalidad_nombre.toLowerCase()}</p>}
                   <p className="mt-1 flex items-center gap-1.5 text-[15px] text-tinta-soft">
                     <CalendarClock className="size-4 shrink-0" /> <span className="first-letter:uppercase">{fechaLarga(r.inicio)}, {hora(r.inicio)}</span>
                   </p>

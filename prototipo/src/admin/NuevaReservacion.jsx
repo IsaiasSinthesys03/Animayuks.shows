@@ -5,7 +5,7 @@ import { AlertTriangle, CircleCheck, UserPlus, X } from 'lucide-react'
 import { useAuth } from '../auth'
 import { crearReservacion, horariosDisponibles, mensajeError, zonaPorCP } from '../lib/api'
 import { obtenerClientes, registrarPago } from '../lib/apiAdmin'
-import { useExtras, useShows } from '../lib/consultas'
+import { useModalidades, useShows } from '../lib/consultas'
 import { hora, hoy, instanteLocal, pesos } from '../lib/format'
 import { useStore } from '../store'
 import { Boton, Campo, Cargando, Input, Select } from '../components/ui'
@@ -29,14 +29,14 @@ export default function NuevaReservacion() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const shows = useShows()
-  const { data: extras } = useExtras()
+  const { data: modalidades } = useModalidades()
   const clientes = useQuery({ queryKey: ['admin-clientes'], queryFn: obtenerClientes })
 
   const [busqueda, setBusqueda] = useState('')
   const [cliente, setCliente] = useState(null)
   const [nuevo, setNuevo] = useState(false)
   const [nc, setNc] = useState({ nombre: '', telefono: '', correo: '' })
-  const [f, setF] = useState({ showId: '', paqueteId: '', extras: [], cp: '', calle: '', colonia: '', referencias: '', fecha: '', hora: '', canal: 'Presencial', pago: '', metodo: 'Efectivo', descuento: '' })
+  const [f, setF] = useState({ showId: '', paqueteId: '', modalidad: '', cp: '', calle: '', colonia: '', referencias: '', fecha: '', hora: '', canal: 'Presencial', pago: '', metodo: 'Efectivo', descuento: '' })
   const [zona, setZona] = useState(undefined) // undefined: sin revisar, null: sin cobertura
   const [excepcion, setExcepcion] = useState(null) // mensaje de la regla que se está saltando
   const [motivo, setMotivo] = useState('')
@@ -48,7 +48,8 @@ export default function NuevaReservacion() {
   const show = activos.find((s) => s.id === f.showId) ?? null
   const paquetes = show?.paquetes.filter((p) => p.activo) ?? []
   const paquete = paquetes.find((p) => p.id === f.paqueteId) ?? null
-  const extrasActivos = (extras ?? []).filter((e) => e.activo)
+  const pideModalidad = !!show?.pide_modalidad
+  const modalidad = pideModalidad ? (modalidades ?? []).find((m) => m.id === f.modalidad) ?? null : null
 
   useEffect(() => {
     if (!f.showId && activos[0]) setF((x) => ({ ...x, showId: activos[0].id, paqueteId: activos[0].paquetes.find((p) => p.activo)?.id ?? '' }))
@@ -67,8 +68,8 @@ export default function NuevaReservacion() {
   }, [f.cp])
 
   const libres = useQuery({
-    queryKey: ['horarios', f.showId, f.paqueteId || null, f.extras, f.cp, f.fecha],
-    queryFn: () => horariosDisponibles({ showId: f.showId, paqueteId: f.paqueteId || null, extras: f.extras, cp: f.cp, fecha: f.fecha }),
+    queryKey: ['horarios', f.showId, f.paqueteId || null, [], f.cp, f.fecha],
+    queryFn: () => horariosDisponibles({ showId: f.showId, paqueteId: f.paqueteId || null, extras: [], cp: f.cp, fecha: f.fecha }),
     enabled: !!f.showId && !!f.fecha && !!zona,
   })
 
@@ -76,7 +77,7 @@ export default function NuevaReservacion() {
     ? (clientes.data ?? []).filter((c) => `${c.nombre} ${c.telefono} ${c.correo}`.toLowerCase().includes(busqueda.trim().toLowerCase())).slice(0, 6)
     : []
 
-  const subtotal = Number(paquete?.precio ?? show?.precio_base ?? 0) + extrasActivos.filter((e) => f.extras.includes(e.id)).reduce((a, e) => a + Number(e.precio), 0)
+  const subtotal = Number(paquete?.precio ?? show?.precio_base ?? 0) + Number(modalidad?.cargo ?? 0)
   const total = Math.max(0, subtotal + Number(zona?.cargo_traslado ?? 0) - (Number(f.descuento) || 0))
 
   const guardar = async (e) => {
@@ -98,8 +99,8 @@ export default function NuevaReservacion() {
         p_calle: f.calle,
         p_colonia: f.colonia,
         p_referencias: f.referencias || null,
-        p_extras: f.extras,
-        p_evento: {},
+        p_extras: [],
+        p_evento: { modalidad_id: modalidad?.id ?? null },
         ...(cliente
           ? { p_cliente_id: cliente.id }
           : { p_cliente: { nombre: nc.nombre.trim(), telefono: nc.telefono.trim(), correo: nc.correo.trim() } }),
@@ -199,17 +200,13 @@ export default function NuevaReservacion() {
                 </Campo>
               )}
             </div>
-            {extrasActivos.length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-2">
-                {extrasActivos.map((e) => {
-                  const on = f.extras.includes(e.id)
-                  return (
-                    <button key={e.id} type="button" aria-pressed={on} onClick={() => set('extras', on ? f.extras.filter((x) => x !== e.id) : [...f.extras, e.id])} className={`h-9 rounded-full px-3.5 text-sm font-medium ring-1 ring-inset ${on ? 'bg-selva-600 text-white ring-selva-600' : 'bg-white ring-linea hover:bg-butaca'}`}>
-                      {e.nombre} <span className="num opacity-70">+{pesos(e.precio)}</span>
-                    </button>
-                  )
-                })}
-              </div>
+            {pideModalidad && (
+              <Campo etiqueta="Tipo de evento" className="mt-4">
+                <Select value={f.modalidad} onChange={(e) => set('modalidad', e.target.value)}>
+                  <option value="">Ninguno de estos (sin costo extra)</option>
+                  {(modalidades ?? []).map((m) => <option key={m.id} value={m.id}>{m.nombre}, +{pesos(m.cargo)}{m.activo ? '' : ' (apagado)'}</option>)}
+                </Select>
+              </Campo>
             )}
           </Bloque>
 

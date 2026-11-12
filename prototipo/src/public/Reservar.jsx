@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, ChevronLeft, Loader2, Timer } from 'lucide-react'
 import { useAuth } from '../auth'
 import { aceptarPaginas, apartarHorario, catalogoCpsPorCodigo, crearReservacion, horariosDisponibles, mensajeError } from '../lib/api'
-import { useConfiguracion, useExtras, useShows } from '../lib/consultas'
+import { useConfiguracion, useModalidades, useShows } from '../lib/consultas'
 import { fechaDeDia, fechaLarga, hora, pesos } from '../lib/format'
 import { Boton, Campo, Cargando, ErrorCarga, Input, Miniatura, Select, claseInput } from '../components/ui'
 import Calendario from '../components/Calendario'
@@ -14,9 +14,11 @@ import { DatosTransferencia, SubirComprobante } from '../components/DatosPago'
 const PASOS = ['Show', 'Lugar', 'Fecha', 'Detalles', 'Tus datos', 'Confirmar']
 const CLAVE_BORRADOR = 'ay-reservacion-borrador'
 const VIGENCIA_BORRADOR = 24 * 60 * 60 * 1000
+const SIN_EXTRAS = [] // los extras se reemplazaron por tipos de evento
+const NINGUNA = 'ninguna'
 
 const VACIO = {
-  paso: 0, showId: '', paqueteId: '', extras: [],
+  paso: 0, showId: '', paqueteId: '', modalidad: '',
   cp: '', zona: null, calle: '', colonia: '', referencias: '',
   fecha: '', inicio: '', expiraEn: '',
   tipoEvento: 'Cumpleaños', festejado: '', asistentes: '', espacio: 'Jardín', comentarios: '',
@@ -43,7 +45,7 @@ function borrarBorrador() {
   } catch { /* nada que borrar */ }
 }
 
-function Boleto({ datos, show, paquete, extrasSel, total, anticipoPct }) {
+function Boleto({ datos, show, paquete, modalidad, total, anticipoPct }) {
   return (
     <div className="rounded-3xl bg-butaca [--boleto-fondo:white]">
       <div className="p-5">
@@ -68,9 +70,9 @@ function Boleto({ datos, show, paquete, extrasSel, total, anticipoPct }) {
       <div className="boleto-corte p-5">
         <dl className="num space-y-1.5 text-[15px]">
           <div className="flex justify-between"><dt className="text-tinta-soft">Show</dt><dd>{pesos(paquete?.precio ?? show?.precio_base ?? 0)}</dd></div>
-          {extrasSel.map((e) => (
-            <div key={e.id} className="flex justify-between gap-3"><dt className="text-tinta-soft">{e.nombre}</dt><dd>{pesos(e.precio)}</dd></div>
-          ))}
+          {modalidad && (
+            <div className="flex justify-between gap-3"><dt className="text-tinta-soft">Evento {modalidad.nombre.toLowerCase()}</dt><dd>{pesos(modalidad.cargo)}</dd></div>
+          )}
           <div className="flex justify-between"><dt className="text-tinta-soft">Traslado</dt><dd>{datos.zona ? pesos(datos.zona.cargo_traslado) : 'Por confirmar'}</dd></div>
           <div className="flex justify-between border-t border-linea pt-2 text-lg font-bold"><dt>Total</dt><dd>{pesos(total)}</dd></div>
           <div className="flex justify-between text-selva-700"><dt>Anticipo para apartar</dt><dd className="font-semibold">{pesos((total * anticipoPct) / 100)}</dd></div>
@@ -139,7 +141,7 @@ export default function Reservar() {
   const queryClient = useQueryClient()
   const { usuario, cliente, cargando: cargandoSesion } = useAuth()
   const shows = useShows()
-  const { data: extras } = useExtras()
+  const { data: modalidades } = useModalidades()
   const { data: cfg } = useConfiguracion()
 
   const [d, setD] = useState(() => ({ ...VACIO, ...leerBorrador() }))
@@ -183,15 +185,16 @@ export default function Reservar() {
   const show = activos.find((s) => s.id === d.showId) ?? null
   const paquetes = show?.paquetes.filter((p) => p.activo) ?? []
   const paquete = paquetes.find((p) => p.id === d.paqueteId) ?? null
-  const extrasActivos = (extras ?? []).filter((e) => e.activo)
-  const extrasSel = extrasActivos.filter((e) => d.extras.includes(e.id))
+  const modalidadesActivas = (modalidades ?? []).filter((m) => m.activo)
+  const pideModalidad = !!show?.pide_modalidad && modalidadesActivas.length > 0
+  const modalidad = pideModalidad ? modalidadesActivas.find((m) => m.id === d.modalidad) ?? null : null
   const lugarCP = useQuery({ queryKey: ['catalogo-codigos', [d.cp]], queryFn: () => catalogoCpsPorCodigo([d.cp]), enabled: !!d.zona && d.cp.length === 5, staleTime: 60 * 60 * 1000 })
-  const total = Number(paquete?.precio ?? show?.precio_base ?? 0) + extrasSel.reduce((a, e) => a + Number(e.precio), 0) + Number(d.zona?.cargo_traslado ?? 0)
+  const total = Number(paquete?.precio ?? show?.precio_base ?? 0) + Number(modalidad?.cargo ?? 0) + Number(d.zona?.cargo_traslado ?? 0)
   const anticipoPct = Number(cfg?.anticipo_porcentaje ?? 50)
 
   const horarios = useQuery({
-    queryKey: ['horarios', d.showId, d.paqueteId || null, d.extras, d.cp, d.fecha],
-    queryFn: () => horariosDisponibles({ showId: d.showId, paqueteId: d.paqueteId || null, extras: d.extras, cp: d.cp, fecha: d.fecha }),
+    queryKey: ['horarios', d.showId, d.paqueteId || null, SIN_EXTRAS, d.cp, d.fecha],
+    queryFn: () => horariosDisponibles({ showId: d.showId, paqueteId: d.paqueteId || null, extras: SIN_EXTRAS, cp: d.cp, fecha: d.fecha }),
     enabled: d.paso === 2 && !!d.fecha && !!d.zona,
     staleTime: 15 * 1000,
   })
@@ -208,7 +211,7 @@ export default function Reservar() {
     return () => clearInterval(t)
   }, [d.expiraEn])
 
-  // Cambiar show, paquete, extras o lugar invalida el horario elegido
+  // Cambiar show, paquete o lugar invalida el horario elegido
   const reiniciarHorario = { fecha: '', inicio: '', expiraEn: '' }
 
   const irA = (paso) => {
@@ -221,6 +224,7 @@ export default function Reservar() {
   const validar = () => {
     const e = {}
     if (d.paso === 0 && !show) e.show = 'Elige el show que quieres reservar.'
+    if (d.paso === 0 && pideModalidad && !modalidad && d.modalidad !== NINGUNA) e.modalidad = 'Elige el tipo de evento, o "ninguno de estos".'
     if (d.paso === 1) {
       if (!d.zona) e.cp = 'Verifica un código postal con cobertura para continuar.'
       if (!d.calle.trim()) e.calle = 'Escribe la calle y el número.'
@@ -256,7 +260,7 @@ export default function Reservar() {
     setErrores({})
     setApartando(h.inicio)
     try {
-      const r = await apartarHorario({ showId: d.showId, paqueteId: d.paqueteId || null, extras: d.extras, cp: d.cp, inicio: h.inicio })
+      const r = await apartarHorario({ showId: d.showId, paqueteId: d.paqueteId || null, extras: SIN_EXTRAS, cp: d.cp, inicio: h.inicio })
       setD((x) => ({ ...x, inicio: r.inicio, expiraEn: r.expira_en }))
     } catch (err) {
       setErrorGeneral(mensajeError(err))
@@ -280,9 +284,9 @@ export default function Reservar() {
         p_calle: d.calle,
         p_colonia: d.colonia,
         p_referencias: d.referencias || null,
-        p_extras: d.extras,
+        p_extras: SIN_EXTRAS,
         p_evento: {
-          tipo_evento: d.tipoEvento, festejado: d.festejado, asistentes: d.asistentes,
+          modalidad_id: modalidad?.id ?? null, tipo_evento: d.tipoEvento, festejado: d.festejado, asistentes: d.asistentes,
           espacio: d.espacio, comentarios: d.comentarios, contacto_dia: d.contactoDia,
         },
         p_cliente: { nombre: d.nombre.trim(), telefono: d.telefono.trim() },
@@ -356,7 +360,7 @@ export default function Reservar() {
                   <button
                     key={s.id}
                     type="button"
-                    onClick={() => setD((x) => ({ ...x, ...reiniciarHorario, showId: s.id, paqueteId: s.paquetes.find((p) => p.activo)?.id ?? '' }))}
+                    onClick={() => setD((x) => ({ ...x, ...reiniciarHorario, showId: s.id, modalidad: x.showId === s.id ? x.modalidad : '', paqueteId: s.paquetes.find((p) => p.activo)?.id ?? '' }))}
                     className={`flex items-center gap-4 rounded-2xl border-2 p-3 text-left transition-colors ${d.showId === s.id ? 'border-selva-600 bg-selva-50/50' : 'border-linea hover:border-tinta-soft/40'}`}
                   >
                     <Miniatura show={s} />
@@ -384,19 +388,24 @@ export default function Reservar() {
                   </div>
                 </fieldset>
               )}
-              {show && extrasActivos.length > 0 && (
+              {pideModalidad && (
                 <fieldset className="mt-8">
-                  <legend className="text-lg font-bold">Extras (opcional)</legend>
+                  <legend className="text-lg font-bold">¿Qué tipo de evento es?</legend>
+                  <p className="mt-1 text-sm text-tinta-soft">Algunos eventos llevan un costo extra. Si el tuyo no es ninguno de estos, elige la última opción.</p>
+                  {errores.modalidad && <p role="alert" className="mt-2 text-error">{errores.modalidad}</p>}
                   <div className="mt-3 space-y-2">
-                    {extrasActivos.map((e) => {
-                      const on = d.extras.includes(e.id)
+                    {[...modalidadesActivas, { id: NINGUNA, nombre: 'Ninguno de estos', descripcion: 'Por ejemplo, una fiesta familiar o un cumpleaños en casa.', cargo: 0 }].map((m) => {
+                      const on = d.modalidad === m.id
                       return (
-                        <label key={e.id} className={`flex cursor-pointer items-center justify-between gap-3 rounded-2xl border-2 px-4 py-3 ${on ? 'border-selva-600 bg-selva-50/50' : 'border-linea'}`}>
-                          <span className="flex items-center gap-3">
-                            <input type="checkbox" checked={on} onChange={() => setD((x) => ({ ...x, ...reiniciarHorario, extras: on ? x.extras.filter((i) => i !== e.id) : [...x.extras, e.id] }))} className="size-4 accent-selva-600" />
-                            {e.nombre}
+                        <label key={m.id} className={`flex cursor-pointer gap-3 rounded-2xl border-2 px-4 py-3 ${on ? 'border-selva-600 bg-selva-50/50' : 'border-linea'}`}>
+                          <input type="radio" name="modalidad" checked={on} onChange={() => set('modalidad', m.id)} className="mt-1 accent-selva-600" />
+                          <span className="min-w-0 flex-1">
+                            <span className="flex flex-wrap items-baseline justify-between gap-x-3">
+                              <span className="font-semibold">{m.nombre}</span>
+                              <span className="num text-sm font-semibold">{Number(m.cargo) > 0 ? `+${pesos(m.cargo)}` : 'Sin costo extra'}</span>
+                            </span>
+                            {m.descripcion && <span className="mt-0.5 block text-sm text-tinta-soft">{m.descripcion}</span>}
                           </span>
-                          <span className="num font-semibold">+{pesos(e.precio)}</span>
                         </label>
                       )
                     })}
@@ -439,7 +448,7 @@ export default function Reservar() {
               <p className="mt-1 text-tinta-soft">Solo ves horarios libres. Todas las horas son de Guadalajara.</p>
               <div className="mt-5 grid gap-8 md:grid-cols-[1fr_220px]">
                 <div className="max-w-md">
-                  <Calendario showId={d.showId} paqueteId={d.paqueteId || null} extras={d.extras} cp={d.cp} valor={d.fecha}
+                  <Calendario showId={d.showId} paqueteId={d.paqueteId || null} extras={SIN_EXTRAS} cp={d.cp} valor={d.fecha}
                     onCambio={(f) => setD((x) => ({ ...x, fecha: f, inicio: '', expiraEn: '' }))} />
                 </div>
                 <div>
@@ -477,7 +486,7 @@ export default function Reservar() {
             <section className="max-w-xl">
               <h2 className="text-2xl font-bold">Cuéntanos del evento</h2>
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                <Campo etiqueta="Tipo de evento">
+                <Campo etiqueta="Ocasión">
                   <Select value={d.tipoEvento} onChange={(e) => set('tipoEvento', e.target.value)}>
                     {['Cumpleaños', 'Bautizo', 'Boda', 'XV años', 'Evento escolar', 'Evento de empresa', 'Otro'].map((t) => <option key={t}>{t}</option>)}
                   </Select>
@@ -522,7 +531,7 @@ export default function Reservar() {
               <div className="mt-5"><DatosTransferencia cfg={cfg} /></div>
               <dl className="mt-5 space-y-1 text-[15px]">
                 <div><dt className="inline text-tinta-soft">Dónde: </dt><dd className="inline">{d.calle}, {d.colonia}, {d.cp}</dd></div>
-                <div><dt className="inline text-tinta-soft">Evento: </dt><dd className="inline">{d.tipoEvento}{d.festejado ? ` de ${d.festejado}` : ''}</dd></div>
+                <div><dt className="inline text-tinta-soft">Evento: </dt><dd className="inline">{d.tipoEvento}{d.festejado ? ` de ${d.festejado}` : ''}{modalidad ? ` (evento ${modalidad.nombre.toLowerCase()})` : ''}</dd></div>
                 <div><dt className="inline text-tinta-soft">Contacto: </dt><dd className="inline">{d.nombre}, {d.telefono}</dd></div>
               </dl>
               <label className="mt-5 flex cursor-pointer gap-3 text-[15px]">
@@ -551,7 +560,7 @@ export default function Reservar() {
 
         <aside className="hidden lg:block">
           <div className="sticky top-24">
-            <Boleto datos={d} show={show} paquete={paquete} extrasSel={extrasSel} total={total} anticipoPct={anticipoPct} />
+            <Boleto datos={d} show={show} paquete={paquete} modalidad={modalidad} total={total} anticipoPct={anticipoPct} />
           </div>
         </aside>
       </div>

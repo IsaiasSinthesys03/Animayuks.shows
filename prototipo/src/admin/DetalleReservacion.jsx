@@ -85,6 +85,7 @@ export default function DetalleReservacion({ r, onCerrar }) {
           <Estado estado={r.estado} />
           <p className="mt-2 text-xl font-bold">{r.shows?.nombre}</p>
           <p className="text-tinta-soft">{r.paquetes?.nombre ?? 'Función'}{r.tipo_evento ? `, ${r.tipo_evento.toLowerCase()}` : ''}{r.festejado ? ` de ${r.festejado}` : ''}</p>
+          {r.modalidad_nombre && <p className="mt-1 text-[15px]">Evento {r.modalidad_nombre.toLowerCase()} <span className="num text-tinta-soft">(+{pesos(r.cargo_modalidad)})</span></p>}
           <p className="mt-2 font-medium first-letter:uppercase">{fechaLarga(r.inicio)}, {hora(r.inicio)}</p>
           <p className="mt-1 flex gap-1.5 text-[15px] text-tinta-soft"><MapPin className="mt-0.5 size-4 shrink-0" /> {r.calle}, {r.colonia}, {r.codigo_postal}{r.zonas?.nombre ? ` (${r.zonas.nombre})` : ''}</p>
           {r.referencias && <p className="mt-1 text-[15px] text-tinta-soft">Referencias: {r.referencias}</p>}

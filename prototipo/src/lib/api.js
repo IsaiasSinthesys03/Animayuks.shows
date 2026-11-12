@@ -41,6 +41,7 @@ export const obtenerShow = async (slug) => {
 }
 
 export const obtenerCategorias = () => datos(supabase.from('categorias').select('*').order('orden'))
+export const obtenerModalidades = () => datos(supabase.from('modalidades').select('*').order('orden').order('nombre'))
 export const obtenerExtras = () => datos(supabase.from('extras').select('*').order('orden'))
 export const obtenerZonas = () => datos(supabase.from('zonas').select('*').order('nombre'))
 export const obtenerConfiguracion = () => datos(supabase.from('configuracion').select('*').eq('id', 1).single())

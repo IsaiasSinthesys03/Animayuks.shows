@@ -2,14 +2,13 @@ import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Check, ChevronLeft, Clock, Play, Users } from 'lucide-react'
 import { urlImagen } from '../lib/api'
-import { useConfiguracion, useExtras, useShow } from '../lib/consultas'
+import { useConfiguracion, useShow } from '../lib/consultas'
 import { pesos } from '../lib/format'
 import { Cargando, Cartel, ErrorCarga } from '../components/ui'
 
 export default function ShowDetalle() {
   const { slug } = useParams()
   const consulta = useShow(slug)
-  const { data: extras } = useExtras()
   const { data: cfg } = useConfiguracion()
   const [paqueteId, setPaqueteId] = useState(null)
   const show = consulta.data
@@ -29,7 +28,6 @@ export default function ShowDetalle() {
   const elegido = paquetes.find((p) => p.id === paqueteId) ?? paquetes[0] ?? null
   const precio = elegido ? elegido.precio : show.precio_base
   const duracion = elegido?.duracion_min ?? show.duracion_min
-  const extrasActivos = (extras ?? []).filter((e) => e.activo)
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:py-12">
@@ -102,12 +100,6 @@ export default function ShowDetalle() {
                 ))}
               </div>
             </fieldset>
-          )}
-
-          {extrasActivos.length > 0 && (
-            <p className="mt-5 text-sm text-tinta-soft">
-              Extras disponibles al reservar: {extrasActivos.map((e) => e.nombre.toLowerCase()).join(', ')}.
-            </p>
           )}
 
           <Link
