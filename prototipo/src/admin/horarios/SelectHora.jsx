@@ -1,7 +1,8 @@
 import { textoHora } from './util'
 
 const PARTES = [
-  { nombre: 'Mañana', desde: '00:00', hasta: '11:59' },
+  { nombre: 'Madrugada', desde: '00:00', hasta: '05:59' },
+  { nombre: 'Mañana', desde: '06:00', hasta: '11:59' },
   { nombre: 'Tarde', desde: '12:00', hasta: '18:59' },
   { nombre: 'Noche', desde: '19:00', hasta: '23:59' },
 ]

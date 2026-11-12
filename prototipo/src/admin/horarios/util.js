@@ -11,8 +11,8 @@ export const aMinutos = (h) => {
   return hh * 60 + mm
 }
 
-/** Cada 15 minutos, de 6:00 a. m. a 11:45 p. m. */
-export const HORAS = Array.from({ length: 72 }, (_, i) => aTexto(6 * 60 + i * 15))
+/** Cada 15 minutos, de 12:00 a. m. a 11:45 p. m. (todo el día) */
+export const HORAS = Array.from({ length: 96 }, (_, i) => aTexto(i * 15))
 /** Para el cierre se puede llegar hasta las 11:59 p. m. */
 export const HORAS_CIERRE = [...HORAS.slice(1), '23:59']
 
