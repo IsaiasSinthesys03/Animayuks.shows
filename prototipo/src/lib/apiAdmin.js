@@ -10,6 +10,12 @@ async function datos(consulta) {
 const SELECT_RESERVACION =
   '*, clientes(id, usuario_id, nombre, telefono, correo), shows(nombre, slug, imagen_principal, duracion_min, pide_modalidad), paquetes(nombre, duracion_min), zonas(nombre), pagos(*), notas_reservacion(*), reservacion_extras(extra_id, precio_unitario, extras(nombre))'
 
+/** Comprobantes que esperan revisión, del más antiguo al más reciente */
+export const obtenerPagosPorRevisar = () =>
+  datos(supabase.from('pagos').select('id, monto, metodo, creado_en, reservacion_id, reservaciones(folio, inicio, clientes(nombre), shows(nombre))').eq('estado', 'pendiente').order('creado_en'))
+/** Reservaciones hechas desde una fecha (para el aviso de "nuevas") */
+export const obtenerReservacionesDesde = (desde) =>
+  datos(supabase.from('reservaciones').select('id, folio, inicio, creado_en, canal, estado, clientes(nombre), shows(nombre)').gt('creado_en', desde).order('creado_en', { ascending: false }).limit(20))
 export const historialReservacion = (id) => datos(supabase.rpc('historial_reservacion', { p_reservacion_id: id }))
 export const aceptacionesDe = (usuarioId) => datos(supabase.from('aceptaciones_legales').select('slug, version, aceptado_en').eq('usuario_id', usuarioId).order('aceptado_en', { ascending: false }))
 export const obtenerReservaciones = ({ desde, hasta } = {}) => {

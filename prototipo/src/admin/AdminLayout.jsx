@@ -5,6 +5,7 @@ import { salir, useAuth } from '../auth'
 import { fechaLarga } from '../lib/format'
 import { useConfiguracion } from '../lib/consultas'
 import { Cargando } from '../components/ui'
+import Notificaciones, { Bolita, usarPagosPorRevisar } from './Notificaciones'
 
 const NAV = [
   { to: '/admin', texto: 'Inicio', icono: LayoutDashboard, fin: true },
@@ -24,6 +25,7 @@ export default function AdminLayout() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const [mas, setMas] = useState(false)
+  const porRevisar = usarPagosPorRevisar(!!usuario && esAdmin).data?.length ?? 0
 
   useEffect(() => setMas(false), [pathname])
 
@@ -56,6 +58,7 @@ export default function AdminLayout() {
           {NAV.map(({ to, texto, icono: Icono, fin }) => (
             <NavLink key={to} to={to} end={fin} className={enlace}>
               <Icono className="size-[18px]" /> {texto}
+              {to === '/admin/reservaciones' && <Bolita n={porRevisar} className="ml-auto" />}
             </NavLink>
           ))}
         </nav>
@@ -73,7 +76,10 @@ export default function AdminLayout() {
         <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 border-b border-linea bg-white px-4 sm:px-6">
           <img src="/landing/logo-320.webp" srcSet="/landing/logo-320.webp 320w, /landing/logo-640.webp 640w" sizes="200px" alt={nombre} className="h-7 lg:hidden w-auto" />
           <p className="hidden text-[15px] text-tinta-soft first-letter:uppercase lg:block">{fechaLarga(new Date())}</p>
-          <span className="truncate text-sm text-tinta-soft">{usuario.email}</span>
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="hidden truncate text-sm text-tinta-soft sm:block">{usuario.email}</span>
+            <Notificaciones />
+          </div>
         </header>
 
         <main className="px-4 pt-6 pb-28 sm:px-6 lg:px-8 lg:pb-12">
@@ -94,7 +100,11 @@ export default function AdminLayout() {
           </span>
         </Link>
         <NavLink to="/admin/reservaciones" className={({ isActive }) => `flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium ${isActive ? 'text-selva-600' : 'text-tinta-soft'}`}>
-          <ClipboardList className="size-5" /> Reservas
+          <span className="relative">
+            <ClipboardList className="size-5" />
+            <Bolita n={porRevisar} className="absolute -top-1.5 -right-3 ring-2 ring-white" />
+          </span>
+          Reservas
         </NavLink>
         <button onClick={() => setMas(true)} className="flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium text-tinta-soft">
           <Ellipsis className="size-5" /> Más

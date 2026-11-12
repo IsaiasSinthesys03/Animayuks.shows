@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Download, Plus, Search } from 'lucide-react'
 import { descargarCSV, obtenerReservaciones } from '../lib/apiAdmin'
@@ -17,21 +17,35 @@ export default function Reservaciones() {
   const [show, setShow] = useState('todos')
   const [canal, setCanal] = useState('todos')
   const [abiertaId, setAbiertaId] = useState(null)
+  const [params, setParams] = useSearchParams()
+  const [soloPorRevisar, setSoloPorRevisar] = useState(false)
+
+  // Desde las notificaciones: /admin/reservaciones?r=<id> abre esa reservación
+  useEffect(() => {
+    const id = params.get('r')
+    if (!id) return
+    setAbiertaId(id)
+    setParams((p) => { const n = new URLSearchParams(p); n.delete('r'); return n }, { replace: true })
+  }, [params, setParams])
 
   const todas = consulta.data ?? []
   const canales = [...new Set(todas.map((r) => r.canal))]
   const abierta = todas.find((r) => r.id === abiertaId)
 
+  const porRevisar = (r) => (r.pagos ?? []).some((p) => p.estado === 'pendiente')
+  const nPorRevisar = todas.filter(porRevisar).length
+
   const lista = useMemo(() => {
     const t = q.trim().toLowerCase()
     return todas.filter(
       (r) =>
+        (!soloPorRevisar || porRevisar(r)) &&
         (estado === 'todos' || r.estado === estado) &&
         (show === 'todos' || r.show_id === show) &&
         (canal === 'todos' || r.canal === canal) &&
         `${r.folio} ${r.clientes?.nombre} ${r.clientes?.telefono} ${r.clientes?.correo}`.toLowerCase().includes(t),
     )
-  }, [todas, estado, show, canal, q])
+  }, [todas, estado, show, canal, q, soloPorRevisar])
 
   const exportar = () =>
     descargarCSV(
@@ -51,6 +65,21 @@ export default function Reservaciones() {
         <Boton tam="sm" variante="secundario" onClick={exportar} disabled={lista.length === 0}><Download className="size-4" /> Exportar</Boton>
         <Boton tam="sm" as={Link} to="/admin/reservaciones/nueva"><Plus className="size-4" /> Nueva reservación</Boton>
       </Encabezado>
+
+      {nPorRevisar > 0 && (
+        <button
+          type="button"
+          onClick={() => setSoloPorRevisar(!soloPorRevisar)}
+          aria-pressed={soloPorRevisar}
+          className={`mb-3 flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-[15px] ring-1 transition-colors ${soloPorRevisar ? 'bg-error text-white ring-error' : 'bg-error-soft text-error ring-error/30 hover:bg-error/15'}`}
+        >
+          <span className={`size-2.5 shrink-0 rounded-full ${soloPorRevisar ? 'bg-white' : 'bg-error'}`} aria-hidden />
+          <span className="flex-1 font-semibold">
+            {nPorRevisar === 1 ? '1 comprobante de pago por revisar' : `${nPorRevisar} reservaciones con comprobantes por revisar`}
+          </span>
+          <span className="text-sm font-semibold underline">{soloPorRevisar ? 'Ver todas' : 'Ver solo esas'}</span>
+        </button>
+      )}
 
       <div className="mb-4 flex flex-wrap gap-2">
         <label className="relative min-w-60 flex-1">
@@ -95,14 +124,24 @@ export default function Reservaciones() {
               <tbody className="divide-y divide-linea">
                 {lista.map((r) => (
                   <tr key={r.id} onClick={() => setAbiertaId(r.id)} className="cursor-pointer hover:bg-butaca/50">
-                    <td className="num px-4 py-3 font-semibold"><button className="hover:underline" onClick={() => setAbiertaId(r.id)}>{r.folio}</button></td>
+                    <td className="num px-4 py-3 font-semibold">
+                      <span className="flex items-center gap-2">
+                        {porRevisar(r) && <span className="size-2.5 shrink-0 rounded-full bg-error" title="Comprobante por revisar" aria-label="Comprobante por revisar" />}
+                        <button className="hover:underline" onClick={() => setAbiertaId(r.id)}>{r.folio}</button>
+                      </span>
+                    </td>
                     <td className="num px-4 py-3 whitespace-nowrap">{fechaCorta(r.inicio)}, {hora(r.inicio)}</td>
                     <td className="px-4 py-3">{r.shows?.nombre}</td>
                     <td className="px-4 py-3">{r.clientes?.nombre}</td>
                     <td className="px-4 py-3">{r.zonas?.nombre ?? 'Fuera de zona'}</td>
                     <td className="px-4 py-3 text-tinta-soft">{r.canal}</td>
                     <td className="num px-4 py-3">{saldoDe(r) > 0 ? pesos(saldoDe(r)) : <span className="text-ok">Liquidado</span>}</td>
-                    <td className="px-4 py-3"><Estado estado={r.estado} /></td>
+                    <td className="px-4 py-3">
+                      <span className="flex flex-wrap items-center gap-1.5">
+                        <Estado estado={r.estado} />
+                        {porRevisar(r) && <span className="rounded-full bg-error-soft px-2 py-0.5 text-xs font-semibold text-error">Pago por revisar</span>}
+                      </span>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -115,9 +154,13 @@ export default function Reservaciones() {
               <li key={r.id}>
                 <button onClick={() => setAbiertaId(r.id)} className="w-full rounded-2xl bg-white p-4 text-left ring-1 ring-linea">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="num text-sm font-semibold">{r.folio}</span>
+                    <span className="num flex items-center gap-2 text-sm font-semibold">
+                      {porRevisar(r) && <span className="size-2.5 rounded-full bg-error" aria-label="Comprobante por revisar" />}
+                      {r.folio}
+                    </span>
                     <Estado estado={r.estado} />
                   </div>
+                  {porRevisar(r) && <p className="mt-1.5 inline-block rounded-full bg-error-soft px-2 py-0.5 text-xs font-semibold text-error">Pago por revisar</p>}
                   <p className="mt-1.5 font-semibold">{r.shows?.nombre}</p>
                   <p className="text-sm text-tinta-soft">{r.clientes?.nombre}</p>
                   <p className="num mt-1 text-sm">{fechaCorta(r.inicio)}, {hora(r.inicio)}{r.zonas?.nombre ? `, ${r.zonas.nombre}` : ''}</p>
