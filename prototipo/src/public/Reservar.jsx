@@ -488,7 +488,7 @@ export default function Reservar() {
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
                 <Campo etiqueta="Ocasión">
                   <Select value={d.tipoEvento} onChange={(e) => set('tipoEvento', e.target.value)}>
-                    {['Cumpleaños', 'Bautizo', 'Boda', 'XV años', 'Evento escolar', 'Evento de empresa', 'Otro'].map((t) => <option key={t}>{t}</option>)}
+                    {['Cumpleaños', 'Bautizo', 'Boda', 'XV años', 'Otro'].map((t) => <option key={t}>{t}</option>)}
                   </Select>
                 </Campo>
                 <Campo etiqueta="Nombre del festejado (opcional)"><Input value={d.festejado} onChange={(e) => set('festejado', e.target.value)} /></Campo>
