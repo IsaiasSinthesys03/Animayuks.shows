@@ -157,12 +157,23 @@ begin
   update storage.objects set name = 'terminos/cambiado.pdf' where bucket_id = 'legales' and name = 'terminos/20261112-terminos.pdf';
   get diagnostics n = row_count;
   if n <> 0 then raise exception 'PRUEBA FALLIDA L10: el admin cambió un PDF publicado'; end if;
-  delete from storage.objects where bucket_id = 'legales' and name = 'terminos/20261112-terminos.pdf';
-  get diagnostics n = row_count;
-  if n <> 0 then raise exception 'PRUEBA FALLIDA L10: el admin borró un PDF publicado'; end if;
-  raise notice 'L10 ok: solo el admin sube PDF legales, y nadie los cambia ni los borra';
+  -- En Supabase un borrado directo lanza error; en la base local simplemente no borra nada
+  begin
+    delete from storage.objects where bucket_id = 'legales' and name = 'terminos/20261112-terminos.pdf';
+    get diagnostics n = row_count;
+    if n <> 0 then raise exception 'PRUEBA FALLIDA L10: el admin borró un PDF publicado'; end if;
+  exception when others then
+    if sqlerrm like 'PRUEBA FALLIDA%' then raise; end if;
+  end;
 end $$;
 reset role;
+
+do $$ begin
+  if not exists (select 1 from storage.objects where bucket_id = 'legales' and name = 'terminos/20261112-terminos.pdf') then
+    raise exception 'PRUEBA FALLIDA L10: el PDF publicado desapareció';
+  end if;
+  raise notice 'L10 ok: solo el admin sube PDF legales, y nadie los cambia ni los borra';
+end $$;
 
 do $$ begin raise notice 'Batería 18 completa: 10 pruebas ok. Deshaciendo los datos de prueba...'; end $$;
 rollback;
