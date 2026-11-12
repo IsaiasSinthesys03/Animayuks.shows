@@ -3,7 +3,7 @@ import { Copy } from 'lucide-react'
 import { Boton } from '../../components/ui'
 import { Interruptor } from '../AdminLayout'
 import EditorFranjas from './EditorFranjas'
-import { DIAS, DIAS_CORTOS, ORDEN, nuevaClave, resumenFranjas } from './util'
+import { DIAS, DIAS_CORTOS, ORDEN, nuevaClave, nuevaFranja, resumenFranjas } from './util'
 
 function CopiarA({ origen, onAplicar, onCerrar }) {
   const [destinos, setDestinos] = useState([])
@@ -30,8 +30,13 @@ function CopiarA({ origen, onAplicar, onCerrar }) {
   )
 }
 
-/** La semana normal: por día, si hay servicio, sus franjas y su máximo de shows */
-export default function SemanaNormal({ semana, onCambio }) {
+/**
+ * Una semana de franjas.
+ * modo "general": interruptor por día y máximo de shows (Horarios y bloqueos).
+ * modo "show": sin interruptor ni máximo; un día sin franjas es un día sin ese show.
+ */
+export default function SemanaNormal({ semana, onCambio, modo = 'general' }) {
+  const esShow = modo === 'show'
   const [copiando, setCopiando] = useState(null)
   const [abierto, setAbierto] = useState(null) // día con el editor abierto en teléfono
 
@@ -48,17 +53,18 @@ export default function SemanaNormal({ semana, onCambio }) {
   return (
     <ul className="divide-y divide-linea">
       {ORDEN.map((n) => {
-        const d = semana.find((x) => x.dia_semana === n)
-        if (!d) return null
+        const base = semana.find((x) => x.dia_semana === n)
+        if (!base) return null
+        const d = esShow ? { ...base, activo: base.franjas.length > 0 } : base
         const expandido = d.activo && (abierto === n || abierto === 'todos')
         return (
           <li key={n} className="py-3">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-              <Interruptor activo={d.activo} etiqueta={`Dar servicio los ${DIAS[n].toLowerCase()}`} onCambio={() => cambiarDia(n, { activo: !d.activo })} />
+              {!esShow && <Interruptor activo={d.activo} etiqueta={`Dar servicio los ${DIAS[n].toLowerCase()}`} onCambio={() => cambiarDia(n, { activo: !d.activo })} />}
               <span className="w-24 font-semibold">{DIAS[n]}</span>
               {d.activo ? (
                 <>
-                  <label className="flex items-center gap-1.5 text-sm">
+                  {!esShow && <label className="flex items-center gap-1.5 text-sm">
                     <span className="text-tinta-soft">Máx. shows</span>
                     <input
                       type="number" min={1} max={20} inputMode="numeric" placeholder="Sin límite"
@@ -67,7 +73,7 @@ export default function SemanaNormal({ semana, onCambio }) {
                       aria-label={`Máximo de shows los ${DIAS[n].toLowerCase()}`}
                       className="num h-9 w-24 rounded-lg border border-linea bg-white px-2 text-sm placeholder:text-tinta-soft/70 focus:border-selva-500 focus:outline-none"
                     />
-                  </label>
+                  </label>}
                   <span className="ml-auto flex items-center gap-1">
                     <button type="button" onClick={() => setCopiando(copiando === n ? null : n)} className="inline-flex h-8 items-center gap-1 rounded-full px-2 text-sm font-semibold text-selva-700 hover:bg-selva-50">
                       <Copy className="size-3.5" /> Copiar a…
@@ -78,7 +84,14 @@ export default function SemanaNormal({ semana, onCambio }) {
                   </span>
                 </>
               ) : (
-                <span className="text-sm text-tinta-soft">Sin servicio</span>
+                <>
+                  <span className="text-sm text-tinta-soft">{esShow ? 'Sin horario' : 'Sin servicio'}</span>
+                  {esShow && (
+                    <button type="button" onClick={() => { cambiarDia(n, { franjas: [nuevaFranja('10:00', '14:00')] }); setAbierto(n) }} className="ml-auto h-8 rounded-full px-2 text-sm font-semibold text-selva-700 hover:bg-selva-50">
+                      + Agregar
+                    </button>
+                  )}
+                </>
               )}
             </div>
             {copiando === n && <CopiarA origen={n} onAplicar={(destinos) => copiar(n, destinos)} onCerrar={() => setCopiando(null)} />}

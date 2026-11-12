@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { mensajeError } from '../lib/api'
 import { guardarHorarioSemana, obtenerHorario } from '../lib/apiAdmin'
 import { useStore } from '../store'
+import { useShows } from '../lib/consultas'
 import { Boton, Cargando, ErrorCarga } from '../components/ui'
 import { Encabezado } from './AdminLayout'
 import SemanaNormal from './horarios/SemanaNormal'
@@ -18,6 +19,8 @@ export default function Disponibilidad() {
   const { avisar } = useStore()
   const queryClient = useQueryClient()
   const horario = useQuery({ queryKey: ['admin-horario'], queryFn: obtenerHorario })
+  const { data: shows } = useShows()
+  const propios = (shows ?? []).filter((x) => x.horario_propio)
   const [semana, setSemana] = useState(null)
   const [error, setError] = useState('')
   const [guardando, setGuardando] = useState(false)
@@ -77,6 +80,11 @@ export default function Disponibilidad() {
             Cada día puede tener varias franjas. En cada franja eliges si las horas se ofrecen cada cierto tiempo o solo a horas exactas.
             El show debe terminar antes del cierre de su franja. Las reservaciones existentes no cambian.
           </p>
+          {propios.length > 0 && (
+            <p className="mt-2 rounded-xl bg-agua-soft px-3 py-2 text-sm">
+              Estos shows usan su propio horario (se cambia en Shows): <span className="font-semibold">{propios.map((x) => x.nombre).join(', ')}</span>.
+            </p>
+          )}
           <div className="mt-2">
             <SemanaNormal semana={semana} onCambio={setSemana} />
           </div>
@@ -93,7 +101,7 @@ export default function Disponibilidad() {
         </section>
 
         <div className="xl:sticky xl:top-4">
-          <VistaPrevia dias={activos.map((d) => ({ clave: String(d.dia_semana), etiqueta: DIAS[d.dia_semana], franjas: d.franjas, maxShows: d.max_shows }))} />
+          <VistaPrevia excluirPropios dias={activos.map((d) => ({ clave: String(d.dia_semana), etiqueta: DIAS[d.dia_semana], franjas: d.franjas, maxShows: d.max_shows }))} />
         </div>
       </div>
 

@@ -9,18 +9,18 @@ import { aBase, problemaFranjas, textoHoraCorta } from './util'
  * Las horas que verá el cliente, calculadas por el servidor con las franjas
  * todavía sin guardar. dias: [{ clave, etiqueta, franjas, maxShows }]
  */
-export default function VistaPrevia({ dias, titulo = 'Así lo verá el cliente' }) {
+export default function VistaPrevia({ dias, titulo = 'Así lo verá el cliente', showFijo = null, excluirPropios = false }) {
   const { data: shows } = useShows()
   const opciones = useMemo(
     () =>
-      (shows ?? []).filter((s) => s.activo).flatMap((s) => {
+      (showFijo ? [showFijo] : (shows ?? []).filter((s) => s.activo && !(excluirPropios && s.horario_propio))).flatMap((s) => {
         const paquetes = s.paquetes.filter((p) => p.activo && p.duracion_min && p.duracion_min !== s.duracion_min)
         return [
           { clave: s.id, texto: `${s.nombre} (${s.duracion_min} min)`, duracion: s.duracion_min },
           ...paquetes.map((p) => ({ clave: `${s.id}:${p.id}`, texto: `${s.nombre}, ${p.nombre.toLowerCase()} (${p.duracion_min} min)`, duracion: p.duracion_min })),
         ]
       }),
-    [shows],
+    [shows, showFijo, excluirPropios],
   )
   const [elegido, setElegido] = useState('')
   const opcion = opciones.find((o) => o.clave === elegido) ?? opciones[0]
@@ -63,7 +63,8 @@ export default function VistaPrevia({ dias, titulo = 'Así lo verá el cliente' 
         <span className="mt-1 block text-xs text-tinta-soft">La duración cambia qué horas caben antes del cierre de cada franja.</span>
       </label>
       {error && <p role="alert" className="mt-3 text-sm text-error">{error}</p>}
-      {dias.length === 0 && <p className="mt-4 rounded-xl bg-error-soft px-3 py-2 text-sm font-medium text-error">Ningún día activo: nadie puede reservar en línea.</p>}
+      {opciones.length === 0 && <p className="mt-3 text-sm text-tinta-soft">Todos los shows activos usan su propio horario.</p>}
+      {dias.length === 0 && <p className="mt-4 rounded-xl bg-error-soft px-3 py-2 text-sm font-medium text-error">{showFijo ? 'Ningún día con horario: este show no se podrá reservar.' : 'Ningún día activo: nadie puede reservar en línea.'}</p>}
       <ul className="mt-4 space-y-2.5">
         {dias.map((d) => {
           const horas = resultado[d.clave]

@@ -8,6 +8,7 @@ import { pesos } from '../lib/format'
 import { useStore } from '../store'
 import { Boton, Campo, Cargando, ErrorCarga, Input, Miniatura, Panel, Select, claseInput } from '../components/ui'
 import { Encabezado, Interruptor } from './AdminLayout'
+import HorarioShow from './horarios/HorarioShow'
 
 const aSlug = (t) =>
   t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
@@ -293,6 +294,14 @@ function EditorShow({ show, onCerrar }) {
           </>
         )}
       </section>
+      {actual ? (
+        <HorarioShow show={{ ...actual, paquetes: (shows ?? []).find((s) => s.id === actual.id)?.paquetes ?? [], horario_propio: (shows ?? []).find((s) => s.id === actual.id)?.horario_propio ?? actual.horario_propio }} />
+      ) : (
+        <section className="border-t border-linea p-5">
+          <h3 className="font-semibold">Horario de este show</h3>
+          <p className="mt-1 text-sm text-tinta-soft">Guarda el show primero para darle un horario propio. Mientras tanto usa el horario general.</p>
+        </section>
+      )}
     </Panel>
   )
 }
@@ -508,6 +517,7 @@ export default function ShowsAdmin() {
                   }} />
                 </div>
                 <p className="text-sm text-tinta-soft">{s.categorias?.nombre ?? 'Sin categoría'}, {s.duracion_min} min, {s.paquetes.length} {s.paquetes.length === 1 ? 'paquete' : 'paquetes'}</p>
+                {s.horario_propio && <span className="mt-1 inline-block rounded-full bg-agua-soft px-2 py-0.5 text-xs font-semibold text-selva-900">Horario propio</span>}
                 <p className="num mt-1 text-sm">Desde <span className="font-semibold">{pesos(s.precio_base)}</span></p>
                 <button onClick={() => setEditando(s.id)} className="mt-2 text-sm font-semibold text-selva-700 underline">Editar</button>
               </div>

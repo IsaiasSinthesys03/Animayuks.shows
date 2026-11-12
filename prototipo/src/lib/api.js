@@ -41,6 +41,7 @@ export const obtenerShow = async (slug) => {
 }
 
 export const obtenerCategorias = () => datos(supabase.from('categorias').select('*').order('orden'))
+export const resumenHorarioShow = (showId) => datos(supabase.rpc('resumen_horario_show', { p_show_id: showId }))
 export const obtenerModalidades = () => datos(supabase.from('modalidades').select('*').order('orden').order('nombre'))
 export const obtenerExtras = () => datos(supabase.from('extras').select('*').order('orden'))
 export const obtenerZonas = () => datos(supabase.from('zonas').select('*').order('nombre'))

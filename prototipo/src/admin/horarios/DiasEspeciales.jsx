@@ -54,7 +54,7 @@ function EditorDia({ dia, onCerrar, onGuardado }) {
   return (
     <Panel abierto onCerrar={onCerrar} titulo={dia ? 'Editar día especial' : 'Agregar día especial'} ancho="max-w-2xl">
       <form onSubmit={guardar} noValidate className="space-y-5 p-5">
-        <p className="text-sm text-tinta-soft">Ese día se usa este horario en lugar del de la semana normal. Sirve para abrir un día que normalmente está cerrado o cambiarle las horas.</p>
+        <p className="text-sm text-tinta-soft">Ese día se usa este horario en lugar del de la semana normal. Sirve para abrir un día que normalmente está cerrado o cambiarle las horas. Aplica a todos los shows, incluso a los que tienen horario propio.</p>
         <div className="grid gap-3 sm:grid-cols-[1fr_140px]">
           <Campo etiqueta="Fecha"><Input type="date" min={hoy()} value={fecha} onChange={(e) => setFecha(e.target.value)} /></Campo>
           <Campo etiqueta="Máx. shows">

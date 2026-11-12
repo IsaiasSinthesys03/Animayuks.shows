@@ -1,10 +1,35 @@
 import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
-import { Check, ChevronLeft, Clock, Play, Users } from 'lucide-react'
-import { urlImagen } from '../lib/api'
+import { CalendarDays, Check, ChevronLeft, Clock, Play, Users } from 'lucide-react'
+import { resumenHorarioShow, urlImagen } from '../lib/api'
 import { useConfiguracion, useShow } from '../lib/consultas'
 import { pesos } from '../lib/format'
 import { Cargando, Cartel, ErrorCarga } from '../components/ui'
+
+const PLURAL = ['domingos', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábados']
+const ORDEN_DIAS = [1, 2, 3, 4, 5, 6, 0]
+const horaCorta = (h) => {
+  const [hh, mm] = h.split(':').map(Number)
+  return `${hh % 12 || 12}${mm ? `:${String(mm).padStart(2, '0')}` : ''} ${hh < 12 ? 'a. m.' : 'p. m.'}`
+}
+const lista = (xs) => (xs.length > 1 ? `${xs.slice(0, -1).join(', ')} y ${xs[xs.length - 1]}` : xs[0])
+
+/** "sábados y domingos, de 10 a. m. a 2 p. m." · los días con el mismo horario se agrupan */
+function textoHorario(filas) {
+  const porDia = new Map()
+  for (const f of filas) {
+    const rango = `de ${horaCorta(f.abre)} a ${horaCorta(f.cierra)}`
+    porDia.set(f.dia_semana, [...(porDia.get(f.dia_semana) ?? []), rango])
+  }
+  const grupos = new Map()
+  for (const n of ORDEN_DIAS) {
+    if (!porDia.has(n)) continue
+    const clave = lista(porDia.get(n))
+    grupos.set(clave, [...(grupos.get(clave) ?? []), PLURAL[n]])
+  }
+  return [...grupos].map(([rangos, dias]) => `${lista(dias)}, ${rangos}`).join('; ')
+}
 
 export default function ShowDetalle() {
   const { slug } = useParams()
@@ -12,6 +37,12 @@ export default function ShowDetalle() {
   const { data: cfg } = useConfiguracion()
   const [paqueteId, setPaqueteId] = useState(null)
   const show = consulta.data
+  const horario = useQuery({
+    queryKey: ['resumen-horario', show?.id],
+    queryFn: () => resumenHorarioShow(show.id),
+    enabled: !!show?.horario_propio,
+    staleTime: 5 * 60 * 1000,
+  })
 
   if (consulta.isLoading) return <Cargando />
   if (consulta.isError) return <ErrorCarga onReintentar={consulta.refetch} />
@@ -100,6 +131,13 @@ export default function ShowDetalle() {
                 ))}
               </div>
             </fieldset>
+          )}
+
+          {show.horario_propio && horario.data?.length > 0 && (
+            <p className="mt-5 flex gap-2 text-[15px]">
+              <CalendarDays className="mt-0.5 size-4 shrink-0 text-selva-700" aria-hidden />
+              <span><span className="font-semibold">Se presenta:</span> {textoHorario(horario.data.map((f) => ({ ...f, abre: f.abre.slice(0, 5), cierra: f.cierra.slice(0, 5) })))}.</span>
+            </p>
           )}
 
           <Link
