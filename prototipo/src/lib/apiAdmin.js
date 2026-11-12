@@ -8,8 +8,10 @@ async function datos(consulta) {
 
 // ── Reservaciones ───────────────────────────────────────────────────────────
 const SELECT_RESERVACION =
-  '*, clientes(id, nombre, telefono, correo), shows(nombre, slug, imagen_principal), paquetes(nombre), zonas(nombre), pagos(*), notas_reservacion(*), reservacion_extras(extra_id, precio_unitario, extras(nombre))'
+  '*, clientes(id, usuario_id, nombre, telefono, correo), shows(nombre, slug, imagen_principal, duracion_min, pide_modalidad), paquetes(nombre, duracion_min), zonas(nombre), pagos(*), notas_reservacion(*), reservacion_extras(extra_id, precio_unitario, extras(nombre))'
 
+export const historialReservacion = (id) => datos(supabase.rpc('historial_reservacion', { p_reservacion_id: id }))
+export const aceptacionesDe = (usuarioId) => datos(supabase.from('aceptaciones_legales').select('slug, version, aceptado_en').eq('usuario_id', usuarioId).order('aceptado_en', { ascending: false }))
 export const obtenerReservaciones = ({ desde, hasta } = {}) => {
   let q = supabase.from('reservaciones').select(SELECT_RESERVACION).order('inicio', { ascending: false })
   if (desde) q = q.gte('inicio', desde)

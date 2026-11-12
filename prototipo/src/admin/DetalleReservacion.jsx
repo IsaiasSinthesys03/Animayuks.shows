@@ -6,6 +6,8 @@ import { cancelarReservacion, horariosDisponibles, mensajeError, reprogramarRese
 import { agregarNota, cambiarEstadoReservacion, registrarPago, resolverPago, urlComprobante } from '../lib/apiAdmin'
 import { fechaLarga, hora, instanteLocal, pesos, saldoDe } from '../lib/format'
 import { useStore } from '../store'
+import { useConfiguracion } from '../lib/consultas'
+import { DetallePago, SeccionCobro, SeccionEvento, SeccionHistorial, SeccionPolitica } from './reservacion/Secciones'
 import { Boton, Campo, Estado, Input, Panel, Select } from '../components/ui'
 
 const soloDigitos = (t) => (t ?? '').replace(/\D/g, '')
@@ -18,6 +20,7 @@ const whatsappDe = (t) => {
 export default function DetalleReservacion({ r, onCerrar }) {
   const { usuario } = useAuth()
   const { avisar } = useStore()
+  const { data: cfg } = useConfiguracion()
   const queryClient = useQueryClient()
   const [ocupado, setOcupado] = useState(false)
   const [error, setError] = useState('')
@@ -84,13 +87,10 @@ export default function DetalleReservacion({ r, onCerrar }) {
         <div>
           <Estado estado={r.estado} />
           <p className="mt-2 text-xl font-bold">{r.shows?.nombre}</p>
-          <p className="text-tinta-soft">{r.paquetes?.nombre ?? 'Función'}{r.tipo_evento ? `, ${r.tipo_evento.toLowerCase()}` : ''}{r.festejado ? ` de ${r.festejado}` : ''}</p>
-          {r.modalidad_nombre && <p className="mt-1 text-[15px]">Evento {r.modalidad_nombre.toLowerCase()} <span className="num text-tinta-soft">(+{pesos(r.cargo_modalidad)})</span></p>}
-          <p className="mt-2 font-medium first-letter:uppercase">{fechaLarga(r.inicio)}, {hora(r.inicio)}</p>
+          <p className="text-tinta-soft">{r.paquetes?.nombre ?? 'Función'}{r.tipo_evento ? `, ${r.tipo_evento.toLowerCase()}` : ''}{r.festejado ? ` de ${r.festejado}` : ''}{r.modalidad_nombre ? ` · evento ${r.modalidad_nombre.toLowerCase()}` : ''}</p>
+          <p className="mt-2 font-medium first-letter:uppercase">{fechaLarga(r.inicio)}, {hora(r.inicio)} a {hora(r.fin)}</p>
           <p className="mt-1 flex gap-1.5 text-[15px] text-tinta-soft"><MapPin className="mt-0.5 size-4 shrink-0" /> {r.calle}, {r.colonia}, {r.codigo_postal}{r.zonas?.nombre ? ` (${r.zonas.nombre})` : ''}</p>
-          {r.referencias && <p className="mt-1 text-[15px] text-tinta-soft">Referencias: {r.referencias}</p>}
-          {r.comentarios && <p className="mt-1 text-[15px] text-tinta-soft">Comentarios: {r.comentarios}</p>}
-          {r.contacto_dia && <p className="mt-1 text-[15px] text-tinta-soft">Recibe: {r.contacto_dia}</p>}
+          {r.estado === 'cancelada' && <p className="mt-2 rounded-xl bg-error-soft px-3 py-2 text-sm">Cancelada{r.cancelada_en ? ` el ${fechaLarga(r.cancelada_en).replace(/^[^,]+, /, '')}` : ''}{r.motivo_cancelacion ? `: ${r.motivo_cancelacion}` : ''}</p>}
           {r.motivo_excepcion && <p className="mt-2 rounded-xl bg-alerta-soft px-3 py-2 text-sm">Excepción: {r.motivo_excepcion}</p>}
         </div>
 
@@ -112,6 +112,9 @@ export default function DetalleReservacion({ r, onCerrar }) {
           </dl>
         </section>
 
+        <SeccionEvento r={r} />
+        <SeccionCobro r={r} anticipoPct={cfg?.anticipo_porcentaje} />
+
         <section>
           <h3 className="font-semibold">Pagos</h3>
           <dl className="num mt-2 grid grid-cols-3 gap-2 text-center">
@@ -119,7 +122,6 @@ export default function DetalleReservacion({ r, onCerrar }) {
             <div className="rounded-2xl bg-butaca p-3"><dt className="text-xs text-tinta-soft">Pagado</dt><dd className="font-bold">{pesos(r.total_pagado)}</dd></div>
             <div className={`rounded-2xl p-3 ${saldo > 0 ? 'bg-alerta-soft' : 'bg-ok-soft'}`}><dt className="text-xs text-tinta-soft">Saldo</dt><dd className="font-bold">{pesos(saldo)}</dd></div>
           </dl>
-          <p className="mt-1.5 text-sm text-tinta-soft">Anticipo requerido: <span className="num">{pesos(r.anticipo_requerido)}</span></p>
 
           {pagos.length > 0 && (
             <ul className="mt-3 divide-y divide-linea rounded-xl ring-1 ring-linea">
@@ -131,6 +133,7 @@ export default function DetalleReservacion({ r, onCerrar }) {
                       {p.estado === 'aprobado' ? 'Aprobado' : p.estado === 'rechazado' ? 'Rechazado' : 'Por revisar'}
                     </span>
                   </div>
+                  <DetallePago p={p} />
                   {p.comprobante_path && (
                     <button onClick={() => abrirComprobante(p.comprobante_path)} className="mt-1 inline-flex items-center gap-1 font-medium text-selva-700 underline">
                       <FileText className="size-3.5" /> Ver comprobante <ExternalLink className="size-3" />
@@ -188,6 +191,9 @@ export default function DetalleReservacion({ r, onCerrar }) {
             saldo > 0 && r.estado !== 'cancelada' && <Boton tam="sm" variante="secundario" className="mt-3" onClick={() => setPagoAbierto(true)}><CircleDollarSign className="size-4" /> Registrar pago</Boton>
           )}
         </section>
+
+        <SeccionPolitica r={r} cfg={cfg} />
+        <SeccionHistorial r={r} />
 
         <section>
           <h3 className="font-semibold">Notas internas</h3>

@@ -1,6 +1,12 @@
 const moneda = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 2, minimumFractionDigits: 0 })
 
-export const pesos = (n) => moneda.format(Number(n) || 0)
+const monedaCentavos = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
+/** "$1,500" o, si lleva centavos, "$849.50" */
+export const pesos = (n) => {
+  const v = Number(n) || 0
+  return (Number.isInteger(Math.round(v * 100) / 100) ? moneda : monedaCentavos).format(v)
+}
 
 // El negocio opera en hora de Guadalajara, sin importar dónde esté quien mira la página
 export const ZONA_HORARIA = 'America/Mexico_City'
