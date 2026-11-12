@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { ChevronLeft, ChevronRight, Printer } from 'lucide-react'
 import { obtenerBloqueos, obtenerReservaciones } from '../lib/apiAdmin'
@@ -7,6 +8,8 @@ import { diaDe, fechaLarga, hora, hoy, instanteLocal } from '../lib/format'
 import { Boton, Cargando, ErrorCarga, Estado } from '../components/ui'
 import { Encabezado } from './AdminLayout'
 import DetalleReservacion from './DetalleReservacion'
+import VistaDia from './agenda/VistaDia'
+import { lineaDesglose } from './agenda/util'
 
 const COLOR_ESTADO = {
   pendiente: 'bg-alerta-soft text-alerta ring-alerta/30',
@@ -19,7 +22,16 @@ const dos = (n) => String(n).padStart(2, '0')
 
 export default function Agenda() {
   const [anioHoy, mesHoy] = hoy().split('-').map(Number)
-  const [vista, setVista] = useState('mes')
+  // La vista y el día van en la URL: al recargar o compartir el enlace se ve lo mismo
+  const [params, setParams] = useSearchParams()
+  const vista = ['mes', 'dia', 'lista'].includes(params.get('vista')) ? params.get('vista') : 'mes'
+  const dia = /^\d{4}-\d{2}-\d{2}$/.test(params.get('fecha') ?? '') ? params.get('fecha') : hoy()
+  const irA = (cambios) => setParams((p) => {
+    const n = new URLSearchParams(p)
+    Object.entries(cambios).forEach(([k, v]) => n.set(k, v))
+    return n
+  }, { replace: true })
+  const setVista = (v) => irA({ vista: v })
   const [{ anio, mes }, setMes] = useState({ anio: anioHoy, mes: mesHoy })
   const [abiertaId, setAbiertaId] = useState(null)
   const [zona, setZona] = useState('todas')
@@ -38,8 +50,9 @@ export default function Agenda() {
   if (reservaciones.isError) return <ErrorCarga onReintentar={reservaciones.refetch} />
 
   const prefijo = `${anio}-${dos(mes)}`
-  const visibles = reservaciones.data
-    .filter((r) => (zona === 'todas' || r.zona_id === zona) && (verCanceladas || !['cancelada', 'expirada', 'rechazada'].includes(r.estado)) && diaDe(r.inicio).startsWith(prefijo))
+  const filtradas = reservaciones.data.filter((r) => (zona === 'todas' || r.zona_id === zona) && (verCanceladas || !['cancelada', 'expirada', 'rechazada'].includes(r.estado)))
+  const visibles = filtradas
+    .filter((r) => diaDe(r.inicio).startsWith(prefijo))
     .sort((a, b) => new Date(a.inicio) - new Date(b.inicio))
   const abierta = reservaciones.data.find((r) => r.id === abiertaId)
 
@@ -62,7 +75,7 @@ export default function Agenda() {
       </Encabezado>
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3 print:hidden">
-        <div className="flex items-center gap-1">
+        <div className={`flex items-center gap-1 ${vista === 'dia' ? 'invisible' : ''}`}>
           <button onClick={() => cambiar(-1)} className="inline-flex size-9 items-center justify-center rounded-full bg-white ring-1 ring-linea hover:bg-butaca" aria-label="Mes anterior"><ChevronLeft className="size-4" /></button>
           <button onClick={() => cambiar(1)} className="inline-flex size-9 items-center justify-center rounded-full bg-white ring-1 ring-linea hover:bg-butaca" aria-label="Mes siguiente"><ChevronRight className="size-4" /></button>
           <p className="ml-2 text-lg font-bold first-letter:uppercase">{MESES[mes - 1]} de {anio}</p>
@@ -76,26 +89,28 @@ export default function Agenda() {
             <input type="checkbox" checked={verCanceladas} onChange={(e) => setVerCanceladas(e.target.checked)} className="accent-selva-600" /> Canceladas
           </label>
           <div className="flex rounded-full bg-white p-1 ring-1 ring-linea" role="group" aria-label="Vista">
-            {[['mes', 'Mes'], ['lista', 'Lista']].map(([id, t]) => (
+            {[['mes', 'Mes'], ['dia', 'Día'], ['lista', 'Lista']].map(([id, t]) => (
               <button key={id} aria-pressed={vista === id} onClick={() => setVista(id)} className={`h-7 rounded-full px-3 text-sm font-medium ${vista === id ? 'bg-selva-600 text-white' : 'text-tinta-soft'}`}>{t}</button>
             ))}
           </div>
         </div>
       </div>
 
-      {vista === 'mes' ? (
+      {vista === 'dia' ? (
+        <VistaDia dia={dia} onCambiarDia={(d) => irA({ fecha: d })} reservaciones={filtradas} bloqueos={bloqueos.data} onAbrir={setAbiertaId} />
+      ) : vista === 'mes' ? (
         <div className="overflow-hidden rounded-2xl bg-white ring-1 ring-linea">
           <div className="grid grid-cols-7 border-b border-linea text-center text-xs font-semibold text-tinta-soft">
             {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map((d) => <span key={d} className="py-2">{d}</span>)}
           </div>
           <div className="grid grid-cols-7">
-            {celdas.map((dia, i) => {
-              if (!dia) return <div key={`v${i}`} className="min-h-24 border-r border-b border-linea bg-butaca/40 sm:min-h-28" />
-              const eventos = visibles.filter((r) => diaDe(r.inicio) === dia)
-              const bloqueo = bloqueoDe(dia)
+            {celdas.map((celda, i) => {
+              if (!celda) return <div key={`v${i}`} className="min-h-24 border-r border-b border-linea bg-butaca/40 sm:min-h-28" />
+              const eventos = visibles.filter((r) => diaDe(r.inicio) === celda)
+              const bloqueo = bloqueoDe(celda)
               return (
-                <div key={dia} className={`min-h-24 border-r border-b border-linea p-1 sm:min-h-28 sm:p-1.5 ${bloqueo ? 'bg-butaca' : ''}`}>
-                  <span className={`num inline-flex size-6 items-center justify-center rounded-full text-xs font-semibold ${dia === hoy() ? 'bg-selva-600 text-white' : ''}`}>{Number(dia.slice(8))}</span>
+                <div key={celda} className={`min-h-24 border-r border-b border-linea p-1 sm:min-h-28 sm:p-1.5 ${bloqueo ? 'bg-butaca' : ''}`}>
+                  <button type="button" onClick={() => irA({ vista: 'dia', fecha: celda })} aria-label={`Ver el día ${Number(celda.slice(8))}`} className={`num inline-flex size-6 items-center justify-center rounded-full text-xs font-semibold hover:ring-2 hover:ring-selva-200 ${celda === hoy() ? 'bg-selva-600 text-white' : ''}`}>{Number(celda.slice(8))}</button>
                   {bloqueo && <p className="mt-0.5 hidden text-[11px] leading-tight text-tinta-soft sm:block">Bloqueado: {bloqueo.motivo}</p>}
                   <div className="mt-0.5 space-y-1">
                     {eventos.map((r) => (
@@ -127,6 +142,7 @@ export default function Agenda() {
                           <span className="block truncate font-semibold">{r.shows?.nombre}</span>
                           <span className="block text-sm text-tinta-soft">{r.clientes?.nombre}, {r.clientes?.telefono}</span>
                           <span className="block text-sm text-tinta-soft">{r.calle}, {r.colonia}, {r.codigo_postal}</span>
+                          <span className="num block text-xs text-selva-700">{lineaDesglose(r)}</span>
                         </span>
                         <Estado estado={r.estado} />
                       </button>
