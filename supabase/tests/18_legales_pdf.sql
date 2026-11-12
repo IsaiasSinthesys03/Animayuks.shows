@@ -72,7 +72,8 @@ begin
      or (select contenido from public.paginas_versiones where slug = 'terminos' and version = v) <> 'Resumen nuevo de prueba' then
     raise exception 'PRUEBA FALLIDA L04: editar el resumen cambió la versión o no actualizó el historial';
   end if;
-  -- Sin PDF, editar el texto sí crea versión (como antes)
+  -- Sin PDF, editar el texto sí crea versión (como antes). Si ya tiene PDF, se le quita dentro de la prueba
+  update public.paginas set pdf_ruta = null, pdf_nombre = null, pdf_bytes = null where slug = 'politica-de-cancelacion' and pdf_ruta is not null;
   select version into v_antes from public.paginas where slug = 'politica-de-cancelacion';
   update public.paginas set contenido = contenido || ' (editado)' where slug = 'politica-de-cancelacion';
   if (select version from public.paginas where slug = 'politica-de-cancelacion') <> v_antes + 1 then

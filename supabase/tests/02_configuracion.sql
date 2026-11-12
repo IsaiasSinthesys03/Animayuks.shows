@@ -128,6 +128,8 @@ begin
   if (select banco from public.configuracion) <> 'BBVA' then
     raise exception 'PRUEBA FALLIDA C07: el admin no pudo capturar los datos bancarios';
   end if;
+  -- Esta prueba mide el texto: si el documento ya tiene PDF, se le quita (dentro de la transacción de prueba)
+  update public.paginas set pdf_ruta = null, pdf_nombre = null, pdf_bytes = null where slug = 'terminos' and pdf_ruta is not null;
   select version into v_antes from public.paginas where slug = 'terminos';
   update public.paginas set titulo = 'Términos (título nuevo)' where slug = 'terminos';
   if (select version from public.paginas where slug = 'terminos') <> v_antes then
