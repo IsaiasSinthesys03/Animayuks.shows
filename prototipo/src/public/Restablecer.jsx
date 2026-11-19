@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { cambiarContrasena, mensajeAuth, useAuth } from '../auth'
 import { useStore } from '../store'
-import { Boton, Campo, Cargando, Input } from '../components/ui'
+import { Boton, Campo, Cargando, Input, InputContrasena } from '../components/ui'
 
 /** Destino del enlace de "recuperar contraseña" del correo. */
 export default function Restablecer() {
@@ -47,7 +47,7 @@ export default function Restablecer() {
       <h1 className="font-bungee text-4xl leading-[1.05] uppercase">Elige una contraseña nueva</h1>
       <form className="mt-8 space-y-4" onSubmit={enviar}>
         <Campo etiqueta="Contraseña nueva" ayuda="Mínimo 8 caracteres." error={error}>
-          <Input type="password" autoComplete="new-password" value={contrasena} onChange={(e) => setContrasena(e.target.value)} required />
+          <InputContrasena autoComplete="new-password" value={contrasena} onChange={(e) => setContrasena(e.target.value)} required />
         </Campo>
         <Boton type="submit" tam="lg" className="w-full" disabled={enviando}>Guardar contraseña</Boton>
       </form>

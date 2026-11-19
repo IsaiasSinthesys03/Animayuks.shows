@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CheckCircle2, CircleAlert, Loader2, X } from 'lucide-react'
+import { CheckCircle2, CircleAlert, Eye, EyeOff, Loader2, X } from 'lucide-react'
 import { urlImagen } from '../lib/api'
 import { useStore } from '../store'
 
@@ -49,6 +49,25 @@ export function Campo({ etiqueta, ayuda, error, children, className = '' }) {
 
 export const claseInput =
   'h-11 w-full rounded-xl border border-linea bg-white px-3.5 text-[15px] text-tinta placeholder:text-tinta-soft/70 transition-colors focus:border-selva-500 focus:outline-none focus:ring-3 focus:ring-selva-100 aria-invalid:border-error'
+
+/** Campo de contraseña con botón para mostrarla u ocultarla */
+export function InputContrasena({ className = '', ...props }) {
+  const [visible, setVisible] = useState(false)
+  return (
+    <span className="relative block">
+      <input {...props} type={visible ? 'text' : 'password'} className={`${claseInput} pr-12 ${className}`} />
+      <button
+        type="button"
+        onClick={(e) => { e.preventDefault(); setVisible(!visible) }}
+        aria-label={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+        aria-pressed={visible}
+        className="absolute top-1/2 right-1.5 inline-flex size-9 -translate-y-1/2 items-center justify-center rounded-full text-tinta-soft hover:bg-butaca hover:text-tinta"
+      >
+        {visible ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
+      </button>
+    </span>
+  )
+}
 
 export function Input(props) {
   return <input className={claseInput} {...props} />

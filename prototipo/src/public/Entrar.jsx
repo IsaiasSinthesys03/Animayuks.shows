@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { MailCheck } from 'lucide-react'
 import { entrar, mensajeAuth, registrar, useAuth } from '../auth'
-import { Boton, Campo, Input } from '../components/ui'
+import { Boton, Campo, Input, InputContrasena } from '../components/ui'
 import Turnstile from '../components/Turnstile'
 
 export default function Entrar() {
@@ -90,7 +90,7 @@ export default function Entrar() {
         )}
         <Campo etiqueta="Correo"><Input type="email" autoComplete="email" value={f.correo} onChange={(e) => set('correo', e.target.value)} required /></Campo>
         <Campo etiqueta="Contraseña" ayuda={modo === 'registro' ? 'Mínimo 8 caracteres.' : undefined}>
-          <Input type="password" autoComplete={modo === 'entrar' ? 'current-password' : 'new-password'} value={f.contrasena} onChange={(e) => set('contrasena', e.target.value)} required />
+          <InputContrasena autoComplete={modo === 'entrar' ? 'current-password' : 'new-password'} value={f.contrasena} onChange={(e) => set('contrasena', e.target.value)} required />
         </Campo>
         {modo === 'entrar' && (
           <p className="text-right text-sm"><Link to="/recuperar" className="font-semibold text-selva-700 underline">Olvidé mi contraseña</Link></p>
