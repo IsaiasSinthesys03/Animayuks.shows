@@ -4,7 +4,7 @@ import { Check, ImagePlus, Pencil, Plus, Trash2, X } from 'lucide-react'
 import { mensajeError, urlImagen } from '../lib/api'
 import { borrarCategoria, borrarModalidad, borrarPaquete, guardarCategoria, guardarModalidad, renombrarCategoria, guardarPaquete, guardarShow, subirImagen } from '../lib/apiAdmin'
 import { useCategorias, useModalidades, useShows } from '../lib/consultas'
-import { pesos } from '../lib/format'
+import { diaMes, hoy, pesos, ventaAbierta } from '../lib/format'
 import { useStore } from '../store'
 import { Boton, Campo, Cargando, ErrorCarga, Input, Miniatura, Panel, Select, claseInput } from '../components/ui'
 import { Encabezado, Interruptor } from './AdminLayout'
@@ -13,6 +13,16 @@ import HorarioShow from './horarios/HorarioShow'
 const aSlug = (t) =>
   t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
 const MAX_IMAGEN_MB = 10
+
+/** "Sale el 1 nov" · "Venta cerrada" · "Temporada 1 dic – 24 dic" */
+function etiquetaFechas(s) {
+  const d = hoy()
+  if (s.venta_desde && d < s.venta_desde) return `Sale el ${diaMes(s.venta_desde)}`
+  if (s.venta_hasta && d > s.venta_hasta) return 'Venta cerrada'
+  if (s.evento_desde || s.evento_hasta) return `Temporada ${s.evento_desde ? diaMes(s.evento_desde) : '…'} – ${s.evento_hasta ? diaMes(s.evento_hasta) : '…'}`
+  if (s.venta_hasta) return `En venta hasta el ${diaMes(s.venta_hasta)}`
+  return null
+}
 
 function usarInvalidar() {
   const queryClient = useQueryClient()
@@ -119,7 +129,8 @@ function EditorShow({ show, onCerrar }) {
     duracion_min: show?.duracion_min ?? 60, montaje_min: show?.montaje_min ?? 30, desmontaje_min: show?.desmontaje_min ?? 20, artistas: show?.artistas ?? 1,
     precio_base: show?.precio_base ?? '', requisitos: (show?.requisitos ?? []).join('\n'), video_url: show?.video_url ?? '',
     destacado: show?.destacado ?? false, pide_modalidad: show?.pide_modalidad ?? false,
-    permite_horas_extra: show?.permite_horas_extra ?? false, precio_hora_extra: Number(show?.precio_hora_extra) > 0 ? show.precio_hora_extra : '', orden: show?.orden ?? 0,
+    permite_horas_extra: show?.permite_horas_extra ?? false,
+    venta_desde: show?.venta_desde ?? '', venta_hasta: show?.venta_hasta ?? '', evento_desde: show?.evento_desde ?? '', evento_hasta: show?.evento_hasta ?? '', precio_hora_extra: Number(show?.precio_hora_extra) > 0 ? show.precio_hora_extra : '', orden: show?.orden ?? 0,
   })
   const [imagen, setImagen] = useState(show?.imagen_principal ?? null)
   const [galeria, setGaleria] = useState(show?.galeria ?? [])
@@ -155,6 +166,8 @@ function EditorShow({ show, onCerrar }) {
     if (f.precio_base === '' || !(Number(f.precio_base) >= 0)) return setError('Escribe el precio base.')
     if (!(Number(f.duracion_min) > 0)) return setError('La duración debe ser mayor a 0.')
     if (f.permite_horas_extra && !(Number(f.precio_hora_extra) > 0)) return setError('Escribe el precio por hora extra.')
+    if (f.venta_desde && f.venta_hasta && f.venta_hasta < f.venta_desde) return setError('El fin del periodo de venta debe ser igual o posterior al inicio.')
+    if (f.evento_desde && f.evento_hasta && f.evento_hasta < f.evento_desde) return setError('El fin de la temporada debe ser igual o posterior al inicio.')
     setGuardando(true)
     try {
       const datos = {
@@ -163,7 +176,8 @@ function EditorShow({ show, onCerrar }) {
         artistas: Number(f.artistas) || 1, precio_base: Number(f.precio_base),
         requisitos: f.requisitos.split('\n').map((x) => x.trim()).filter(Boolean),
         video_url: f.video_url.trim() || null, destacado: f.destacado, pide_modalidad: f.pide_modalidad,
-        permite_horas_extra: f.permite_horas_extra, precio_hora_extra: Number(f.precio_hora_extra) || 0, orden: Number(f.orden) || 0,
+        permite_horas_extra: f.permite_horas_extra,
+        venta_desde: f.venta_desde || null, venta_hasta: f.venta_hasta || null, evento_desde: f.evento_desde || null, evento_hasta: f.evento_hasta || null, precio_hora_extra: Number(f.precio_hora_extra) || 0, orden: Number(f.orden) || 0,
         imagen_principal: imagen, galeria,
       }
       if (!actual) datos.slug = aSlug(f.nombre)
@@ -250,6 +264,16 @@ function EditorShow({ show, onCerrar }) {
           <input type="checkbox" checked={f.pide_modalidad} onChange={(e) => set('pide_modalidad', e.target.checked)} className="mt-0.5 size-4 accent-selva-600" />
           <span>Preguntar tipo de evento al reservar<span className="block font-normal text-tinta-soft">El cliente elige un tipo de evento (Escolar, Privado, Municipal…) con su costo extra, o ninguno. Apágalo si este show no encaja con esos eventos.</span></span>
         </label>
+        <div className="rounded-xl ring-1 ring-linea p-3">
+          <p className="text-sm font-semibold">Fechas (opcional)</p>
+          <p className="text-sm text-tinta-soft">Vacías = siempre disponible. Las reservaciones ya hechas no se cancelan.</p>
+          <div className="mt-2 grid gap-3 sm:grid-cols-2">
+            <Campo etiqueta="Se puede reservar desde" ayuda="Antes de esta fecha no aparece en el sitio."><Input type="date" value={f.venta_desde} onChange={(e) => set('venta_desde', e.target.value)} /></Campo>
+            <Campo etiqueta="Se puede reservar hasta" ayuda="Después de esta fecha deja de aparecer."><Input type="date" min={f.venta_desde || undefined} value={f.venta_hasta} onChange={(e) => set('venta_hasta', e.target.value)} /></Campo>
+            <Campo etiqueta="Se presenta desde" ayuda="Primer día en que se puede hacer el evento."><Input type="date" value={f.evento_desde} onChange={(e) => set('evento_desde', e.target.value)} /></Campo>
+            <Campo etiqueta="Se presenta hasta" ayuda="Último día en que se puede hacer el evento."><Input type="date" min={f.evento_desde || undefined} value={f.evento_hasta} onChange={(e) => set('evento_hasta', e.target.value)} /></Campo>
+          </div>
+        </div>
         <div className="rounded-xl ring-1 ring-linea p-3">
           <label className="flex items-start gap-2 text-sm font-medium">
             <input type="checkbox" checked={f.permite_horas_extra} onChange={(e) => set('permite_horas_extra', e.target.checked)} className="mt-0.5 size-4 accent-selva-600" />
@@ -532,6 +556,7 @@ export default function ShowsAdmin() {
                 </div>
                 <p className="text-sm text-tinta-soft">{s.categorias?.nombre ?? 'Sin categoría'}, {s.duracion_min} min, {s.paquetes.length} {s.paquetes.length === 1 ? 'paquete' : 'paquetes'}</p>
                 {s.horario_propio && <span className="mt-1 inline-block rounded-full bg-agua-soft px-2 py-0.5 text-xs font-semibold text-selva-900">Horario propio</span>}
+                {etiquetaFechas(s) && <span className={`mt-1 ml-1 inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${ventaAbierta(s) ? 'bg-selva-50 text-selva-700' : 'bg-alerta-soft text-alerta'}`}>{etiquetaFechas(s)}</span>}
                 {s.permite_horas_extra && <span className="mt-1 ml-1 inline-block rounded-full bg-maiz-soft px-2 py-0.5 text-xs font-semibold">Tiempo extra {pesos(s.precio_hora_extra)}/h</span>}
                 <p className="num mt-1 text-sm">Desde <span className="font-semibold">{pesos(s.precio_base)}</span></p>
                 <button onClick={() => setEditando(s.id)} className="mt-2 text-sm font-semibold text-selva-700 underline">Editar</button>

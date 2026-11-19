@@ -4,7 +4,7 @@ import { Link, useParams } from 'react-router-dom'
 import { CalendarDays, Check, ChevronLeft, Clock, Play, Users } from 'lucide-react'
 import { resumenHorarioShow, urlImagen } from '../lib/api'
 import { useConfiguracion, useShow } from '../lib/consultas'
-import { pesos } from '../lib/format'
+import { diaMes, hoy, pesos, textoTemporada, ventaAbierta } from '../lib/format'
 import { Cargando, Cartel, ErrorCarga } from '../components/ui'
 
 const PLURAL = ['domingos', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábados']
@@ -50,6 +50,19 @@ export default function ShowDetalle() {
     return (
       <div className="mx-auto max-w-xl px-4 py-24 text-center">
         <p className="text-xl font-semibold">Este show ya no está en cartelera.</p>
+        <Link to="/shows" className="mt-4 inline-block font-semibold text-selva-700 underline">Ver la cartelera</Link>
+      </div>
+    )
+  }
+
+  if (!ventaAbierta(show)) {
+    return (
+      <div className="mx-auto max-w-xl px-4 py-24 text-center">
+        <p className="text-xl font-semibold">
+          {show.venta_desde && hoy() < show.venta_desde
+            ? `${show.nombre} estará disponible para reservar a partir del ${diaMes(show.venta_desde)}.`
+            : `${show.nombre} ya no está disponible para reservar.`}
+        </p>
         <Link to="/shows" className="mt-4 inline-block font-semibold text-selva-700 underline">Ver la cartelera</Link>
       </div>
     )
@@ -133,6 +146,9 @@ export default function ShowDetalle() {
             </fieldset>
           )}
 
+          {textoTemporada(show) && (
+            <p className="mt-5 text-[15px]"><span className="font-semibold">Temporada:</span> {textoTemporada(show).replace('Se presenta', 'se presenta')}.</p>
+          )}
           {show.permite_horas_extra && Number(show.precio_hora_extra) > 0 && (
             <p className="mt-5 text-[15px]"><span className="font-semibold">¿Quieres más tiempo?</span> Puedes agregar tiempo extra al reservar: {pesos(show.precio_hora_extra)} por hora.</p>
           )}

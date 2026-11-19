@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Search, Users } from 'lucide-react'
 import { useCategorias, useShows } from '../lib/consultas'
-import { pesos } from '../lib/format'
+import { pesos, ventaAbierta } from '../lib/format'
 import { Cargando, Cartel, ErrorCarga } from '../components/ui'
 
 export default function Catalogo() {
@@ -15,7 +15,7 @@ export default function Catalogo() {
   const lista = useMemo(() => {
     const t = texto.trim().toLowerCase()
     const filtrados = (shows.data ?? []).filter(
-      (s) => (categoria === 'Todos' || s.categorias?.nombre === categoria) && `${s.nombre} ${s.resumen}`.toLowerCase().includes(t),
+      (s) => ventaAbierta(s) && (categoria === 'Todos' || s.categorias?.nombre === categoria) && `${s.nombre} ${s.resumen}`.toLowerCase().includes(t),
     )
     return orden === 'precio'
       ? [...filtrados].sort((a, b) => Number(a.precio_base) - Number(b.precio_base))

@@ -42,6 +42,20 @@ export const textoMinutos = (m) => {
 /** Opciones de tiempo extra: 30, 60, … hasta el máximo */
 export const opcionesExtra = (max) => Array.from({ length: Math.floor((Number(max) || 0) / 30) }, (_, i) => (i + 1) * 30)
 
+const fDiaMes = conZona({ day: 'numeric', month: 'long' })
+/** "2026-12-01" → "1 de diciembre" */
+export const diaMes = (dia) => fDiaMes.format(new Date(`${dia}T18:00:00Z`))
+
+/** ¿Se puede reservar hoy? (periodo de venta del show; vacío = siempre) */
+export const ventaAbierta = (s, dia = hoy()) => (!s?.venta_desde || dia >= s.venta_desde) && (!s?.venta_hasta || dia <= s.venta_hasta)
+
+/** "Se presenta del 1 al 24 de diciembre" · null si no tiene temporada */
+export function textoTemporada(s) {
+  if (!s?.evento_desde && !s?.evento_hasta) return null
+  if (s.evento_desde && s.evento_hasta) return `Se presenta del ${diaMes(s.evento_desde)} al ${diaMes(s.evento_hasta)}`
+  return s.evento_desde ? `Se presenta a partir del ${diaMes(s.evento_desde)}` : `Se presenta hasta el ${diaMes(s.evento_hasta)}`
+}
+
 export const saldoDe = (r) => Math.max(Number(r.total) - Number(r.total_pagado), 0)
 
 const DIAS_CORTOS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']

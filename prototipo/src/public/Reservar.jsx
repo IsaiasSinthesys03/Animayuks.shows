@@ -5,7 +5,7 @@ import { Check, ChevronLeft, Loader2, Timer } from 'lucide-react'
 import { useAuth } from '../auth'
 import { aceptarPaginas, apartarHorario, catalogoCpsPorCodigo, crearReservacion, horariosDisponibles, mensajeError } from '../lib/api'
 import { useConfiguracion, useModalidades, useShows } from '../lib/consultas'
-import { fechaDeDia, fechaLarga, hora, opcionesExtra, pesos, textoMinutos } from '../lib/format'
+import { fechaDeDia, fechaLarga, hora, opcionesExtra, pesos, textoMinutos, textoTemporada, ventaAbierta } from '../lib/format'
 import { Boton, Campo, Cargando, ErrorCarga, Input, Miniatura, Select, claseInput } from '../components/ui'
 import Calendario from '../components/Calendario'
 import VerificadorCP from '../components/VerificadorCP'
@@ -157,7 +157,7 @@ export default function Reservar() {
   const [restante, setRestante] = useState(null)
   const set = (k, v) => setD((x) => ({ ...x, [k]: v }))
 
-  const activos = useMemo(() => (shows.data ?? []).filter((s) => s.activo), [shows.data])
+  const activos = useMemo(() => (shows.data ?? []).filter((s) => s.activo && ventaAbierta(s)), [shows.data])
 
   // Lo que viene en la URL (desde un cartel o del verificador de cobertura) manda sobre el borrador
   const slugUrl = params.get('show')
@@ -375,6 +375,7 @@ export default function Reservar() {
                       <span className="block font-semibold">{s.nombre}</span>
                       <span className="block text-sm text-tinta-soft">{s.categorias?.nombre}, {s.duracion_min} min</span>
                       <span className="num block text-sm font-semibold">Desde {pesos(s.precio_base)}</span>
+                      {textoTemporada(s) && <span className="block text-xs font-semibold text-selva-700">{textoTemporada(s)}</span>}
                     </span>
                   </button>
                 ))}

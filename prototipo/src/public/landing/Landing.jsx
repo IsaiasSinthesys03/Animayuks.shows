@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronRight, Play } from 'lucide-react'
 import { useBannersLanding, useConfiguracion, useContenidoLanding, useShows, useVideosLanding } from '../../lib/consultas'
-import { pesos } from '../../lib/format'
+import { pesos, ventaAbierta } from '../../lib/format'
 import { urlImagen } from '../../lib/api'
 import { Cargando, Cartel, ErrorCarga } from '../../components/ui'
 import VerificadorCP from '../../components/VerificadorCP'
@@ -117,7 +117,7 @@ function TarjetaShow({ show, indice }) {
 function ShowsDestacados({ contenido }) {
   const shows = useShows()
   const lista = (shows.data ?? [])
-    .filter((s) => s.activo)
+    .filter((s) => s.activo && ventaAbierta(s))
     .sort((a, b) => Number(b.destacado) - Number(a.destacado) || a.orden - b.orden)
     .slice(0, 4)
   if (shows.data && lista.length === 0) return null
